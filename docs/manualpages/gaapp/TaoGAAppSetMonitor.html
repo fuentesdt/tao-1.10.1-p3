@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGAAppSetMonitor</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGAAppSetMonitor"><H1>TaoGAAppSetMonitor</H1></A>
+Sets an ADDITIONAL function that is to be used at every iteration of the solver to display the interation's progress. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp_ga.h" 
+int TaoGAAppSetMonitor(TAO_GA_APPLICATION gaapp, int (*mymonitor)(TAO_GA_APPLICATION, void*), void *mctx)
+</PRE>
+Collective on TAO_GA_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gaapp </B></TD><TD>- the TAO_GA_APPLICATION application context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mymonitor </B></TD><TD>- monitoring routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mctx </B></TD><TD>- [optional] user-defined context for private data for the
+monitor routine (may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of mymonitor</FONT></H2>
+<pre>
+    int mymonitor(TAO_DA_APPLICATION gaapp, void *mctx)
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gaapp </B></TD><TD>- the TAO_GA_APPLICATION application context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mctx </B></TD><TD>- [optional] monitoring context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+Several different monitoring routines may be set by calling
+<A HREF="../gaapp/TaoGAAppSetMonitor.html#TaoGAAppSetMonitor">TaoGAAppSetMonitor</A>() mutiple times; all will be called in the
+order in which they were set.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ GAApplication, monitor, <A HREF="../lsolver/View.html#View">View</A>
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../gaapp/TaoGAAppMonitor.html#TaoGAAppMonitor">TaoGAAppMonitor</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/external/globalarraytao/taoapp_ga.c.html#TaoGAAppSetMonitor">src/external/globalarraytao/taoapp_ga.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

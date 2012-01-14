@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetDefaultSolutionVec</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetDefaultSolutionVec"><H1>TaoAppSetDefaultSolutionVec</H1></A>
+Sets the vector representing the variables and an initial guess. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetDefaultSolutionVec(TAO_APPLICATION taoapp, Vec xx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xx </B></TD><TD>- variable vector that stores the solution
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This vector will be used by the solver, so do not use it
+for other purposes.  The user should destroy this vector after
+solving the application.
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A HREF="../ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>(), <A HREF="../ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app.c.html#TaoAppSetDefaultSolutionVec">src/petsctao/application/petscapp/tao_app.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

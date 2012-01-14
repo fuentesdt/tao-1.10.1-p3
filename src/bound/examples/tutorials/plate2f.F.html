@@ -1,0 +1,1092 @@
+<center><a href="plate2f.F">Actual source code: plate2f.F</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a>! <font color="#666666">"$Id$"</font>;
+<a name="line2">  2: </a>!
+<a name="line3">  3: </a>!  Program usage: mpirun -np &lt;proc&gt; plate2f [all TAO options] 
+<a name="line4">  4: </a>!
+<a name="line5">  5: </a>!  This example demonstrates use of the TAO package to solve a bound constrained
+<a name="line6">  6: </a>!  minimization problem.  This example is based on a problem from the
+<a name="line7">  7: </a>!  MINPACK-2 test suite.  Given a rectangular 2-D domain and boundary values
+<a name="line8">  8: </a>!  along the edges of the domain, the objective is to find the surface
+<a name="line9">  9: </a>!  with the minimal area that satisfies the boundary conditions.
+<a name="line10"> 10: </a>!  The command line options are:
+<a name="line11"> 11: </a>!    -mx &lt;xg&gt;, where &lt;xg&gt; = number of grid points in the 1st coordinate direction
+<a name="line12"> 12: </a>!    -my &lt;yg&gt;, where &lt;yg&gt; = number of grid points in the 2nd coordinate direction
+<a name="line13"> 13: </a>!    -bmx &lt;bxg&gt;, where &lt;bxg&gt; = number of grid points under plate in 1st direction
+<a name="line14"> 14: </a>!    -bmy &lt;byg&gt;, where &lt;byg&gt; = number of grid points under plate in 2nd direction
+<a name="line15"> 15: </a>!    -bheight &lt;ht&gt;, where &lt;ht&gt; = height of the plate
+<a name="line16"> 16: </a>!
+<a name="line17"> 17: </a>!<font color="#B22222">/*T</font>
+<a name="line18"> 18: </a><font color="#B22222">!   Concepts: TAO - Solving a bound constrained minimization problem</font>
+<a name="line19"> 19: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(); <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>();</font>
+<a name="line20"> 20: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(); <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>();</font>
+<a name="line21"> 21: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(); </font>
+<a name="line22"> 22: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>();</font>
+<a name="line23"> 23: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBounds.html#TaoAppSetVariableBounds">TaoAppSetVariableBounds</A>();</font>
+<a name="line24"> 24: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>();</font>
+<a name="line25"> 25: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(); <A href="../../../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>();</font>
+<a name="line26"> 26: </a><font color="#B22222">!   Routines: <A href="../../../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>();</font>
+<a name="line27"> 27: </a><font color="#B22222">!   Processors: n</font>
+<a name="line28"> 28: </a><font color="#B22222">!T*/</font>
+
+
+
+<a name="line32"> 32: </a>      implicit none
+
+<a name="line34"> 34: </a><font color="#A020F0">#include </font><font color="#666666">"plate2f.h"</font><font color="#A020F0"></font>
+
+<a name="line36"> 36: </a>! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+<a name="line37"> 37: </a>!                   Variable declarations
+<a name="line38"> 38: </a>! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+<a name="line39"> 39: </a>!
+<a name="line40"> 40: </a>!  Variables:
+<a name="line41"> 41: </a>!    (common from plate2f.h):
+<a name="line42"> 42: </a>!    Nx, Ny           number of processors in x- and y- directions
+<a name="line43"> 43: </a>!    mx, my           number of grid points in x,y directions
+<a name="line44"> 44: </a>!    N    global dimension of vector
+
+<a name="line46"> 46: </a>      integer          info          ! used to check <font color="#4169E1">for</font> functions returning nonzeros
+<a name="line47"> 47: </a>      Vec              x             ! solution vector
+<a name="line48"> 48: </a>      Vec              xl, xu        ! lower and upper bounds vectorsp
+<a name="line49"> 49: </a>      PetscInt         m             ! number of local elements in vector
+<a name="line50"> 50: </a>      TAO_SOLVER       tao           ! TAO_SOLVER solver context
+<a name="line51"> 51: </a>      TAO_APPLICATION  plateapp      ! PETSc application
+<a name="line52"> 52: </a>      Mat              H             ! Hessian matrix
+<a name="line53"> 53: </a>      ISLocalToGlobalMapping isltog  ! local to global mapping object
+<a name="line54"> 54: </a>      PetscTruth       flg
+<a name="line55"> 55: </a>      PetscInt         i1,i3,i7
+
+
+<a name="line58"> 58: </a>      external FormFunctionGradient
+<a name="line59"> 59: </a>      external FormHessian
+<a name="line60"> 60: </a>      external MSA_BoundaryConditions
+<a name="line61"> 61: </a>      external MSA_Plate
+<a name="line62"> 62: </a>      external MSA_InitialPoint
+<a name="line63"> 63: </a>! Initialize Tao
+
+<a name="line65"> 65: </a>      i1=1
+<a name="line66"> 66: </a>      i3=3
+<a name="line67"> 67: </a>      i7=7
+
+
+<a name="line70"> 70: </a>      call PetscInitialize(PETSC_NULL_CHARACTER,info)
+<a name="line71"> 71: </a>      call <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(PETSC_NULL_CHARACTER,info)
+<a name="line72"> 72: </a>      
+
+<a name="line74"> 74: </a>! Specify <font color="#4169E1">default</font> dimensions of the problem
+<a name="line75"> 75: </a>      mx = 10
+<a name="line76"> 76: </a>      my = 10
+<a name="line77"> 77: </a>      bheight = 0.1
+
+<a name="line79"> 79: </a>! Check <font color="#4169E1">for</font> any command line arguments that override defaults      
+<a name="line80"> 80: </a>      
+<a name="line81"> 81: </a>      call PetscOptionsGetInt(TAO_NULL_CHARACTER,<font color="#666666">"-mx"</font>,mx,flg,info)
+<a name="line82"> 82: </a>      call PetscOptionsGetInt(TAO_NULL_CHARACTER,<font color="#666666">"-my"</font>,my,flg,info)
+<a name="line83"> 83: </a>      
+<a name="line84"> 84: </a>      bmx = mx/2
+<a name="line85"> 85: </a>      bmy = my/2
+
+<a name="line87"> 87: </a>      call PetscOptionsGetInt(TAO_NULL_CHARACTER,<font color="#666666">"-bmx"</font>,bmx,flg,info)
+<a name="line88"> 88: </a>      call PetscOptionsGetInt(TAO_NULL_CHARACTER,<font color="#666666">"-bmy"</font>,bmy,flg,info)
+<a name="line89"> 89: </a>      call PetscOptionsGetReal(TAO_NULL_CHARACTER,<font color="#666666">"-bheight"</font>,bheight,   &amp;
+<a name="line90"> 90: </a>     &amp;      flg,info)
+<a name="line91"> 91: </a>      
+
+<a name="line93"> 93: </a>! Calculate any derived values from parameters
+<a name="line94"> 94: </a>      N = mx*my
+
+<a name="line96"> 96: </a>! Let Petsc determine the dimensions of the local vectors 
+<a name="line97"> 97: </a>      Nx = PETSC_DECIDE
+<a name="line98"> 98: </a>      NY = PETSC_DECIDE
+
+<a name="line100">100: </a>! A two dimensional distributed array will help define this problem, which
+<a name="line101">101: </a>! derives from an elliptic PDE on a two-dimensional domain.  From the 
+<a name="line102">102: </a>! distributed array, create the vectors
+
+<a name="line104">104: </a>      call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,         &amp;
+<a name="line105">105: </a>     &amp;     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &amp;
+<a name="line106">106: </a>     &amp;     da,info)
+<a name="line107">107: </a>      
+
+<a name="line109">109: </a>! Extract global and local vectors from DA; The local vectors are
+<a name="line110">110: </a>! used solely as work space <font color="#4169E1">for</font> the evaluation of the function, 
+<a name="line111">111: </a>! gradient, and Hessian.  <A href="../../../../docs/manualpages/indexset/Duplicate.html#Duplicate">Duplicate</A> <font color="#4169E1">for</font> remaining vectors that are 
+<a name="line112">112: </a>! the same types.
+
+<a name="line114">114: </a>      call DACreateGlobalVector(da,x,info)
+<a name="line115">115: </a>      call DACreateLocalVector(da,localX,info)
+<a name="line116">116: </a>      call VecDuplicate(localX,localV,info)
+
+<a name="line118">118: </a>! Create a matrix data structure to store the Hessian.
+<a name="line119">119: </a>! Here we (optionally) also associate the local numbering scheme
+<a name="line120">120: </a>! with the matrix so that later we can use local indices <font color="#4169E1">for</font> matrix
+<a name="line121">121: </a>! assembly
+
+<a name="line123">123: </a>      call VecGetLocalSize(x,m,info)
+<a name="line124">124: </a>      call MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,  &amp;
+<a name="line125">125: </a>     &amp;     i3,PETSC_NULL_INTEGER,H,info)
+
+<a name="line127">127: </a>      call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,info)
+<a name="line128">128: </a>      call DAGetISLocalToGlobalMapping(da,isltog,info)
+<a name="line129">129: </a>      call MatSetLocalToGlobalMapping(H,isltog,info)
+<a name="line130">130: </a>      
+
+<a name="line132">132: </a>! The Tao code begins here
+<a name="line133">133: </a>! Create TAO solver and set desired solution method.
+<a name="line134">134: </a>! This problems uses bounded variables, so the
+<a name="line135">135: </a>! method must either be 'tao_tron' or 'tao_blmvm'
+
+<a name="line137">137: </a>      call <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(MPI_COMM_WORLD,'tao_blmvm',tao,info)
+<a name="line138">138: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(MPI_COMM_WORLD,plateapp,info)
+<a name="line139">139: </a>      
+
+<a name="line141">141: </a>!     Set minimization function and gradient, hessian evaluation functions
+
+<a name="line143">143: </a>!     <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A> is shortened to 31 chars to comply with some compilers
+<a name="line144">144: </a>      call TaoAppSetObjectiveAndGradientRo(plateapp,                    &amp;
+<a name="line145">145: </a>     &amp;     FormFunctionGradient,PETSC_NULL_OBJECT,info)
+
+<a name="line147">147: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(plateapp,H,H,info)
+<a name="line148">148: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(plateapp,FormHessian,                 &amp;
+<a name="line149">149: </a>     &amp;     PETSC_NULL_OBJECT, info)
+<a name="line150">150: </a>      
+
+<a name="line152">152: </a>! Set Variable bounds 
+<a name="line153">153: </a>      call MSA_BoundaryConditions(info)
+<a name="line154">154: </a>      call VecDuplicate(x,xl,info)
+<a name="line155">155: </a>      call VecDuplicate(x,xu,info)
+<a name="line156">156: </a>      call MSA_Plate(xl,xu,info)
+<a name="line157">157: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBounds.html#TaoAppSetVariableBounds">TaoAppSetVariableBounds</A>(plateapp,xl,xu,info)
+
+<a name="line159">159: </a>! Set the initial solution guess
+<a name="line160">160: </a>      call MSA_InitialPoint(x, info)
+<a name="line161">161: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(plateapp,x,info)
+
+<a name="line163">163: </a>! Check <font color="#4169E1">for</font> any tao command line options
+<a name="line164">164: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>(plateapp,tao,info)
+
+<a name="line166">166: </a>! <A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> the application
+<a name="line167">167: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>(plateapp,tao,info)
+
+<a name="line169">169: </a>!     <A href="../../../../docs/manualpages/lsolver/View.html#View">View</A> TAO solver information
+<a name="line170">170: </a>!      call <A href="../../../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>(tao,info)
+
+<a name="line172">172: </a>! Free TAO data structures
+<a name="line173">173: </a>      call <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(tao,info)
+<a name="line174">174: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>(plateapp,info)  
+
+<a name="line176">176: </a>! Free PETSc data structures
+<a name="line177">177: </a>      call VecDestroy(x,info)
+<a name="line178">178: </a>      call VecDestroy(xl,info)
+<a name="line179">179: </a>      call VecDestroy(xu,info)
+<a name="line180">180: </a>      call VecDestroy(Top,info)
+<a name="line181">181: </a>      call VecDestroy(Bottom,info)
+<a name="line182">182: </a>      call VecDestroy(Left,info)
+<a name="line183">183: </a>      call VecDestroy(Right,info)
+<a name="line184">184: </a>      call MatDestroy(H,info)
+<a name="line185">185: </a>      call VecDestroy(localX,info)
+<a name="line186">186: </a>      call VecDestroy(localV,info)
+<a name="line187">187: </a>      call DADestroy(da,info)
+
+<a name="line189">189: </a>! Finalize TAO 
+
+<a name="line191">191: </a>      call <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>(info)
+<a name="line192">192: </a>      call PetscFinalize(info)
+
+<a name="line194">194: </a>      end
+
+<a name="line196">196: </a>! ---------------------------------------------------------------------
+<a name="line197">197: </a>!
+<a name="line198">198: </a>!  FormFunctionGradient - Evaluates function f(X). 
+<a name="line199">199: </a>!    
+<a name="line200">200: </a>!  Input Parameters:
+<a name="line201">201: </a>!  tao   - the TAO_SOLVER context
+<a name="line202">202: </a>!  X     - the input vector 
+<a name="line203">203: </a>!  dummy - optional user-defined context, as set by TaoSetFunction()
+<a name="line204">204: </a>!          (not used here)
+<a name="line205">205: </a>!
+<a name="line206">206: </a>!  Output Parameters:
+<a name="line207">207: </a>!  fcn     - the newly evaluated function
+<a name="line208">208: </a>!  G       - the gradient vector
+<a name="line209">209: </a>!  info  - error code
+<a name="line210">210: </a>!
+
+
+<a name="line213">213: </a>      subroutine FormFunctionGradient(tao,X,fcn,G,dummy,info)
+<a name="line214">214: </a>      implicit none
+
+<a name="line216">216: </a>! da, localX, localG, Top, Bottom, Left, Right defined in plate2f.h
+<a name="line217">217: </a><font color="#A020F0">#include </font><font color="#666666">"plate2f.h"</font><font color="#A020F0"></font>
+<a name="line218">218: </a>      
+<a name="line219">219: </a>! Input/output variables
+
+<a name="line221">221: </a>      TAO_SOLVER       tao
+<a name="line222">222: </a>      PetscScalar fcn
+<a name="line223">223: </a>      Vec              X, G
+<a name="line224">224: </a>      integer          info
+<a name="line225">225: </a>      PetscInt         dummy
+<a name="line226">226: </a>      
+<a name="line227">227: </a>      PetscInt         i,j,row
+<a name="line228">228: </a>      PetscInt         xs, xm
+<a name="line229">229: </a>      PetscInt         gxs, gxm
+<a name="line230">230: </a>      PetscInt         ys, ym
+<a name="line231">231: </a>      PetscInt         gys, gym
+<a name="line232">232: </a>      PetscScalar      ft,zero,hx,hy,hydhx,hxdhy
+<a name="line233">233: </a>      PetscScalar      area,rhx,rhy
+<a name="line234">234: </a>      PetscScalar      f1,f2,f3,f4,f5,f6,d1,d2,d3
+<a name="line235">235: </a>      PetscScalar      d4,d5,d6,d7,d8
+<a name="line236">236: </a>      PetscScalar      df1dxc,df2dxc,df3dxc,df4dxc
+<a name="line237">237: </a>      PetscScalar      df5dxc,df6dxc
+<a name="line238">238: </a>      PetscScalar      xc,xl,xr,xt,xb,xlt,xrb
+
+
+<a name="line241">241: </a>! PETSc's VecGetArray acts differently in Fortran than it does in C.
+<a name="line242">242: </a>! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, info)
+<a name="line243">243: </a>! will <font color="#4169E1">return</font> an array of doubles referenced by x_array offset by x_index.
+<a name="line244">244: </a>!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
+<a name="line245">245: </a>! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
+<a name="line246">246: </a>      PetscScalar      g_v(0:1),x_v(0:1)
+<a name="line247">247: </a>      PetscScalar      top_v(0:1),left_v(0:1)
+<a name="line248">248: </a>      PetscScalar      right_v(0:1),bottom_v(0:1)
+<a name="line249">249: </a>      PetscOffset      g_i,left_i,right_i
+<a name="line250">250: </a>      PetscOffset      bottom_i,top_i,x_i
+
+<a name="line252">252: </a>      ft = 0.0d0
+<a name="line253">253: </a>      zero = 0.0d0
+<a name="line254">254: </a>      hx = 1.0d0/(mx + 1)
+<a name="line255">255: </a>      hy = 1.0d0/(my + 1)
+<a name="line256">256: </a>      hydhx = hy/hx
+<a name="line257">257: </a>      hxdhy = hx/hy
+<a name="line258">258: </a>      area = 0.5d0 * hx * hy
+<a name="line259">259: </a>      rhx = mx + 1.0d0
+<a name="line260">260: </a>      rhy = my + 1.0d0
+
+
+<a name="line263">263: </a>! Get local mesh boundaries
+<a name="line264">264: </a>      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &amp;
+<a name="line265">265: </a>     &amp;                  PETSC_NULL_INTEGER,info)
+<a name="line266">266: </a>      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,             &amp;
+<a name="line267">267: </a>     &amp;                       gxm,gym,PETSC_NULL_INTEGER,info)
+
+<a name="line269">269: </a>! Scatter ghost points to local vector
+<a name="line270">270: </a>      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,info)
+<a name="line271">271: </a>      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,info)
+
+<a name="line273">273: </a>! Initialize the vector to zero
+<a name="line274">274: </a>      call VecSet(localV,zero,info)
+
+<a name="line276">276: </a>! Get arrays to vector data (See note above about using VecGetArray in Fortran)
+<a name="line277">277: </a>      call VecGetArray(localX,x_v,x_i,info)
+<a name="line278">278: </a>      call VecGetArray(localV,g_v,g_i,info)
+<a name="line279">279: </a>      call VecGetArray(Top,top_v,top_i,info)
+<a name="line280">280: </a>      call VecGetArray(Bottom,bottom_v,bottom_i,info)
+<a name="line281">281: </a>      call VecGetArray(Left,left_v,left_i,info)
+<a name="line282">282: </a>      call VecGetArray(Right,right_v,right_i,info)
+
+<a name="line284">284: </a>! Compute function over the locally owned part of the mesh       
+<a name="line285">285: </a>      <font color="#4169E1">do</font> j = ys,ys+ym-1
+<a name="line286">286: </a>         <font color="#4169E1">do</font> i = xs,xs+xm-1
+<a name="line287">287: </a>            row = (j-gys)*gxm + (i-gxs)
+<a name="line288">288: </a>            xc = x_v(row+x_i)
+<a name="line289">289: </a>            xt = xc
+<a name="line290">290: </a>            xb = xc
+<a name="line291">291: </a>            xr = xc
+<a name="line292">292: </a>            xl = xc
+<a name="line293">293: </a>            xrb = xc
+<a name="line294">294: </a>            xlt = xc
+
+<a name="line296">296: </a>            <font color="#4169E1">if</font> (i .eq. 0) then !left side
+<a name="line297">297: </a>               xl = left_v(j - ys + 1 + left_i)
+<a name="line298">298: </a>               xlt = left_v(j - ys + 2 + left_i)
+<a name="line299">299: </a>            <font color="#4169E1">else</font>
+<a name="line300">300: </a>               xl = x_v(row - 1 + x_i)
+<a name="line301">301: </a>            endif
+
+<a name="line303">303: </a>            <font color="#4169E1">if</font> (j .eq. 0) then !bottom side
+<a name="line304">304: </a>               xb = bottom_v(i - xs + 1 + bottom_i)
+<a name="line305">305: </a>               xrb = bottom_v(i - xs + 2 + bottom_i)
+<a name="line306">306: </a>            <font color="#4169E1">else</font>
+<a name="line307">307: </a>               xb = x_v(row - gxm + x_i)
+<a name="line308">308: </a>            endif
+
+<a name="line310">310: </a>            <font color="#4169E1">if</font> (i + 1 .eq. gxs + gxm) then !right side
+<a name="line311">311: </a>               xr = right_v(j - ys + 1 + right_i)
+<a name="line312">312: </a>               xrb = right_v(j - ys + right_i)
+<a name="line313">313: </a>            <font color="#4169E1">else</font>
+<a name="line314">314: </a>               xr = x_v(row + 1 + x_i)
+<a name="line315">315: </a>            endif
+
+<a name="line317">317: </a>            <font color="#4169E1">if</font> (j + 1 .eq. gys + gym) then !top side
+<a name="line318">318: </a>               xt = top_v(i - xs + 1 + top_i)
+<a name="line319">319: </a>               xlt = top_v(i - xs + top_i)
+<a name="line320">320: </a>            <font color="#4169E1">else</font>
+<a name="line321">321: </a>               xt = x_v(row + gxm + x_i)
+<a name="line322">322: </a>            endif
+
+<a name="line324">324: </a>            <font color="#4169E1">if</font> ((i .gt. gxs ) .and. (j + 1 .lt. gys + gym)) then
+<a name="line325">325: </a>               xlt = x_v(row - 1 + gxm + x_i)
+<a name="line326">326: </a>            endif
+
+<a name="line328">328: </a>            <font color="#4169E1">if</font> ((j .gt. gys) .and. (i + 1 .lt. gxs + gxm)) then
+<a name="line329">329: </a>               xrb = x_v(row + 1 - gxm + x_i)
+<a name="line330">330: </a>            endif
+
+<a name="line332">332: </a>            d1 = xc-xl
+<a name="line333">333: </a>            d2 = xc-xr
+<a name="line334">334: </a>            d3 = xc-xt
+<a name="line335">335: </a>            d4 = xc-xb
+<a name="line336">336: </a>            d5 = xr-xrb
+<a name="line337">337: </a>            d6 = xrb-xb
+<a name="line338">338: </a>            d7 = xlt-xl
+<a name="line339">339: </a>            d8 = xt-xlt
+
+<a name="line341">341: </a>            df1dxc = d1 * hydhx
+<a name="line342">342: </a>            df2dxc = d1 * hydhx + d4 * hxdhy
+<a name="line343">343: </a>            df3dxc = d3 * hxdhy
+<a name="line344">344: </a>            df4dxc = d2 * hydhx + d3 * hxdhy
+<a name="line345">345: </a>            df5dxc = d2 * hydhx
+<a name="line346">346: </a>            df6dxc = d4 * hxdhy
+
+<a name="line348">348: </a>            d1 = d1 * rhx
+<a name="line349">349: </a>            d2 = d2 * rhx
+<a name="line350">350: </a>            d3 = d3 * rhy
+<a name="line351">351: </a>            d4 = d4 * rhy
+<a name="line352">352: </a>            d5 = d5 * rhy
+<a name="line353">353: </a>            d6 = d6 * rhx
+<a name="line354">354: </a>            d7 = d7 * rhy
+<a name="line355">355: </a>            d8 = d8 * rhx
+
+<a name="line357">357: </a>            f1 = sqrt(1.0d0 + d1*d1 + d7*d7)
+<a name="line358">358: </a>            f2 = sqrt(1.0d0 + d1*d1 + d4*d4)
+<a name="line359">359: </a>            f3 = sqrt(1.0d0 + d3*d3 + d8*d8)
+<a name="line360">360: </a>            f4 = sqrt(1.0d0 + d3*d3 + d2*d2)
+<a name="line361">361: </a>            f5 = sqrt(1.0d0 + d2*d2 + d5*d5)
+<a name="line362">362: </a>            f6 = sqrt(1.0d0 + d4*d4 + d6*d6)
+
+<a name="line364">364: </a>            ft = ft + f2 + f4
+
+<a name="line366">366: </a>            df1dxc = df1dxc / f1
+<a name="line367">367: </a>            df2dxc = df2dxc / f2
+<a name="line368">368: </a>            df3dxc = df3dxc / f3
+<a name="line369">369: </a>            df4dxc = df4dxc / f4
+<a name="line370">370: </a>            df5dxc = df5dxc / f5
+<a name="line371">371: </a>            df6dxc = df6dxc / f6
+
+<a name="line373">373: </a>            g_v(row + g_i) = 0.5 * (df1dxc + df2dxc + df3dxc + df4dxc +  &amp;
+<a name="line374">374: </a>     &amp;                              df5dxc + df6dxc)
+<a name="line375">375: </a>         enddo
+<a name="line376">376: </a>      enddo
+
+<a name="line378">378: </a>! Compute triangular areas along the border of the domain. 
+<a name="line379">379: </a>      <font color="#4169E1">if</font> (xs .eq. 0) then  ! left side
+<a name="line380">380: </a>         <font color="#4169E1">do</font> j=ys,ys+ym-1
+<a name="line381">381: </a>            d3 = (left_v(j-ys+1+left_i) - left_v(j-ys+2+left_i))         &amp;
+<a name="line382">382: </a>     &amp;                 * rhy
+<a name="line383">383: </a>            d2 = (left_v(j-ys+1+left_i) - x_v((j-gys)*gxm + x_i))        &amp;
+<a name="line384">384: </a>     &amp;                 * rhx
+<a name="line385">385: </a>            ft = ft + sqrt(1.0d0 + d3*d3 + d2*d2)
+<a name="line386">386: </a>         enddo
+<a name="line387">387: </a>      endif
+
+<a name="line389">389: </a>      
+<a name="line390">390: </a>      <font color="#4169E1">if</font> (ys .eq. 0) then !bottom side
+<a name="line391">391: </a>         <font color="#4169E1">do</font> i=xs,xs+xm-1
+<a name="line392">392: </a>            d2 = (bottom_v(i+1-xs+bottom_i)-bottom_v(i-xs+2+bottom_i))    &amp;
+<a name="line393">393: </a>     &amp;                    * rhx
+<a name="line394">394: </a>            d3 = (bottom_v(i-xs+1+bottom_i)-x_v(i-gxs+x_i))*rhy
+<a name="line395">395: </a>            ft = ft + sqrt(1.0 + d3*d3 + d2*d2)
+<a name="line396">396: </a>         enddo
+<a name="line397">397: </a>      endif
+
+<a name="line399">399: </a>      
+<a name="line400">400: </a>      <font color="#4169E1">if</font> (xs + xm .eq. mx) then ! right side
+<a name="line401">401: </a>         <font color="#4169E1">do</font> j=ys,ys+ym-1
+<a name="line402">402: </a>            d1 = (x_v((j+1-gys)*gxm-1+x_i)-right_v(j-ys+1+right_i))*rhx
+<a name="line403">403: </a>            d4 = (right_v(j-ys+right_i) - right_v(j-ys+1+right_i))*rhy
+<a name="line404">404: </a>            ft = ft + sqrt(1.0d0 + d1*d1 + d4*d4)
+<a name="line405">405: </a>         enddo
+<a name="line406">406: </a>      endif
+
+<a name="line408">408: </a>      
+<a name="line409">409: </a>      <font color="#4169E1">if</font> (ys + ym .eq. my) then
+<a name="line410">410: </a>         <font color="#4169E1">do</font> i=xs,xs+xm-1
+<a name="line411">411: </a>            d1 = (x_v((gym-1)*gxm+i-gxs+x_i) - top_v(i-xs+1+top_i))*rhy
+<a name="line412">412: </a>            d4 = (top_v(i-xs+1+top_i) - top_v(i-xs+top_i))*rhx
+<a name="line413">413: </a>            ft = ft + sqrt(1.0d0 + d1*d1 + d4*d4)
+<a name="line414">414: </a>         enddo
+<a name="line415">415: </a>      endif
+
+<a name="line417">417: </a>      
+<a name="line418">418: </a>      <font color="#4169E1">if</font> ((ys .eq. 0) .and. (xs .eq. 0)) then
+<a name="line419">419: </a>         d1 = (left_v(0 + left_i) - left_v(1 + left_i)) * rhy
+<a name="line420">420: </a>         d2 = (bottom_v(0+bottom_i)-bottom_v(1+bottom_i))*rhx
+<a name="line421">421: </a>         ft = ft + sqrt(1.0d0 + d1*d1 + d2*d2)
+<a name="line422">422: </a>      endif
+
+<a name="line424">424: </a>      <font color="#4169E1">if</font> ((ys + ym .eq. my) .and. (xs + xm .eq. mx)) then
+<a name="line425">425: </a>         d1 = (right_v(ym+1+right_i) - right_v(ym+right_i))*rhy
+<a name="line426">426: </a>         d2 = (top_v(xm+1+top_i) - top_v(xm + top_i))*rhx
+<a name="line427">427: </a>         ft = ft + sqrt(1.0d0 + d1*d1 + d2*d2)
+<a name="line428">428: </a>      endif
+
+<a name="line430">430: </a>      ft = ft * area
+<a name="line431">431: </a>      call MPI_Allreduce(ft,fcn,1,MPI_DOUBLE_PRECISION,                  &amp;
+<a name="line432">432: </a>     &amp;             MPI_SUM,MPI_COMM_WORLD,info)
+
+
+
+<a name="line436">436: </a>! Restore vectors
+<a name="line437">437: </a>      call VecRestoreArray(localX,x_v,x_i,info)
+<a name="line438">438: </a>      call VecRestoreArray(localV,g_v,g_i,info)
+<a name="line439">439: </a>      call VecRestoreArray(Left,left_v,left_i,info)
+<a name="line440">440: </a>      call VecRestoreArray(Top,top_v,top_i,info)
+<a name="line441">441: </a>      call VecRestoreArray(Bottom,bottom_v,bottom_i,info)
+<a name="line442">442: </a>      call VecRestoreArray(Right,right_v,right_i,info)
+
+<a name="line444">444: </a>! Scatter values to global vector
+<a name="line445">445: </a>      call DALocalToGlobal(da,localV,INSERT_VALUES,G,info)
+
+<a name="line447">447: </a>      call PetscLogFlops(70*xm*ym,info)
+
+<a name="line449">449: </a>      <font color="#4169E1">return</font>
+<a name="line450">450: </a>      end  !FormFunctionGradient
+<a name="line451">451: </a>      
+
+
+
+
+<a name="line456">456: </a>! ----------------------------------------------------------------------------
+<a name="line457">457: </a>! 
+<a name="line458">458: </a>!<font color="#B22222">/*</font>
+<a name="line459">459: </a><font color="#B22222">!   FormHessian - Evaluates Hessian matrix.</font>
+<a name="line460">460: </a><font color="#B22222">!</font>
+<a name="line461">461: </a><font color="#B22222">!   Input Parameters:</font>
+<a name="line462">462: </a><font color="#B22222">!.  tao  - the TAO_SOLVER context</font>
+<a name="line463">463: </a><font color="#B22222">!.  X    - input vector</font>
+<a name="line464">464: </a><font color="#B22222">!.  dummy  - not used </font>
+<a name="line465">465: </a><font color="#B22222">!</font>
+<a name="line466">466: </a><font color="#B22222">!   Output Parameters:</font>
+<a name="line467">467: </a><font color="#B22222">!.  Hessian    - Hessian matrix</font>
+<a name="line468">468: </a><font color="#B22222">!.  Hpc    - optionally different preconditioning matrix</font>
+<a name="line469">469: </a><font color="#B22222">!.  flag - flag indicating matrix structure</font>
+<a name="line470">470: </a><font color="#B22222">!</font>
+<a name="line471">471: </a><font color="#B22222">!   Notes:</font>
+<a name="line472">472: </a><font color="#B22222">!   Due to mesh point reordering with DAs, we must always work</font>
+<a name="line473">473: </a><font color="#B22222">!   with the local mesh points, and then transform them to the new</font>
+<a name="line474">474: </a><font color="#B22222">!   global numbering with the local-to-global mapping.  We cannot work</font>
+<a name="line475">475: </a><font color="#B22222">!   directly with the global numbers for the original uniprocessor mesh!  </font>
+<a name="line476">476: </a><font color="#B22222">!</font>
+<a name="line477">477: </a><font color="#B22222">!   Two methods are available for imposing this transformation</font>
+<a name="line478">478: </a><font color="#B22222">!   when setting matrix entries:</font>
+<a name="line479">479: </a><font color="#B22222">!     (A) MatSetValuesLocal(), using the local ordering (including</font>
+<a name="line480">480: </a><font color="#B22222">!         ghost points!)</font>
+<a name="line481">481: </a><font color="#B22222">!         - Do the following two steps once, before calling <A href="../../../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>()</font>
+<a name="line482">482: </a><font color="#B22222">!           - Use DAGetISLocalToGlobalMapping() to extract the</font>
+<a name="line483">483: </a><font color="#B22222">!             local-to-global map from the DA</font>
+<a name="line484">484: </a><font color="#B22222">!           - Associate this map with the matrix by calling</font>
+<a name="line485">485: </a><font color="#B22222">!             MatSetLocalToGlobalMapping() </font>
+<a name="line486">486: </a><font color="#B22222">!         - Then set matrix entries using the local ordering</font>
+<a name="line487">487: </a><font color="#B22222">!           by calling MatSetValuesLocal()</font>
+<a name="line488">488: </a><font color="#B22222">!     (B) MatSetValues(), using the global ordering </font>
+<a name="line489">489: </a><font color="#B22222">!         - Use DAGetGlobalIndices() to extract the local-to-global map</font>
+<a name="line490">490: </a><font color="#B22222">!         - Then apply this map explicitly yourself</font>
+<a name="line491">491: </a><font color="#B22222">!         - Set matrix entries using the global ordering by calling</font>
+<a name="line492">492: </a><font color="#B22222">!           MatSetValues()</font>
+<a name="line493">493: </a><font color="#B22222">!   Option (A) seems cleaner/easier in many cases, and is the procedure</font>
+<a name="line494">494: </a><font color="#B22222">!   used in this example.</font>
+<a name="line495">495: </a><font color="#B22222">*/</font>
+<a name="line496">496: </a>      subroutine FormHessian(tao, X, Hessian, Hpc, flg, dummy, info)
+<a name="line497">497: </a>      implicit none
+
+<a name="line499">499: </a>! da,Top,Left,Right,Bottom,mx,my,localX defined in plate2f.h
+<a name="line500">500: </a><font color="#A020F0">#include </font><font color="#666666">"plate2f.h"</font><font color="#A020F0"></font>
+<a name="line501">501: </a>      
+<a name="line502">502: </a>      TAO_SOLVER     tao
+<a name="line503">503: </a>      Vec            X
+<a name="line504">504: </a>      Mat            Hessian,Hpc
+<a name="line505">505: </a>      MatStructure   flg
+<a name="line506">506: </a>      PetscInt       dummy
+<a name="line507">507: </a>      integer        info
+
+<a name="line509">509: </a>      PetscInt       i,j,k,row
+<a name="line510">510: </a>      PetscInt       xs,xm,gxs,gxm
+<a name="line511">511: </a>      PetscInt       ys,ym,gys,gym
+<a name="line512">512: </a>      PetscInt       col(0:6)
+<a name="line513">513: </a>      PetscScalar    hx,hy,hydhx,hxdhy,rhx,rhy
+<a name="line514">514: </a>      PetscScalar    f1,f2,f3,f4,f5,f6,d1,d2,d3
+<a name="line515">515: </a>      PetscScalar    d4,d5,d6,d7,d8
+<a name="line516">516: </a>      PetscScalar    xc,xl,xr,xt,xb,xlt,xrb
+<a name="line517">517: </a>      PetscScalar    hl,hr,ht,hb,hc,htl,hbr
+
+<a name="line519">519: </a>! PETSc's VecGetArray acts differently in Fortran than it does in C.
+<a name="line520">520: </a>! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, info)
+<a name="line521">521: </a>! will <font color="#4169E1">return</font> an array of doubles referenced by x_array offset by x_index.
+<a name="line522">522: </a>!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
+<a name="line523">523: </a>! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
+<a name="line524">524: </a>      PetscScalar   right_v(0:1),left_v(0:1)
+<a name="line525">525: </a>      PetscScalar   bottom_v(0:1),top_v(0:1)
+<a name="line526">526: </a>      PetscScalar   x_v(0:1)
+<a name="line527">527: </a>      PetscOffset   x_i,right_i,left_i
+<a name="line528">528: </a>      PetscOffset   bottom_i,top_i
+<a name="line529">529: </a>      PetscScalar   v(0:6)
+<a name="line530">530: </a>      PetscTruth    assembled
+<a name="line531">531: </a>      PetscInt      i1
+<a name="line532">532: </a> 
+<a name="line533">533: </a>      i1=1
+<a name="line534">534: </a>      
+<a name="line535">535: </a>! Set various matrix options 
+<a name="line536">536: </a>      call MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,
+<a name="line537">537: </a>     &amp;                  PETSC_TRUE,info)
+
+<a name="line539">539: </a>! Get local mesh boundaries
+<a name="line540">540: </a>      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &amp;
+<a name="line541">541: </a>     &amp;                  PETSC_NULL_INTEGER,info)
+<a name="line542">542: </a>      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &amp;
+<a name="line543">543: </a>     &amp;                       PETSC_NULL_INTEGER,info)
+
+<a name="line545">545: </a>! Scatter ghost points to local vectors
+<a name="line546">546: </a>      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,info)
+<a name="line547">547: </a>      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,info)
+
+<a name="line549">549: </a>! Get pointers to vector data (see note on Fortran arrays above)
+<a name="line550">550: </a>      call VecGetArray(localX,x_v,x_i,info)
+<a name="line551">551: </a>      call VecGetArray(Top,top_v,top_i,info)
+<a name="line552">552: </a>      call VecGetArray(Bottom,bottom_v,bottom_i,info)
+<a name="line553">553: </a>      call VecGetArray(Left,left_v,left_i,info)
+<a name="line554">554: </a>      call VecGetArray(Right,right_v,right_i,info)
+
+<a name="line556">556: </a>! Initialize matrix entries to zero
+<a name="line557">557: </a>      call MatAssembled(Hessian,assembled,info)
+<a name="line558">558: </a>      <font color="#4169E1">if</font> (assembled .eqv. PETSC_TRUE) call MatZeroEntries(Hessian,info)
+
+
+<a name="line561">561: </a>      rhx = mx + 1.0
+<a name="line562">562: </a>      rhy = my + 1.0
+<a name="line563">563: </a>      hx = 1.0/rhx
+<a name="line564">564: </a>      hy = 1.0/rhy
+<a name="line565">565: </a>      hydhx = hy/hx
+<a name="line566">566: </a>      hxdhy = hx/hy
+<a name="line567">567: </a>! compute Hessian over the locally owned part of the mesh
+
+<a name="line569">569: </a>      <font color="#4169E1">do</font>  i=xs,xs+xm-1
+<a name="line570">570: </a>         <font color="#4169E1">do</font>  j=ys,ys+ym-1
+<a name="line571">571: </a>            row = (j-gys)*gxm + (i-gxs)
+<a name="line572">572: </a>            
+<a name="line573">573: </a>            xc = x_v(row + x_i)
+<a name="line574">574: </a>            xt = xc
+<a name="line575">575: </a>            xb = xc
+<a name="line576">576: </a>            xr = xc
+<a name="line577">577: </a>            xl = xc
+<a name="line578">578: </a>            xrb = xc
+<a name="line579">579: </a>            xlt = xc
+
+<a name="line581">581: </a>            <font color="#4169E1">if</font> (i .eq. gxs) then   ! Left side
+<a name="line582">582: </a>               xl = left_v(left_i + j - ys + 1)
+<a name="line583">583: </a>               xlt = left_v(left_i + j - ys + 2)
+<a name="line584">584: </a>            <font color="#4169E1">else</font>
+<a name="line585">585: </a>               xl = x_v(x_i + row -1 )
+<a name="line586">586: </a>            endif
+
+<a name="line588">588: </a>            <font color="#4169E1">if</font> (j .eq. gys) then ! bottom side
+<a name="line589">589: </a>               xb = bottom_v(bottom_i + i - xs + 1)
+<a name="line590">590: </a>               xrb = bottom_v(bottom_i + i - xs + 2)
+<a name="line591">591: </a>            <font color="#4169E1">else</font>
+<a name="line592">592: </a>               xb = x_v(x_i + row - gxm)
+<a name="line593">593: </a>            endif
+
+<a name="line595">595: </a>            <font color="#4169E1">if</font> (i+1 .eq. gxs + gxm) then !right side
+<a name="line596">596: </a>               xr = right_v(right_i + j - ys + 1)
+<a name="line597">597: </a>               xrb = right_v(right_i + j - ys)
+<a name="line598">598: </a>            <font color="#4169E1">else</font>
+<a name="line599">599: </a>               xr = x_v(x_i + row + 1)
+<a name="line600">600: </a>            endif
+
+<a name="line602">602: </a>            <font color="#4169E1">if</font> (j+1 .eq. gym+gys) then !top side
+<a name="line603">603: </a>               xt = top_v(top_i +i - xs + 1)
+<a name="line604">604: </a>               xlt = top_v(top_i + i - xs)
+<a name="line605">605: </a>            <font color="#4169E1">else</font>
+<a name="line606">606: </a>               xt = x_v(x_i + row + gxm)
+<a name="line607">607: </a>            endif
+
+<a name="line609">609: </a>            <font color="#4169E1">if</font> ((i .gt. gxs) .and. (j+1 .lt. gys+gym)) then
+<a name="line610">610: </a>               xlt = x_v(x_i + row - 1 + gxm)
+<a name="line611">611: </a>            endif
+<a name="line612">612: </a>            
+<a name="line613">613: </a>            <font color="#4169E1">if</font> ((i+1 .lt. gxs+gxm) .and. (j .gt. gys)) then
+<a name="line614">614: </a>               xrb = x_v(x_i + row + 1 - gxm)
+<a name="line615">615: </a>            endif
+
+<a name="line617">617: </a>            d1 = (xc-xl)*rhx
+<a name="line618">618: </a>            d2 = (xc-xr)*rhx
+<a name="line619">619: </a>            d3 = (xc-xt)*rhy
+<a name="line620">620: </a>            d4 = (xc-xb)*rhy
+<a name="line621">621: </a>            d5 = (xrb-xr)*rhy
+<a name="line622">622: </a>            d6 = (xrb-xb)*rhx
+<a name="line623">623: </a>            d7 = (xlt-xl)*rhy
+<a name="line624">624: </a>            d8 = (xlt-xt)*rhx
+<a name="line625">625: </a>            
+<a name="line626">626: </a>            f1 = sqrt( 1.0d0 + d1*d1 + d7*d7)
+<a name="line627">627: </a>            f2 = sqrt( 1.0d0 + d1*d1 + d4*d4)
+<a name="line628">628: </a>            f3 = sqrt( 1.0d0 + d3*d3 + d8*d8)
+<a name="line629">629: </a>            f4 = sqrt( 1.0d0 + d3*d3 + d2*d2)
+<a name="line630">630: </a>            f5 = sqrt( 1.0d0 + d2*d2 + d5*d5)
+<a name="line631">631: </a>            f6 = sqrt( 1.0d0 + d4*d4 + d6*d6)
+<a name="line632">632: </a>            
+<a name="line633">633: </a>            
+<a name="line634">634: </a>            hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+                 &amp;
+<a name="line635">635: </a>     &amp;              (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2)
+
+<a name="line637">637: </a>            hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+                 &amp;
+<a name="line638">638: </a>     &amp;            (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4)
+
+<a name="line640">640: </a>            ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+                 &amp;
+<a name="line641">641: </a>     &amp;                (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4)
+
+<a name="line643">643: </a>            hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+                 &amp;
+<a name="line644">644: </a>     &amp;              (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2)
+<a name="line645">645: </a>            
+<a name="line646">646: </a>            hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6)
+<a name="line647">647: </a>            htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3)
+<a name="line648">648: </a>            
+<a name="line649">649: </a>            hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) +                         &amp;
+<a name="line650">650: </a>     &amp;              hxdhy*(1.0+d8*d8)/(f3*f3*f3) +                      &amp;
+<a name="line651">651: </a>     &amp;              hydhx*(1.0+d5*d5)/(f5*f5*f5) +                      &amp;
+<a name="line652">652: </a>     &amp;              hxdhy*(1.0+d6*d6)/(f6*f6*f6) +                      &amp;
+<a name="line653">653: </a>     &amp;              (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-               &amp;
+<a name="line654">654: </a>     &amp;              2*d1*d4)/(f2*f2*f2) +  (hxdhy*(1.0+d2*d2)+          &amp;
+<a name="line655">655: </a>     &amp;              hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4)               
+<a name="line656">656: </a>            
+<a name="line657">657: </a>            hl = hl * 0.5
+<a name="line658">658: </a>            hr = hr * 0.5
+<a name="line659">659: </a>            ht = ht * 0.5
+<a name="line660">660: </a>            hb = hb * 0.5
+<a name="line661">661: </a>            hbr = hbr * 0.5
+<a name="line662">662: </a>            htl = htl * 0.5
+<a name="line663">663: </a>            hc = hc * 0.5 
+
+<a name="line665">665: </a>            k = 0
+
+<a name="line667">667: </a>            <font color="#4169E1">if</font> (j .gt. 0) then
+<a name="line668">668: </a>               v(k) = hb
+<a name="line669">669: </a>               col(k) = row - gxm
+<a name="line670">670: </a>               k=k+1
+<a name="line671">671: </a>            endif
+
+<a name="line673">673: </a>            <font color="#4169E1">if</font> ((j .gt. 0) .and. (i .lt. mx-1)) then
+<a name="line674">674: </a>               v(k) = hbr
+<a name="line675">675: </a>               col(k) = row-gxm+1
+<a name="line676">676: </a>               k=k+1
+<a name="line677">677: </a>            endif
+
+<a name="line679">679: </a>            <font color="#4169E1">if</font> (i .gt. 0) then
+<a name="line680">680: </a>               v(k) = hl
+<a name="line681">681: </a>               col(k) = row - 1
+<a name="line682">682: </a>               k = k+1
+<a name="line683">683: </a>            endif
+
+<a name="line685">685: </a>            v(k) = hc
+<a name="line686">686: </a>            col(k) = row
+<a name="line687">687: </a>            k=k+1
+
+<a name="line689">689: </a>            <font color="#4169E1">if</font> (i .lt. mx-1) then
+<a name="line690">690: </a>               v(k) = hr
+<a name="line691">691: </a>               col(k) = row + 1
+<a name="line692">692: </a>               k=k+1
+<a name="line693">693: </a>            endif
+
+<a name="line695">695: </a>            <font color="#4169E1">if</font> ((i .gt. 0) .and. (j .lt. my-1)) then
+<a name="line696">696: </a>               v(k) = htl
+<a name="line697">697: </a>               col(k) = row + gxm - 1
+<a name="line698">698: </a>               k=k+1
+<a name="line699">699: </a>            endif
+
+<a name="line701">701: </a>            <font color="#4169E1">if</font> (j .lt. my-1) then
+<a name="line702">702: </a>               v(k) = ht
+<a name="line703">703: </a>               col(k) = row + gxm
+<a name="line704">704: </a>               k=k+1
+<a name="line705">705: </a>            endif
+
+<a name="line707">707: </a>! Set matrix values using local numbering, defined earlier in main routine
+<a name="line708">708: </a>            call MatSetValuesLocal(Hessian,i1,row,k,col,v,INSERT_VALUES,      &amp;
+<a name="line709">709: </a>     &amp;                              info)
+
+<a name="line711">711: </a>            
+
+<a name="line713">713: </a>         enddo
+<a name="line714">714: </a>      enddo
+<a name="line715">715: </a>      
+<a name="line716">716: </a>! restore vectors
+<a name="line717">717: </a>      call VecRestoreArray(localX,x_v,x_i,info)
+<a name="line718">718: </a>      call VecRestoreArray(Left,left_v,left_i,info)
+<a name="line719">719: </a>      call VecRestoreArray(Right,right_v,right_i,info)
+<a name="line720">720: </a>      call VecRestoreArray(Top,top_v,top_i,info)
+<a name="line721">721: </a>      call VecRestoreArray(Bottom,bottom_v,bottom_i,info)
+
+
+<a name="line724">724: </a>! Assemble the matrix
+<a name="line725">725: </a>      call MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY,info)
+<a name="line726">726: </a>      call MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY,info)
+
+<a name="line728">728: </a>      call PetscLogFlops(199*xm*ym,info)
+
+<a name="line730">730: </a>      <font color="#4169E1">return</font>
+<a name="line731">731: </a>      end  
+<a name="line732">732: </a>      
+<a name="line733">733: </a>      
+
+
+
+<a name="line737">737: </a>! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy,H, defined in plate2f.h
+
+<a name="line739">739: </a>! ----------------------------------------------------------------------------
+<a name="line740">740: </a>!
+<a name="line741">741: </a>!<font color="#B22222">/*</font>
+<a name="line742">742: </a><font color="#B22222">!     MSA_BoundaryConditions - calculates the boundary conditions for the region</font>
+<a name="line743">743: </a><font color="#B22222">!</font>
+<a name="line744">744: </a><font color="#B22222">!</font>
+<a name="line745">745: </a><font color="#B22222">!*/</font>
+
+<a name="line747">747: </a>      subroutine MSA_BoundaryConditions(info)
+<a name="line748">748: </a>      implicit none
+
+<a name="line750">750: </a>! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy defined in plate2f.h
+<a name="line751">751: </a><font color="#A020F0">#include </font><font color="#666666">"plate2f.h"</font><font color="#A020F0"></font>
+
+<a name="line753">753: </a>      integer          info
+<a name="line754">754: </a>      PetscInt         i,j,k,limit,maxits
+<a name="line755">755: </a>      PetscInt         xs, xm, gxs, gxm
+<a name="line756">756: </a>      PetscInt         ys, ym, gys, gym
+<a name="line757">757: </a>      PetscInt         bsize, lsize
+<a name="line758">758: </a>      PetscInt         tsize, rsize
+<a name="line759">759: </a>      PetscScalar      one,two,three,tol
+<a name="line760">760: </a>      PetscScalar      scl,fnorm,det,xt
+<a name="line761">761: </a>      PetscScalar      yt,hx,hy,u1,u2,nf1,nf2
+<a name="line762">762: </a>      PetscScalar      njac11,njac12,njac21,njac22
+<a name="line763">763: </a>      PetscScalar      b, t, l, r
+<a name="line764">764: </a>      PetscScalar      boundary_v(0:1)
+<a name="line765">765: </a>      PetscOffset      boundary_i
+<a name="line766">766: </a>      logical exitloop
+<a name="line767">767: </a>      TaoTruth flg
+
+<a name="line769">769: </a>      limit=0
+<a name="line770">770: </a>      maxits = 5
+<a name="line771">771: </a>      tol=1e-10
+<a name="line772">772: </a>      b=-0.5d0
+<a name="line773">773: </a>      t= 0.5d0
+<a name="line774">774: </a>      l=-0.5d0
+<a name="line775">775: </a>      r= 0.5d0
+<a name="line776">776: </a>      xt=0
+<a name="line777">777: </a>      yt=0
+<a name="line778">778: </a>      one=1.0d0
+<a name="line779">779: </a>      two=2.0d0
+<a name="line780">780: </a>      three=3.0d0
+
+
+<a name="line783">783: </a>      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &amp;
+<a name="line784">784: </a>     &amp;                  PETSC_NULL_INTEGER,info)
+<a name="line785">785: </a>      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,              &amp;
+<a name="line786">786: </a>     &amp;                       gxm,gym,PETSC_NULL_INTEGER,info)
+
+<a name="line788">788: </a>      bsize = xm + 2
+<a name="line789">789: </a>      lsize = ym + 2
+<a name="line790">790: </a>      rsize = ym + 2
+<a name="line791">791: </a>      tsize = xm + 2
+<a name="line792">792: </a>      
+
+<a name="line794">794: </a>      call VecCreateMPI(MPI_COMM_WORLD,bsize,PETSC_DECIDE,Bottom,info)
+<a name="line795">795: </a>      call VecCreateMPI(MPI_COMM_WORLD,tsize,PETSC_DECIDE,Top,info)
+<a name="line796">796: </a>      call VecCreateMPI(MPI_COMM_WORLD,lsize,PETSC_DECIDE,Left,info)
+<a name="line797">797: </a>      call VecCreateMPI(MPI_COMM_WORLD,rsize,PETSC_DECIDE,Right,info)
+
+<a name="line799">799: </a>      hx= (r-l)/(mx+1)
+<a name="line800">800: </a>      hy= (t-b)/(my+1)
+
+<a name="line802">802: </a>      <font color="#4169E1">do</font> j=0,3
+<a name="line803">803: </a>         
+<a name="line804">804: </a>         <font color="#4169E1">if</font> (j.eq.0) then
+<a name="line805">805: </a>            yt=b
+<a name="line806">806: </a>            xt=l+hx*xs
+<a name="line807">807: </a>            limit=bsize
+<a name="line808">808: </a>            call VecGetArray(Bottom,boundary_v,boundary_i,info)
+<a name="line809">809: </a>            
+
+<a name="line811">811: </a>         elseif (j.eq.1) then
+<a name="line812">812: </a>            yt=t
+<a name="line813">813: </a>            xt=l+hx*xs
+<a name="line814">814: </a>            limit=tsize
+<a name="line815">815: </a>            call VecGetArray(Top,boundary_v,boundary_i,info)
+
+<a name="line817">817: </a>         elseif (j.eq.2) then
+<a name="line818">818: </a>            yt=b+hy*ys
+<a name="line819">819: </a>            xt=l
+<a name="line820">820: </a>            limit=lsize
+<a name="line821">821: </a>            call VecGetArray(Left,boundary_v,boundary_i,info)
+
+<a name="line823">823: </a>         elseif (j.eq.3) then
+<a name="line824">824: </a>            yt=b+hy*ys
+<a name="line825">825: </a>            xt=r
+<a name="line826">826: </a>            limit=rsize
+<a name="line827">827: </a>            call VecGetArray(Right,boundary_v,boundary_i,info)
+<a name="line828">828: </a>         endif
+<a name="line829">829: </a>         
+
+<a name="line831">831: </a>         <font color="#4169E1">do</font> i=0,limit-1
+<a name="line832">832: </a>            
+<a name="line833">833: </a>            u1=xt
+<a name="line834">834: </a>            u2=-yt
+<a name="line835">835: </a>            k = 0
+<a name="line836">836: </a>            exitloop = .false.
+<a name="line837">837: </a>            <font color="#4169E1">do</font> <font color="#4169E1">while</font> (k .lt. maxits .and. (.not. exitloop) )
+
+<a name="line839">839: </a>               nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt
+<a name="line840">840: </a>               nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt
+<a name="line841">841: </a>               fnorm=sqrt(nf1*nf1+nf2*nf2)
+<a name="line842">842: </a>               <font color="#4169E1">if</font> (fnorm .gt. tol) then
+<a name="line843">843: </a>                  njac11=one+u2*u2-u1*u1
+<a name="line844">844: </a>                  njac12=two*u1*u2
+<a name="line845">845: </a>                  njac21=-two*u1*u2
+<a name="line846">846: </a>                  njac22=-one - u1*u1 + u2*u2
+<a name="line847">847: </a>                  det = njac11*njac22-njac21*njac12
+<a name="line848">848: </a>                  u1 = u1-(njac22*nf1-njac12*nf2)/det
+<a name="line849">849: </a>                  u2 = u2-(njac11*nf2-njac21*nf1)/det
+<a name="line850">850: </a>               <font color="#4169E1">else</font> 
+<a name="line851">851: </a>                  exitloop = .true.
+<a name="line852">852: </a>               endif
+<a name="line853">853: </a>               k=k+1
+<a name="line854">854: </a>            enddo
+
+<a name="line856">856: </a>            boundary_v(i + boundary_i) = u1*u1-u2*u2
+<a name="line857">857: </a>            <font color="#4169E1">if</font> ((j .eq. 0) .or. (j .eq. 1)) then
+<a name="line858">858: </a>               xt = xt + hx
+<a name="line859">859: </a>            <font color="#4169E1">else</font>
+<a name="line860">860: </a>               yt = yt + hy
+<a name="line861">861: </a>            endif
+
+<a name="line863">863: </a>         enddo
+<a name="line864">864: </a>               
+
+<a name="line866">866: </a>         <font color="#4169E1">if</font> (j.eq.0) then
+<a name="line867">867: </a>            call VecRestoreArray(Bottom,boundary_v,boundary_i,info)
+<a name="line868">868: </a>         elseif (j.eq.1) then
+<a name="line869">869: </a>            call VecRestoreArray(Top,boundary_v,boundary_i,info)
+<a name="line870">870: </a>         elseif (j.eq.2) then
+<a name="line871">871: </a>            call VecRestoreArray(Left,boundary_v,boundary_i,info)
+<a name="line872">872: </a>         elseif (j.eq.3) then
+<a name="line873">873: </a>            call VecRestoreArray(Right,boundary_v,boundary_i,info)
+<a name="line874">874: </a>         endif
+<a name="line875">875: </a>         
+<a name="line876">876: </a>      enddo
+
+
+<a name="line879">879: </a>! <A href="../../../../docs/manualpages/vector/Scale.html#Scale">Scale</A> the boundary <font color="#4169E1">if</font> desired
+<a name="line880">880: </a>      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,<font color="#666666">"-bottom"</font>,            &amp;
+<a name="line881">881: </a>     &amp;                         scl,flg,info)
+<a name="line882">882: </a>      <font color="#4169E1">if</font> (flg .eqv. PETSC_TRUE) then
+<a name="line883">883: </a>         call VecScale(scl,Bottom,info)
+<a name="line884">884: </a>      endif
+
+<a name="line886">886: </a>      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,<font color="#666666">"-top"</font>,               &amp;
+<a name="line887">887: </a>     &amp;                         scl,flg,info)
+<a name="line888">888: </a>      <font color="#4169E1">if</font> (flg .eqv. PETSC_TRUE) then
+<a name="line889">889: </a>         call VecScale(scl,Top,info)
+<a name="line890">890: </a>      endif
+
+<a name="line892">892: </a>      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,<font color="#666666">"-right"</font>,             &amp;
+<a name="line893">893: </a>     &amp;                         scl,flg,info)
+<a name="line894">894: </a>      <font color="#4169E1">if</font> (flg .eqv. PETSC_TRUE) then
+<a name="line895">895: </a>         call VecScale(scl,Right,info)
+<a name="line896">896: </a>      endif
+
+<a name="line898">898: </a>      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,<font color="#666666">"-left"</font>,              &amp;
+<a name="line899">899: </a>     &amp;                         scl,flg,info)
+<a name="line900">900: </a>      <font color="#4169E1">if</font> (flg .eqv. PETSC_TRUE) then
+<a name="line901">901: </a>         call VecScale(scl,Left,info)
+<a name="line902">902: </a>      endif
+<a name="line903">903: </a>         
+<a name="line904">904: </a>      
+<a name="line905">905: </a>      <font color="#4169E1">return</font>
+<a name="line906">906: </a>      end
+
+<a name="line908">908: </a>! ----------------------------------------------------------------------------
+<a name="line909">909: </a>!
+<a name="line910">910: </a>!<font color="#B22222">/*</font>
+<a name="line911">911: </a><font color="#B22222">!     MSA_Plate - Calculates an obstacle for surface to stretch over</font>
+<a name="line912">912: </a><font color="#B22222">!</font>
+<a name="line913">913: </a><font color="#B22222">!     Output Parameter:</font>
+<a name="line914">914: </a><font color="#B22222">!.    xl - lower bound vector</font>
+<a name="line915">915: </a><font color="#B22222">!.    xu - upper bound vector</font>
+<a name="line916">916: </a><font color="#B22222">!</font>
+<a name="line917">917: </a><font color="#B22222">!*/</font>
+
+<a name="line919">919: </a>      subroutine MSA_Plate(xl,xu,info)
+<a name="line920">920: </a>      implicit none
+
+<a name="line922">922: </a>! mx,my,bmx,bmy,da,bheight defined in plate2f.h
+<a name="line923">923: </a><font color="#A020F0">#include </font><font color="#666666">"plate2f.h"</font><font color="#A020F0"></font>
+<a name="line924">924: </a>      Vec              xl,xu
+<a name="line925">925: </a>      integer          info
+<a name="line926">926: </a>      PetscInt         i,j,row
+<a name="line927">927: </a>      PetscInt         xs, xm, ys, ym
+<a name="line928">928: </a>      PetscScalar      lb,ub
+
+<a name="line930">930: </a>! PETSc's VecGetArray acts differently in Fortran than it does in C.
+<a name="line931">931: </a>! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, info)
+<a name="line932">932: </a>! will <font color="#4169E1">return</font> an array of doubles referenced by x_array offset by x_index.
+<a name="line933">933: </a>!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
+<a name="line934">934: </a>! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
+<a name="line935">935: </a>      PetscScalar      xl_v(0:1)
+<a name="line936">936: </a>      PetscOffset      xl_i
+
+
+<a name="line939">939: </a>      lb = -1.0d300
+<a name="line940">940: </a>      ub = 1.0d300
+
+<a name="line942">942: </a>      <font color="#4169E1">if</font> (bmy .lt. 0) bmy = 0
+<a name="line943">943: </a>      <font color="#4169E1">if</font> (bmy .gt. my) bmy = my
+<a name="line944">944: </a>      <font color="#4169E1">if</font> (bmx .lt. 0) bmx = 0
+<a name="line945">945: </a>      <font color="#4169E1">if</font> (bmx .gt. mx) bmx = mx
+<a name="line946">946: </a>      
+
+<a name="line948">948: </a>      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &amp;
+<a name="line949">949: </a>     &amp;             PETSC_NULL_INTEGER,info)
+
+<a name="line951">951: </a>      call VecSet(xl,lb,info)
+<a name="line952">952: </a>      call VecSet(xu,ub,info)
+
+<a name="line954">954: </a>      call VecGetArray(xl,xl_v,xl_i,info)
+<a name="line955">955: </a>      
+
+<a name="line957">957: </a>      <font color="#4169E1">do</font> i=xs,xs+xm-1
+
+<a name="line959">959: </a>         <font color="#4169E1">do</font> j=ys,ys+ym-1
+<a name="line960">960: </a>            
+<a name="line961">961: </a>            row=(j-ys)*xm + (i-xs)
+
+<a name="line963">963: </a>            <font color="#4169E1">if</font> (i.ge.((mx-bmx)/2) .and. i.lt.(mx-(mx-bmx)/2) .and.           &amp;
+<a name="line964">964: </a>     &amp;          j.ge.((my-bmy)/2) .and. j.lt.(my-(my-bmy)/2)) then  
+<a name="line965">965: </a>               xl_v(xl_i+row) = bheight
+
+<a name="line967">967: </a>            endif
+
+<a name="line969">969: </a>         enddo
+<a name="line970">970: </a>      enddo
+
+
+<a name="line973">973: </a>      call VecRestoreArray(xl,xl_v,xl_i,info)
+<a name="line974">974: </a>      
+<a name="line975">975: </a>      <font color="#4169E1">return</font>
+<a name="line976">976: </a>      end
+
+
+
+<a name="line980">980: </a>      
+<a name="line981">981: </a>      
+<a name="line982">982: </a>! ----------------------------------------------------------------------------
+<a name="line983">983: </a>!
+<a name="line984">984: </a>!<font color="#B22222">/*</font>
+<a name="line985">985: </a><font color="#B22222">!     MSA_InitialPoint - Calculates an obstacle for surface to stretch over</font>
+<a name="line986">986: </a><font color="#B22222">!</font>
+<a name="line987">987: </a><font color="#B22222">!     Output Parameter:</font>
+<a name="line988">988: </a><font color="#B22222">!.    X - vector for initial guess</font>
+<a name="line989">989: </a><font color="#B22222">!</font>
+<a name="line990">990: </a><font color="#B22222">!*/</font>
+
+<a name="line992">992: </a>      subroutine MSA_InitialPoint(X, info)
+<a name="line993">993: </a>      implicit none
+
+<a name="line995">995: </a>! mx,my,localX,da,Top,Left,Bottom,Right defined in plate2f.h
+<a name="line996">996: </a><font color="#A020F0">#include </font><font color="#666666">"plate2f.h"</font><font color="#A020F0"></font>
+<a name="line997">997: </a>      Vec               X
+<a name="line998">998: </a>      integer           info
+<a name="line999">999: </a>      PetscInt          start,i,j
+<a name="line1000">1000: </a>      PetscInt          row
+<a name="line1001">1001: </a>      PetscInt          xs,xm,gxs,gxm
+<a name="line1002">1002: </a>      PetscInt          ys,ym,gys,gym
+<a name="line1003">1003: </a>      PetscScalar       zero, np5
+
+<a name="line1005">1005: </a>! PETSc's VecGetArray acts differently in Fortran than it does in C.
+<a name="line1006">1006: </a>! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (integer) x_index, info)
+<a name="line1007">1007: </a>! will <font color="#4169E1">return</font> an array of doubles referenced by x_array offset by x_index.
+<a name="line1008">1008: </a>!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
+<a name="line1009">1009: </a>! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
+<a name="line1010">1010: </a>      PetscScalar   left_v(0:1),right_v(0:1)
+<a name="line1011">1011: </a>      PetscScalar   bottom_v(0:1),top_v(0:1)
+<a name="line1012">1012: </a>      PetscScalar   x_v(0:1)
+<a name="line1013">1013: </a>      PetscOffset   left_i, right_i, top_i
+<a name="line1014">1014: </a>      PetscOffset   bottom_i,x_i
+<a name="line1015">1015: </a>      PetscTruth    flg
+<a name="line1016">1016: </a>      PetscRandom   rctx
+<a name="line1017">1017: </a>      
+<a name="line1018">1018: </a>      zero = 0.0d0
+<a name="line1019">1019: </a>      np5 = -0.5d0
+
+<a name="line1021">1021: </a>      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,<font color="#666666">"-start"</font>,            &amp;
+<a name="line1022">1022: </a>     &amp;                        start,flg,info)
+
+<a name="line1024">1024: </a>      <font color="#4169E1">if</font> ((flg .eqv. PETSC_TRUE) .and. (start .eq. 0)) then  ! the zero vector is reasonable
+<a name="line1025">1025: </a>         call VecSet(X,zero,info)
+
+<a name="line1027">1027: </a>      elseif ((flg .eqv. PETSC_TRUE) .and. (start .gt. 0)) then  ! random start -0.5 &lt; xi &lt; 0.5 
+<a name="line1028">1028: </a>         call PetscRandomCreate(MPI_COMM_WORLD,rctx,info)
+<a name="line1029">1029: </a>         <font color="#4169E1">do</font> i=0,start-1
+<a name="line1030">1030: </a>            call VecSetRandom(X,rctx,info)
+<a name="line1031">1031: </a>         enddo
+
+<a name="line1033">1033: </a>         call PetscRandomDestroy(rctx,info)
+<a name="line1034">1034: </a>         call VecShift(X,np5,info)
+
+<a name="line1036">1036: </a>      <font color="#4169E1">else</font>   ! average of boundary conditions
+<a name="line1037">1037: </a>         
+<a name="line1038">1038: </a>!        Get Local mesh boundaries
+<a name="line1039">1039: </a>         call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &amp;
+<a name="line1040">1040: </a>     &amp;                     PETSC_NULL_INTEGER,info) 
+<a name="line1041">1041: </a>         call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &amp;
+<a name="line1042">1042: </a>     &amp;                     PETSC_NULL_INTEGER,info)
+
+
+
+<a name="line1046">1046: </a>!        Get pointers to vector data
+<a name="line1047">1047: </a>         call VecGetArray(Top,top_v,top_i,info)
+<a name="line1048">1048: </a>         call VecGetArray(Bottom,bottom_v,bottom_i,info)
+<a name="line1049">1049: </a>         call VecGetArray(Left,left_v,left_i,info)
+<a name="line1050">1050: </a>         call VecGetArray(Right,right_v,right_i,info)
+<a name="line1051">1051: </a>         
+<a name="line1052">1052: </a>         call VecGetArray(localX,x_v,x_i,info)
+<a name="line1053">1053: </a>      
+<a name="line1054">1054: </a>!        Perform local computations 
+<a name="line1055">1055: </a>         <font color="#4169E1">do</font>  j=ys,ys+ym-1
+<a name="line1056">1056: </a>            <font color="#4169E1">do</font> i=xs,xs+xm-1
+<a name="line1057">1057: </a>               row = (j-gys)*gxm  + (i-gxs)
+<a name="line1058">1058: </a>               x_v(x_i + row) = ((j+1)*bottom_v(bottom_i +i-xs+1)/my        &amp;
+<a name="line1059">1059: </a>     &amp;             + (my-j+1)*top_v(top_i+i-xs+1)/(my+2) +                  &amp;
+<a name="line1060">1060: </a>     &amp;              (i+1)*left_v(left_i+j-ys+1)/mx       +                  &amp;
+<a name="line1061">1061: </a>     &amp;              (mx-i+1)*right_v(right_i+j-ys+1)/(mx+2))*0.5
+<a name="line1062">1062: </a>            enddo
+<a name="line1063">1063: </a>         enddo
+
+<a name="line1065">1065: </a>!        Restore vectors
+<a name="line1066">1066: </a>         call VecRestoreArray(localX,x_v,x_i,info)
+
+<a name="line1068">1068: </a>         call VecRestoreArray(Left,left_v,left_i,info)
+<a name="line1069">1069: </a>         call VecRestoreArray(Top,top_v,top_i,info)
+<a name="line1070">1070: </a>         call VecRestoreArray(Bottom,bottom_v,bottom_i,info)
+<a name="line1071">1071: </a>         call VecRestoreArray(Right,right_v,right_i,info)
+
+<a name="line1073">1073: </a>         call DALocalToGlobal(da,localX,INSERT_VALUES,X,info)
+
+<a name="line1075">1075: </a>      endif
+
+<a name="line1077">1077: </a>      <font color="#4169E1">return</font>
+<a name="line1078">1078: </a>      end
+</pre>
+</body>
+
+</html>

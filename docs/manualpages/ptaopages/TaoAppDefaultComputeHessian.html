@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppDefaultComputeHessian</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppDefaultComputeHessian"><H1>TaoAppDefaultComputeHessian</H1></A>
+Computes the Hessian using finite differences.  
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp.h"  
+#include "src/tao_impl.h"  
+#include "src/petsctao/include/taopetsc.h" 
+int TaoAppDefaultComputeHessian(TAO_APPLICATION taoapp,Vec V,Mat *H,Mat *B,
+                           MatStructure *flag,void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context 
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>V </B></TD><TD>- compute Hessian at this point
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- the TAO_APPLICATION structure, cast to (void*)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>H </B></TD><TD>- Hessian matrix (not altered in this routine)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>B </B></TD><TD>- newly computed Hessian matrix to use with preconditioner (generally the same as H)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>flag </B></TD><TD>- flag indicating whether the matrix sparsity structure has changed
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Key</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_fd </B></TD><TD>- Activates <A HREF="../ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>()
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_view_hessian </B></TD><TD>- view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+This routine is slow and expensive, and is not currently optimized
+to take advantage of sparsity in the problem.  Although
+<A HREF="../ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>() is not recommended for general use
+in large-scale applications, It can be useful in checking the
+correctness of a user-provided Hessian.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+The gradient evaluation must be set using the routine <A HREF="../ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>().
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_APPLICATION, finite differences, Hessian
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A HREF="../ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>(), SNESDefaultComputeJacobian(),
+<BR><A HREF="../ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>(), TaoAppDefaultComputeGradient()
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/fdiff.c.html#TaoAppDefaultComputeHessian">src/petsctao/application/petscapp/fdiff.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+</BODY></HTML>

@@ -1,0 +1,341 @@
+<center><a href="tao_app_j.c">Actual source code: tao_app_j.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_app_impl.h"</font><font color="#A020F0">       </font><font color="#B22222">/*I  "tao.h"  I*/</font><font color="#A020F0"></font>
+
+
+
+<a name="line9">  9: </a><font color="#B22222">/*@C</font>
+<a name="line10"> 10: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A> - Compute the gradient of the objective function using the</font>
+<a name="line11"> 11: </a><font color="#B22222">   routine set by TaoApplicationSetGradientRoutine().</font>
+
+<a name="line13"> 13: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line16"> 16: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line17"> 17: </a><font color="#B22222">-  X - the point where the objective should be evaluated</font>
+
+<a name="line19"> 19: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line20"> 20: </a><font color="#B22222">.  f - function value</font>
+
+<a name="line22"> 22: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line24"> 24: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line26"> 26: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>()</font>
+<a name="line27"> 27: </a><font color="#B22222">@*/</font>
+<a name="line28"> 28: </a><strong><font color="#4169E1"><a name="TaoAppComputeVariableBounds"></a>int TaoAppComputeVariableBounds(TAO_APPLICATION taoapp, Vec XL, Vec XU)</font></strong>{
+<a name="line29"> 29: </a>  int info;
+<a name="line34"> 34: </a>  info = PetscInfo(XL,<font color="#666666">"TAO:  Compute variable bounds of TAO_APPLICATION object.\n"</font>); CHKERRQ(info);
+<a name="line35"> 35: </a>  <font color="#4169E1">if</font> (taoapp-&gt;computebounds){
+<a name="line36"> 36: </a>    info = (*taoapp-&gt;computebounds)(taoapp,XL,XU,taoapp-&gt;boundctx); CHKERRQ(info);
+<a name="line37"> 37: </a>  }
+<a name="line38"> 38: </a>  <font color="#4169E1">return</font>(0);
+<a name="line39"> 39: </a>}
+
+<a name="line43"> 43: </a><font color="#B22222">/*@C</font>
+<a name="line44"> 44: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBoundsRoutine.html#TaoAppSetVariableBoundsRoutine">TaoAppSetVariableBoundsRoutine</A> - Sets a routine that evaluates the function at</font>
+<a name="line45"> 45: </a><font color="#B22222">the specified point.</font>
+
+<a name="line47"> 47: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line49"> 49: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line50"> 50: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line51"> 51: </a><font color="#B22222">.  func - bound evaluation routine</font>
+<a name="line52"> 52: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line53"> 53: </a><font color="#B22222">         bounds evaluation routine (may be TAO_NULL)</font>
+
+<a name="line55"> 55: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line56"> 56: </a><font color="#B22222">$     func (Vec xl,Vec xu, void *ctx);</font>
+
+<a name="line58"> 58: </a><font color="#B22222">+  tao - the TAO_APPLICATION context</font>
+<a name="line59"> 59: </a><font color="#B22222">.  xl - lower bound vector</font>
+<a name="line60"> 60: </a><font color="#B22222">.  xu - upper bound vector</font>
+<a name="line61"> 61: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line63"> 63: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line65"> 65: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoGetVariableBoundVecs.html#TaoGetVariableBoundVecs">TaoGetVariableBoundVecs</A>()</font>
+
+<a name="line67"> 67: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, bounds</font>
+<a name="line68"> 68: </a><font color="#B22222">@*/</font>
+<a name="line69"> 69: </a><strong><font color="#4169E1"><a name="TaoAppSetVariableBoundsRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBoundsRoutine.html#TaoAppSetVariableBoundsRoutine">TaoAppSetVariableBoundsRoutine</A>(TAO_APPLICATION taoapp, int (*func)(TAO_APPLICATION,Vec,Vec,void*),void *ctx)</font></strong>{
+<a name="line72"> 72: </a>  taoapp-&gt;computebounds=func;
+<a name="line73"> 73: </a>  taoapp-&gt;boundctx=ctx;
+<a name="line74"> 74: </a>  <font color="#4169E1">return</font>(0);
+<a name="line75"> 75: </a>}
+
+
+<a name="line80"> 80: </a><font color="#B22222">/*@</font>
+<a name="line81"> 81: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetFunctionVec.html#TaoAppSetFunctionVec">TaoAppSetFunctionVec</A> - Set the Vec that will be used to store the constraint function.</font>
+
+<a name="line83"> 83: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line85"> 85: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line86"> 86: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line87"> 87: </a><font color="#B22222">-  r - vector to constrainf function values</font>
+
+<a name="line89"> 89: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line91"> 91: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, function</font>
+
+<a name="line93"> 93: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>()</font>
+
+<a name="line95"> 95: </a><font color="#B22222">@*/</font>
+<a name="line96"> 96: </a><strong><font color="#4169E1"><a name="TaoAppSetFunctionVec"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetFunctionVec.html#TaoAppSetFunctionVec">TaoAppSetFunctionVec</A>(TAO_APPLICATION taoapp, Vec r)</font></strong>{
+<a name="line97"> 97: </a>  int info;
+<a name="line100">100: </a>  <font color="#4169E1">if</font> (r){
+<a name="line102">102: </a>    PetscObjectReference((PetscObject)r);
+<a name="line103">103: </a>  }
+<a name="line104">104: </a>  <font color="#4169E1">if</font> (taoapp-&gt;R){
+<a name="line105">105: </a>    info=VecDestroy(taoapp-&gt;R); CHKERRQ(info);
+<a name="line106">106: </a>  }
+<a name="line107">107: </a>  taoapp-&gt;R=r;
+<a name="line108">108: </a>  <font color="#4169E1">return</font>(0);
+<a name="line109">109: </a>}
+
+
+<a name="line114">114: </a><font color="#B22222">/*@C</font>
+<a name="line115">115: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppGetFunctionVec.html#TaoAppGetFunctionVec">TaoAppGetFunctionVec</A> - Get the Vec that used to store the constraint function.</font>
+
+<a name="line117">117: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line119">119: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line120">120: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line121">121: </a><font color="#B22222">-  r - vector to constrainf function values</font>
+
+<a name="line123">123: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line125">125: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, function</font>
+
+<a name="line127">127: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>()</font>
+
+<a name="line129">129: </a><font color="#B22222">@*/</font>
+<a name="line130">130: </a><strong><font color="#4169E1"><a name="TaoAppGetFunctionVec"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppGetFunctionVec.html#TaoAppGetFunctionVec">TaoAppGetFunctionVec</A>(TAO_APPLICATION taoapp, Vec *r)</font></strong>{
+<a name="line133">133: </a>  <font color="#4169E1">if</font> (r){
+<a name="line134">134: </a>    *r=taoapp-&gt;R;
+<a name="line135">135: </a>  }
+<a name="line136">136: </a>  <font color="#4169E1">return</font>(0);
+<a name="line137">137: </a>}
+
+
+
+<a name="line143">143: </a><font color="#B22222">/*@C</font>
+<a name="line144">144: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A> - Sets the routine that evaluates</font>
+<a name="line145">145: </a><font color="#B22222">   equality constraint functions.</font>
+
+<a name="line147">147: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line149">149: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line150">150: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line151">151: </a><font color="#B22222">.  func - the constraint function evaluation routine</font>
+<a name="line152">152: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line154">154: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line155">155: </a><font color="#B22222">$     func (TAO_APPLICATION taoapp,Vec x,Vec r,void *ctx);</font>
+
+<a name="line157">157: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION  context</font>
+<a name="line158">158: </a><font color="#B22222">.  x - input vector</font>
+<a name="line159">159: </a><font color="#B22222">.  r - constraint vector</font>
+<a name="line160">160: </a><font color="#B22222">-  ctx - user-defined function gradient context set from <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>()</font>
+
+<a name="line162">162: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line164">164: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, function</font>
+
+<a name="line166">166: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetFunctionVec.html#TaoAppSetFunctionVec">TaoAppSetFunctionVec</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>()</font>
+
+<a name="line168">168: </a><font color="#B22222">@*/</font>
+<a name="line169">169: </a><strong><font color="#4169E1"><a name="TaoAppSetConstraintRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>(TAO_APPLICATION taoapp, int (*func)(TAO_APPLICATION,Vec,Vec,void*),void *ctx)</font></strong>{
+<a name="line172">172: </a>  taoapp-&gt;usrfvctx = ctx;
+<a name="line173">173: </a>  taoapp-&gt;computevfunc = func;
+<a name="line174">174: </a>  <font color="#4169E1">return</font>(0);
+<a name="line175">175: </a>}
+
+<a name="line179">179: </a><font color="#B22222">/*@C</font>
+<a name="line180">180: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeFunction.html#TaoAppComputeFunction">TaoAppComputeFunction</A> - Compute the constraint vector using the</font>
+<a name="line181">181: </a><font color="#B22222">   routine set by TaoApplicationSetConstraintsRoutine().</font>
+
+<a name="line183">183: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line185">185: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line186">186: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line187">187: </a><font color="#B22222">-  X - the point where the objective should be evaluated</font>
+
+<a name="line189">189: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line190">190: </a><font color="#B22222">.  R - constraint vector</font>
+
+<a name="line192">192: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line194">194: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line196">196: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeJacobian.html#TaoAppComputeJacobian">TaoAppComputeJacobian</A>() <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>()</font>
+<a name="line197">197: </a><font color="#B22222">@*/</font>
+<a name="line198">198: </a><strong><font color="#4169E1"><a name="TaoAppComputeFunction"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeFunction.html#TaoAppComputeFunction">TaoAppComputeFunction</A>(TAO_APPLICATION taoapp, Vec X, Vec R)</font></strong>{
+<a name="line199">199: </a>  int     info;
+
+<a name="line205">205: </a>  <font color="#4169E1">if</font> (taoapp-&gt;computevfunc){
+<a name="line206">206: </a>    info = PetscLogEventBegin(Tao_FunctionEval,taoapp,X,R,0);CHKERRQ(info);
+<a name="line207">207: </a>    PetscStackPush(<font color="#666666">"Tao user ConstraintsFunction"</font>);
+<a name="line208">208: </a>    info = (*taoapp-&gt;computevfunc)(taoapp,X,R,taoapp-&gt;usrfvctx);
+<a name="line209">209: </a>    CHKERRQ(info);
+<a name="line210">210: </a>    PetscStackPop;
+<a name="line211">211: </a>    info = PetscLogEventEnd(Tao_FunctionEval,taoapp,X,R,0);
+<a name="line212">212: </a>  } <font color="#4169E1">else</font> {
+<a name="line213">213: </a>    SETERRQ(1,<font color="#666666">"TAO ERROR: Must set Constraint function"</font>);
+<a name="line214">214: </a>  }
+<a name="line215">215: </a>  <font color="#4169E1">return</font>(0);
+<a name="line216">216: </a>}
+
+
+<a name="line221">221: </a><font color="#B22222">/*@</font>
+<a name="line222">222: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A> - Sets the matrix to be used for the Jacobian.</font>
+
+<a name="line224">224: </a><font color="#B22222">   Collective on TAO_APPLICATION and Mat</font>
+
+<a name="line226">226: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line227">227: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line228">228: </a><font color="#B22222">.  J - Jacobian matrix</font>
+<a name="line229">229: </a><font color="#B22222">-  JP - Preconditioner for Jacobian</font>
+
+<a name="line231">231: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line233">233: </a><font color="#B22222">.keywords: TAO_APPLICATION, Jacobian</font>
+
+<a name="line235">235: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetFunctionVec.html#TaoAppSetFunctionVec">TaoAppSetFunctionVec</A>()</font>
+<a name="line236">236: </a><font color="#B22222">@*/</font>
+<a name="line237">237: </a><strong><font color="#4169E1"><a name="TaoAppSetJacobianMat"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(TAO_APPLICATION taoapp,Mat J, Mat JP)</font></strong>{
+<a name="line238">238: </a>  int info;
+<a name="line241">241: </a>  <font color="#4169E1">if</font> (J || JP){
+<a name="line244">244: </a>    PetscObjectReference((PetscObject)J);
+<a name="line245">245: </a>    PetscObjectReference((PetscObject)JP);
+<a name="line246">246: </a>  }
+
+<a name="line248">248: </a>  <font color="#4169E1">if</font> (taoapp-&gt;J || taoapp-&gt;JP){
+<a name="line249">249: </a>    info=MatDestroy(taoapp-&gt;J);CHKERRQ(info);
+<a name="line250">250: </a>    info=MatDestroy(taoapp-&gt;JP);CHKERRQ(info);
+<a name="line251">251: </a>  }
+<a name="line252">252: </a>  taoapp-&gt;J=J;
+<a name="line253">253: </a>  taoapp-&gt;JP=JP;
+<a name="line254">254: </a>  <font color="#4169E1">return</font>(0);
+<a name="line255">255: </a>}
+
+<a name="line259">259: </a><font color="#B22222">/*@</font>
+<a name="line260">260: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppGetJacobianMat.html#TaoAppGetJacobianMat">TaoAppGetJacobianMat</A> - Get the matrix to be used for the Jacobian.</font>
+
+<a name="line262">262: </a><font color="#B22222">   Collective on TAO_APPLICATION and Mat</font>
+
+<a name="line264">264: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line265">265: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line266">266: </a><font color="#B22222">-  J - Jacobian matrix</font>
+
+<a name="line268">268: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line270">270: </a><font color="#B22222">.keywords: TAO_APPLICATION, Jacobian</font>
+
+<a name="line272">272: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>()</font>
+<a name="line273">273: </a><font color="#B22222">@*/</font>
+<a name="line274">274: </a><strong><font color="#4169E1"><a name="TaoAppGetJacobianMat"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppGetJacobianMat.html#TaoAppGetJacobianMat">TaoAppGetJacobianMat</A>(TAO_APPLICATION taoapp,Mat *J, Mat *JP)</font></strong>{
+<a name="line277">277: </a>  <font color="#4169E1">if</font> (J) { *J=taoapp-&gt;J;}
+<a name="line278">278: </a>  <font color="#4169E1">if</font> (JP){ *JP=taoapp-&gt;JP; }
+<a name="line279">279: </a>  <font color="#4169E1">return</font>(0);
+<a name="line280">280: </a>}
+
+<a name="line284">284: </a><font color="#B22222">/*@C</font>
+<a name="line285">285: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A> - Sets the function to compute the Jacobian of</font>
+<a name="line286">286: </a><font color="#B22222">the equality constraint function as well as the</font>
+<a name="line287">287: </a><font color="#B22222">   location to store the matrix.</font>
+
+<a name="line289">289: </a><font color="#B22222">   Collective on TAO_APPLICATION and Mat</font>
+
+<a name="line291">291: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line292">292: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line293">293: </a><font color="#B22222">.  jac - Jacobian evaluation routine</font>
+<a name="line294">294: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line295">295: </a><font color="#B22222">         Hessian evaluation routine (may be TAO_NULL)</font>
+
+<a name="line297">297: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line298">298: </a><font color="#B22222">$    jac (TAO_APPLICATION taoapp,Vec x,Mat *J,Mat *JPre, void *ctx);</font>
+
+<a name="line300">300: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION  context</font>
+<a name="line301">301: </a><font color="#B22222">.  x - input vector</font>
+<a name="line302">302: </a><font color="#B22222">.  J - Jacobian matrix</font>
+<a name="line303">303: </a><font color="#B22222">.  JPre - matrix to precondition J</font>
+<a name="line304">304: </a><font color="#B22222">-  ctx - [optional] user-defined Hessian context</font>
+
+<a name="line306">306: </a><font color="#B22222">   Notes: </font>
+
+<a name="line308">308: </a><font color="#B22222">   The function jac() takes Mat * as the matrix arguments rather than Mat.  </font>
+<a name="line309">309: </a><font color="#B22222">   This allows the Jacobian evaluation routine to replace J with a </font>
+<a name="line310">310: </a><font color="#B22222">   completely new new matrix structure (not just different matrix elements)</font>
+<a name="line311">311: </a><font color="#B22222">   when appropriate, for instance, if the nonzero structure is changing</font>
+<a name="line312">312: </a><font color="#B22222">   throughout the global iterations.</font>
+
+<a name="line314">314: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line316">316: </a><font color="#B22222">.keywords: TAO_APPLICATION, Jacobian</font>
+
+<a name="line318">318: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>()</font>
+<a name="line319">319: </a><font color="#B22222">@*/</font>
+<a name="line320">320: </a><strong><font color="#4169E1"><a name="TaoAppSetJacobianRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>(TAO_APPLICATION taoapp,int (*jac)(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)</font></strong>{
+<a name="line323">323: </a>  taoapp-&gt;computejacobian=jac;
+<a name="line324">324: </a>  taoapp-&gt;usrjctx=ctx;
+<a name="line325">325: </a>  <font color="#4169E1">return</font>(0);
+<a name="line326">326: </a>}
+
+
+<a name="line331">331: </a><font color="#B22222">/*@C</font>
+<a name="line332">332: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeJacobian.html#TaoAppComputeJacobian">TaoAppComputeJacobian</A> - Compute the Jacobian of the nonlinear equations using the</font>
+<a name="line333">333: </a><font color="#B22222">   routine set by TaoApplicationSetJacobianRoutine().</font>
+
+<a name="line335">335: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line337">337: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line338">338: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line339">339: </a><font color="#B22222">.  X - the variable vector</font>
+<a name="line340">340: </a><font color="#B22222">.  H - the Jacobian matrix</font>
+<a name="line341">341: </a><font color="#B22222">.  HP - the preconditioner for the Jacobian matrix.</font>
+<a name="line342">342: </a><font color="#B22222">-  flag - flag used in KSPSetOperators()</font>
+
+<a name="line344">344: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line345">345: </a><font color="#B22222">+  H - the Jacobian matrix</font>
+<a name="line346">346: </a><font color="#B22222">.  HP - the preconditioner for the Jacobian matrix.</font>
+<a name="line347">347: </a><font color="#B22222">-  flag - flag used in KSPSetOperators()</font>
+
+<a name="line349">349: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line351">351: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line353">353: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeFunction.html#TaoAppComputeFunction">TaoAppComputeFunction</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>()</font>
+<a name="line354">354: </a><font color="#B22222">@*/</font>
+<a name="line355">355: </a><strong><font color="#4169E1"><a name="TaoAppComputeJacobian"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeJacobian.html#TaoAppComputeJacobian">TaoAppComputeJacobian</A>(TAO_APPLICATION taoapp, Vec X, Mat *JJ, Mat *JJPre, MatStructure*flag)</font></strong>{
+
+<a name="line357">357: </a>  int     info;
+<a name="line358">358: </a>  Mat J=*JJ,JPre=*JJPre;
+<a name="line359">359: </a>  MatStructure pflag=*flag;
+
+<a name="line365">365: </a>  <font color="#4169E1">if</font> (taoapp-&gt;computejacobian){
+<a name="line366">366: </a>    PetscStackPush(<font color="#666666">"TAO User Jacobian Evaluation"</font>);
+<a name="line367">367: </a>    info = PetscLogEventBegin(Tao_JacobianEval,taoapp,X,J,0);CHKERRQ(info);
+<a name="line368">368: </a>    info = (*taoapp-&gt;computejacobian)(taoapp,X,&amp;J,&amp;JPre, &amp;pflag, taoapp-&gt;usrjctx);
+<a name="line369">369: </a>    CHKERRQ(info);
+<a name="line370">370: </a>    info = PetscLogEventEnd(Tao_JacobianEval,taoapp,X,J,0);CHKERRQ(info);
+<a name="line371">371: </a>    PetscStackPop;
+<a name="line372">372: </a>  } <font color="#4169E1">else</font> {
+<a name="line373">373: </a>    SETERRQ(1,<font color="#666666">"TAO Error:  No Jacobian Routine Available."</font>);
+<a name="line374">374: </a>  }
+<a name="line375">375: </a>  *JJ=J;*JJPre=JPre; *flag=pflag;
+<a name="line376">376: </a>  <font color="#4169E1">return</font>(0);
+<a name="line377">377: </a>}
+
+</pre>
+</body>
+
+</html>

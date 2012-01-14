@@ -1,0 +1,339 @@
+<center><a href="submatfree.c">Actual source code: submatfree.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"submatfree.h"</font><font color="#A020F0">                </font><font color="#B22222">/*I  "mat.h"  I*/</font><font color="#A020F0"></font>
+
+<a name="line3">  3: </a><strong><font color="#4169E1">int <A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(IS, Vec, IS *)</font></strong>;
+<a name="line4">  4: </a><strong><font color="#4169E1">int <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(IS, PetscScalar, Vec)</font></strong>;
+
+
+<a name="line9">  9: </a><font color="#B22222">/*@C</font>
+<a name="line10"> 10: </a><font color="#B22222">  <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A> - Creates a reduced matrix by masking a</font>
+<a name="line11"> 11: </a><font color="#B22222">  full matrix.</font>
+
+<a name="line13"> 13: </a><font color="#B22222">   Collective on matrix</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line16"> 16: </a><font color="#B22222">+  mat - matrix of arbitrary type</font>
+<a name="line17"> 17: </a><font color="#B22222">.  RowMask - the rows that will be zero</font>
+<a name="line18"> 18: </a><font color="#B22222">-  ColMask - the columns that will be zero</font>
+
+<a name="line20"> 20: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line21"> 21: </a><font color="#B22222">.  J - New matrix</font>
+
+<a name="line23"> 23: </a><font color="#B22222">   Notes: </font>
+<a name="line24"> 24: </a><font color="#B22222">   The user provides the input data and is responsible for destroying</font>
+<a name="line25"> 25: </a><font color="#B22222">   this data after matrix J has been destroyed.  </font>
+<a name="line26"> 26: </a><font color="#B22222"> </font>
+<a name="line27"> 27: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line29"> 29: </a><font color="#B22222">.seealso: MatCreate()</font>
+<a name="line30"> 30: </a><font color="#B22222">@*/</font>
+<a name="line31"> 31: </a><strong><font color="#4169E1"><a name="MatCreateSubMatrixFree"></a>int <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A>(Mat mat,IS RowMask, IS ColMask, Mat *J)</font></strong>
+<a name="line32"> 32: </a>{
+<a name="line33"> 33: </a>  MPI_Comm     comm=((PetscObject)mat)-&gt;comm;
+<a name="line34"> 34: </a>  MatSubMatFreeCtx ctx;
+<a name="line35"> 35: </a>  int          info;
+<a name="line36"> 36: </a>  PetscInt mloc,nloc,m,n;
+
+<a name="line39"> 39: </a>  info = PetscNew(_p_MatSubMatFreeCtx,&amp;ctx);CHKERRQ(info);
+
+<a name="line41"> 41: </a>  ctx-&gt;A=mat;
+<a name="line42"> 42: </a>  //  ctx-&gt;Row=Row;
+<a name="line43"> 43: </a>  //  ctx-&gt;Col=Col;
+
+<a name="line45"> 45: </a>  info = MatGetSize(mat,&amp;m,&amp;n);CHKERRQ(info);
+<a name="line46"> 46: </a>  info = MatGetLocalSize(mat,&amp;mloc,&amp;nloc);CHKERRQ(info);
+
+<a name="line48"> 48: </a>  info = VecCreateMPI(comm,nloc,n,&amp;ctx-&gt;VC);CHKERRQ(info);
+<a name="line49"> 49: </a>  //  info = <A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(Col, ctx-&gt;VC, &amp;ctx-&gt;ColComplement);CHKERRQ(info);
+<a name="line50"> 50: </a>  //  ctx-&gt;RowComplement=ctx-&gt;ColComplement;
+<a name="line51"> 51: </a>  ctx-&gt;VR=ctx-&gt;VC;
+<a name="line52"> 52: </a>  info =  PetscObjectReference((PetscObject)mat);CHKERRQ(info);
+
+<a name="line54"> 54: </a>  info=<A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(RowMask,ctx-&gt;VC,&amp;ctx-&gt;RowComplement);CHKERRQ(info);
+<a name="line55"> 55: </a>  info=<A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(ColMask,ctx-&gt;VC,&amp;ctx-&gt;ColComplement);CHKERRQ(info);
+<a name="line56"> 56: </a>  <font color="#B22222">/*</font>
+<a name="line57"> 57: </a><font color="#B22222">  info =  PetscObjectReference((PetscObject)ctx-&gt;RowComplement);CHKERRQ(info);</font>
+<a name="line58"> 58: </a><font color="#B22222">  info =  PetscObjectReference((PetscObject)ctx-&gt;ColComplement);CHKERRQ(info);</font>
+<a name="line59"> 59: </a><font color="#B22222">  */</font>
+<a name="line60"> 60: </a>  info = MatCreateShell(comm,mloc,nloc,m,n,ctx,J);CHKERRQ(info);
+
+<a name="line62"> 62: </a>  //  info = MatShellSetOperation(*J,MATOP_GET_ROW,(void(*)())MatGetRow_SMF);CHKERRQ(info);
+<a name="line63"> 63: </a>  //  info = MatShellSetOperation(*J,MATOP_RESTORE_ROW,(void(*)())MatRestoreRow_SMF);CHKERRQ(info);
+<a name="line64"> 64: </a>  info = MatShellSetOperation(*J,MATOP_MULT,(void(*)())MatMult_SMF);CHKERRQ(info);
+<a name="line65"> 65: </a>  info = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatDestroy_SMF);CHKERRQ(info);
+<a name="line66"> 66: </a>  info = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatView_SMF);CHKERRQ(info);
+<a name="line67"> 67: </a>  info = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)())MatMultTranspose_SMF);CHKERRQ(info);
+<a name="line68"> 68: </a>  info = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)())MatDiagonalSet_SMF);CHKERRQ(info);
+<a name="line69"> 69: </a>  info = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)())MatShift_SMF);CHKERRQ(info);
+<a name="line70"> 70: </a>  info = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)())MatEqual_SMF);CHKERRQ(info);
+<a name="line71"> 71: </a>  info = MatShellSetOperation(*J,MATOP_SCALE,(void(*)())MatScale_SMF);CHKERRQ(info);
+<a name="line72"> 72: </a>  info = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)())MatTranspose_SMF);CHKERRQ(info);
+<a name="line73"> 73: </a>  info = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)())MatGetDiagonal_SMF);CHKERRQ(info);
+<a name="line74"> 74: </a>  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)())MatGetSubMatrices_SMF);CHKERRQ(info);
+<a name="line75"> 75: </a>  info = MatShellSetOperation(*J,MATOP_NORM,(void(*)())MatNorm_SMF);CHKERRQ(info);
+<a name="line76"> 76: </a>  info = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)())MatDuplicate_SMF);CHKERRQ(info);
+<a name="line77"> 77: </a>  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)())MatGetSubMatrix_SMF);CHKERRQ(info);
+<a name="line78"> 78: </a>  info = MatShellSetOperation(*J,MATOP_GET_ROW_MAX,(void(*)())MatDuplicate_SMF);CHKERRQ(info);
+
+<a name="line80"> 80: </a>  info = PetscLogObjectParent(mat,*J); CHKERRQ(info);
+
+<a name="line82"> 82: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line83"> 83: </a>}
+
+<a name="line87"> 87: </a><strong><font color="#4169E1"><a name="MatSMFResetRowColumn"></a>int MatSMFResetRowColumn(Mat mat,IS RowMask,IS ColMask)</font></strong>{
+<a name="line88"> 88: </a>  MatSubMatFreeCtx ctx;
+<a name="line89"> 89: </a>  int           info;
+
+<a name="line92"> 92: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line93"> 93: </a>  info = PetscObjectReference((PetscObject)RowMask);CHKERRQ(info);
+<a name="line94"> 94: </a>  info = PetscObjectReference((PetscObject)ColMask);CHKERRQ(info);
+<a name="line95"> 95: </a>  info = ISDestroy(ctx-&gt;RowComplement);CHKERRQ(info);
+<a name="line96"> 96: </a>  info = ISDestroy(ctx-&gt;ColComplement);CHKERRQ(info);
+<a name="line97"> 97: </a>  ctx-&gt;ColComplement=ColMask;
+<a name="line98"> 98: </a>  ctx-&gt;RowComplement=RowMask;
+<a name="line99"> 99: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line100">100: </a>}
+
+<a name="line104">104: </a><strong><font color="#4169E1"><a name="MatMult_SMF"></a>int MatMult_SMF(Mat mat,Vec a,Vec y)</font></strong>
+<a name="line105">105: </a>{
+<a name="line106">106: </a>  MatSubMatFreeCtx ctx;
+<a name="line107">107: </a>  int           info;
+
+<a name="line110">110: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line111">111: </a>  info = VecCopy(a,ctx-&gt;VR);CHKERRQ(info);
+<a name="line112">112: </a>  info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(ctx-&gt;ColComplement,0.0,ctx-&gt;VR);CHKERRQ(info);
+<a name="line113">113: </a>  info = MatMult(ctx-&gt;A,ctx-&gt;VR,y);CHKERRQ(info);
+<a name="line114">114: </a>  info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(ctx-&gt;RowComplement,0.0,y);CHKERRQ(info);
+<a name="line115">115: </a>  <font color="#4169E1">return</font>(0);
+<a name="line116">116: </a>}
+
+<a name="line120">120: </a><strong><font color="#4169E1"><a name="MatMultTranspose_SMF"></a>int MatMultTranspose_SMF(Mat mat,Vec a,Vec y)</font></strong>
+<a name="line121">121: </a>{
+<a name="line122">122: </a>  MatSubMatFreeCtx ctx;
+<a name="line123">123: </a>  int info;
+
+<a name="line126">126: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line127">127: </a>  info = VecCopy(a,ctx-&gt;VC);CHKERRQ(info);
+<a name="line128">128: </a>  info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(ctx-&gt;RowComplement,0.0,ctx-&gt;VC);CHKERRQ(info);
+<a name="line129">129: </a>  info = MatMultTranspose(ctx-&gt;A,ctx-&gt;VC,y);CHKERRQ(info);
+<a name="line130">130: </a>  info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(ctx-&gt;ColComplement,0.0,y);CHKERRQ(info);
+<a name="line131">131: </a>  <font color="#4169E1">return</font>(0);
+<a name="line132">132: </a>} 
+
+<a name="line136">136: </a><strong><font color="#4169E1"><a name="MatDiagonalSet_SMF"></a>int MatDiagonalSet_SMF(Mat M, Vec D,InsertMode is)</font></strong>
+<a name="line137">137: </a>{
+<a name="line138">138: </a>  MatSubMatFreeCtx ctx;
+<a name="line139">139: </a>  int           info;
+
+<a name="line142">142: </a>  info = MatShellGetContext(M,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line143">143: </a>  info = MatDiagonalSet(ctx-&gt;A,D,is);
+<a name="line144">144: </a>  <font color="#4169E1">return</font>(0);
+<a name="line145">145: </a>} 
+
+<a name="line149">149: </a><strong><font color="#4169E1"><a name="MatDestroy_SMF"></a>int MatDestroy_SMF(Mat mat)</font></strong>
+<a name="line150">150: </a>{
+<a name="line151">151: </a>  int          info;
+<a name="line152">152: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line155">155: </a>  info=MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line156">156: </a>  //  info=ISDestroy(ctx-&gt;Row);CHKERRQ(info);
+<a name="line157">157: </a>  //  info=ISDestroy(ctx-&gt;Col);CHKERRQ(info);
+<a name="line158">158: </a>  info =MatDestroy(ctx-&gt;A);CHKERRQ(info);
+<a name="line159">159: </a>  info=ISDestroy(ctx-&gt;RowComplement);CHKERRQ(info);
+<a name="line160">160: </a>  info=ISDestroy(ctx-&gt;ColComplement);CHKERRQ(info);
+<a name="line161">161: </a>  info=VecDestroy(ctx-&gt;VC);CHKERRQ(info);
+<a name="line162">162: </a>  info = PetscFree(ctx); CHKERRQ(info);
+<a name="line163">163: </a>  <font color="#4169E1">return</font>(0);
+<a name="line164">164: </a>}
+
+
+
+<a name="line170">170: </a><strong><font color="#4169E1"><a name="MatView_SMF"></a>int MatView_SMF(Mat mat,PetscViewer viewer)</font></strong>
+<a name="line171">171: </a>{
+<a name="line172">172: </a>  int          info;
+<a name="line173">173: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line176">176: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line177">177: </a>  info = MatView(ctx-&gt;A,viewer);CHKERRQ(info);
+<a name="line178">178: </a>  //  info = ISView(ctx-&gt;Row,viewer);CHKERRQ(info);
+<a name="line179">179: </a>  //  info = ISView(ctx-&gt;Col,viewer);CHKERRQ(info);
+<a name="line180">180: </a>  <font color="#4169E1">return</font>(0);
+<a name="line181">181: </a>}
+
+<a name="line185">185: </a><strong><font color="#4169E1"><a name="MatShift_SMF"></a>int MatShift_SMF(Mat Y, PetscScalar a)</font></strong>
+<a name="line186">186: </a>{
+<a name="line187">187: </a>  int          info;
+<a name="line188">188: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line191">191: </a>  info = MatShellGetContext(Y,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line192">192: </a>  info = MatShift(ctx-&gt;A,a);CHKERRQ(info);
+<a name="line193">193: </a>  <font color="#4169E1">return</font>(0);
+<a name="line194">194: </a>}
+
+<a name="line198">198: </a><strong><font color="#4169E1"><a name="MatDuplicate_SMF"></a>int MatDuplicate_SMF(Mat mat,MatDuplicateOption op,Mat *M)</font></strong>
+<a name="line199">199: </a>{
+<a name="line200">200: </a>  int          info;
+<a name="line201">201: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line204">204: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line205">205: </a>  info = <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A>(ctx-&gt;A,ctx-&gt;RowComplement,ctx-&gt;ColComplement,M);CHKERRQ(info);
+<a name="line206">206: </a>  <font color="#4169E1">return</font>(0);
+<a name="line207">207: </a>}
+
+<a name="line211">211: </a><strong><font color="#4169E1"><a name="MatEqual_SMF"></a>int MatEqual_SMF(Mat A,Mat B,PetscTruth *flg)</font></strong>
+<a name="line212">212: </a>{
+<a name="line213">213: </a>  int          info;
+<a name="line214">214: </a>  MatSubMatFreeCtx  ctx1,ctx2;
+<a name="line215">215: </a>  PetscTruth flg1,flg2,flg3;
+
+<a name="line218">218: </a>  info = MatShellGetContext(A,(void **)&amp;ctx1);CHKERRQ(info);
+<a name="line219">219: </a>  info = MatShellGetContext(B,(void **)&amp;ctx2);CHKERRQ(info);
+<a name="line220">220: </a>  info = ISEqual(ctx1-&gt;RowComplement,ctx2-&gt;RowComplement,&amp;flg2);CHKERRQ(info);
+<a name="line221">221: </a>  info = ISEqual(ctx1-&gt;ColComplement,ctx2-&gt;ColComplement,&amp;flg3);CHKERRQ(info);
+<a name="line222">222: </a>  <font color="#4169E1">if</font> (flg2==PETSC_FALSE || flg3==PETSC_FALSE){
+<a name="line223">223: </a>    *flg=PETSC_FALSE;
+<a name="line224">224: </a>  } <font color="#4169E1">else</font> {
+<a name="line225">225: </a>    info = MatEqual(ctx1-&gt;A,ctx2-&gt;A,&amp;flg1);CHKERRQ(info);
+<a name="line226">226: </a>    <font color="#4169E1">if</font> (flg1==PETSC_FALSE){ *flg=PETSC_FALSE;} 
+<a name="line227">227: </a>    <font color="#4169E1">else</font> { *flg=PETSC_TRUE;} 
+<a name="line228">228: </a>  }
+<a name="line229">229: </a>  <font color="#4169E1">return</font>(0);
+<a name="line230">230: </a>}
+
+<a name="line234">234: </a><strong><font color="#4169E1"><a name="MatScale_SMF"></a>int MatScale_SMF(Mat mat, PetscScalar a)</font></strong>
+<a name="line235">235: </a>{
+<a name="line236">236: </a>  int          info;
+<a name="line237">237: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line240">240: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line241">241: </a>  info = MatScale(ctx-&gt;A,a);CHKERRQ(info);
+<a name="line242">242: </a>  <font color="#4169E1">return</font>(0);
+<a name="line243">243: </a>}
+
+<a name="line247">247: </a><strong><font color="#4169E1"><a name="MatTranspose_SMF"></a>int MatTranspose_SMF(Mat mat,Mat *B)</font></strong>
+<a name="line248">248: </a>{
+<a name="line250">250: </a>  PetscFunctionReturn(1);
+<a name="line251">251: </a>}
+
+<a name="line255">255: </a><strong><font color="#4169E1"><a name="MatGetDiagonal_SMF"></a>int MatGetDiagonal_SMF(Mat mat,Vec v)</font></strong>
+<a name="line256">256: </a>{
+<a name="line257">257: </a>  int          info;
+<a name="line258">258: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line261">261: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line262">262: </a>  info = MatGetDiagonal(ctx-&gt;A,v);CHKERRQ(info);
+<a name="line263">263: </a>  //  info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(ctx-&gt;RowComplement,0.0,v);CHKERRQ(info);
+<a name="line264">264: </a>  <font color="#4169E1">return</font>(0);
+<a name="line265">265: </a>}
+
+<a name="line269">269: </a><strong><font color="#4169E1"><a name="MatGetRowMax_SMF"></a>int MatGetRowMax_SMF(Mat M, Vec D)</font></strong>
+<a name="line270">270: </a>{
+<a name="line271">271: </a>  MatSubMatFreeCtx ctx;
+<a name="line272">272: </a>  int           info;
+
+<a name="line275">275: </a>  info = MatShellGetContext(M,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line276">276: </a>  info = MatGetRowMax(ctx-&gt;A,D,PETSC_NULL);
+<a name="line277">277: </a>  //  info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(ctx-&gt;RowComplement,0.0,D);CHKERRQ(info);
+<a name="line278">278: </a>  <font color="#4169E1">return</font>(0);
+<a name="line279">279: </a>} 
+
+
+<a name="line284">284: </a><strong><font color="#4169E1"><a name="MatGetSubMatrices_SMF"></a>int MatGetSubMatrices_SMF(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat **B)</font></strong>
+<a name="line285">285: </a>{
+<a name="line286">286: </a>  int info,i;
+
+<a name="line289">289: </a>  <font color="#4169E1">if</font> (scall == MAT_INITIAL_MATRIX) {
+<a name="line290">290: </a>    info = PetscMalloc( (n+1)*<font color="#4169E1">sizeof</font>(Mat),B );CHKERRQ(info);
+<a name="line291">291: </a>  }
+
+<a name="line293">293: </a>  <font color="#4169E1">for</font> ( i=0; i&lt;n; i++ ) {
+<a name="line294">294: </a>    info = MatGetSubMatrix_SMF(A,irow[i],icol[i],scall,&amp;(*B)[i]);CHKERRQ(info);
+<a name="line295">295: </a>  }
+<a name="line296">296: </a>  <font color="#4169E1">return</font>(0);
+<a name="line297">297: </a>}
+
+<a name="line301">301: </a><strong><font color="#4169E1"><a name="MatGetSubMatrix_SMF"></a>int MatGetSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,</font></strong>
+<a name="line302">302: </a><strong><font color="#4169E1">                        Mat *newmat)</font></strong>
+<a name="line303">303: </a>{
+<a name="line304">304: </a>  int          info;
+<a name="line305">305: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line308">308: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line309">309: </a>  <font color="#4169E1">if</font> (newmat){
+<a name="line310">310: </a>    info=MatDestroy(*newmat);CHKERRQ(info);
+<a name="line311">311: </a>  }
+<a name="line312">312: </a>  info = <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A>(ctx-&gt;A,isrow,iscol, newmat);CHKERRQ(info);
+<a name="line313">313: </a>  <font color="#4169E1">return</font>(0);
+<a name="line314">314: </a>}
+
+<a name="line318">318: </a><strong><font color="#4169E1"><a name="MatGetRow_SMF"></a>int MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscScalar **vals)</font></strong>
+<a name="line319">319: </a>{
+<a name="line320">320: </a>  int          info;
+<a name="line321">321: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line324">324: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line325">325: </a>  info = MatGetRow(ctx-&gt;A,row,ncols,cols,vals);CHKERRQ(info);
+<a name="line326">326: </a>  <font color="#4169E1">return</font>(0);
+<a name="line327">327: </a>}
+
+<a name="line331">331: </a><strong><font color="#4169E1"><a name="MatRestoreRow_SMF"></a>int MatRestoreRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscScalar **vals)</font></strong>
+<a name="line332">332: </a>{
+<a name="line333">333: </a>  int          info;
+<a name="line334">334: </a>  MatSubMatFreeCtx ctx;
+
+<a name="line337">337: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line338">338: </a>  info = MatRestoreRow(ctx-&gt;A,row,ncols,cols,vals);CHKERRQ(info);
+<a name="line339">339: </a>  <font color="#4169E1">return</font>(0);
+<a name="line340">340: </a>}
+
+<a name="line344">344: </a><strong><font color="#4169E1"><a name="MatGetColumnVector_SMF"></a>int MatGetColumnVector_SMF(Mat mat,Vec Y, PetscInt col)</font></strong>
+<a name="line345">345: </a>{
+<a name="line346">346: </a>  int    info;
+<a name="line347">347: </a>  MatSubMatFreeCtx  ctx;
+
+<a name="line350">350: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line351">351: </a>  info = MatGetColumnVector(ctx-&gt;A,Y,col);CHKERRQ(info);
+<a name="line352">352: </a>  //  info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(ctx-&gt;RowComplement,0.0,Y);CHKERRQ(info);
+<a name="line353">353: </a>  <font color="#4169E1">return</font>(0);
+<a name="line354">354: </a>}
+
+<a name="line358">358: </a><strong><font color="#4169E1"><a name="MatConvert_SMF"></a>int MatConvert_SMF(Mat mat,MatType newtype,Mat *NewMat)</font></strong>
+<a name="line359">359: </a>{
+<a name="line360">360: </a>  int info;
+<a name="line361">361: </a>  int size;
+<a name="line362">362: </a>  MatSubMatFreeCtx  ctx;
+
+<a name="line365">365: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line366">366: </a>  MPI_Comm_size(((PetscObject)mat)-&gt;comm,&amp;size);
+<a name="line367">367: </a>  PetscFunctionReturn(1);
+<a name="line368">368: </a>}
+
+<a name="line372">372: </a><strong><font color="#4169E1"><a name="MatNorm_SMF"></a>int MatNorm_SMF(Mat mat,NormType type,PetscReal *norm)</font></strong>
+<a name="line373">373: </a>{
+<a name="line374">374: </a>  int info;
+<a name="line375">375: </a>  MatSubMatFreeCtx  ctx;
+
+<a name="line378">378: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+
+<a name="line380">380: </a>  <font color="#4169E1">if</font> (type == NORM_FROBENIUS) {
+<a name="line381">381: </a>    *norm = 1.0;
+<a name="line382">382: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (type == NORM_1 || type == NORM_INFINITY) {
+<a name="line383">383: </a>    *norm = 1.0;
+<a name="line384">384: </a>  } <font color="#4169E1">else</font> {
+<a name="line385">385: </a>    SETERRQ(PETSC_ERR_SUP,<font color="#666666">"No two norm"</font>);
+<a name="line386">386: </a>  }
+<a name="line387">387: </a>  <font color="#4169E1">return</font>(0);
+<a name="line388">388: </a>}
+</pre>
+</body>
+
+</html>

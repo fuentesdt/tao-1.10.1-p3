@@ -1,0 +1,27 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>BoundGradientProjection</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="BoundGradientProjection"><H1>BoundGradientProjection</H1></A>
+Projects this vector according to this definition. If XX[i]==XXL[i], then this[i] = min(G[i],0);    If XX[i]==XXU[i], then this[i] = max(G[i],0); else this[i] = G[i]; 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoVec::BoundGradientProjection(TaoVec* gg,TaoVec* xxll,TaoVec* xx, TaoVec* xxuu)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>GG,XX,XXL,XXU </B> -the vectors.
+<br>
+<P>
+
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/vector/taovec.c.html#BoundGradientProjection">src/vector/taovec.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

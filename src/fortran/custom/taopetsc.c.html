@@ -1,0 +1,426 @@
+<center><a href="taopetsc.c">Actual source code: taopetsc.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"private/fortranimpl.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"petscksp.h"</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0"></font>
+
+
+<a name="line6">  6: </a><font color="#A020F0">#ifdef PETSC_HAVE_FORTRAN_CAPS</font>
+
+<a name="line8">  8: </a><strong><font color="#228B22">#define taopetscapplicationcreate_     TAOPETSCAPPLICATIONCREATE</font></strong>
+<a name="line9">  9: </a><strong><font color="#228B22">#define taoapplicationcreate_          TAOAPPLICATIONCREATE</font></strong>
+<a name="line10"> 10: </a><strong><font color="#228B22">#define taoapplicationdestroy_          TAOAPPLICATIONDESTROY</font></strong>
+<a name="line11"> 11: </a><strong><font color="#228B22">#define taosetapplication_          TAOSETAPPLICATION</font></strong>
+
+<a name="line13"> 13: </a><strong><font color="#228B22">#define taoappsetobjectiveandgradientroutine_    TAOAPPSETOBJECTIVEANDGRADIENTROUTINE</font></strong>
+<a name="line14"> 14: </a><strong><font color="#228B22">#define taoappsetobjectiveandgradientro_         TAOAPPSETOBJECTIVEANDGRADIENTRO</font></strong>
+<a name="line15"> 15: </a><strong><font color="#228B22">#define taoappsetobjectiveroutine_               TAOAPPSETOBJECTIVEROUTINE</font></strong>
+<a name="line16"> 16: </a><strong><font color="#228B22">#define taoappsetgradientroutine_                TAOAPPSETGRADIENTROUTINE</font></strong>
+<a name="line17"> 17: </a><strong><font color="#228B22">#define taoappsethessianroutine_                 TAOAPPSETHESSIANROUTINE</font></strong>
+<a name="line18"> 18: </a><strong><font color="#228B22">#define taoappsetvariableboundsroutine_          TAOAPPSETVARIABLEBOUNDSROUTINE</font></strong>
+<a name="line19"> 19: </a><strong><font color="#228B22">#define taoappsetjacobianroutine_                TAOAPPSETJACOBIANROUTINE</font></strong>
+<a name="line20"> 20: </a><strong><font color="#228B22">#define taoappsetconstraintroutine_              TAOAPPSETCONSTRAINTROUTINE</font></strong>
+<a name="line21"> 21: </a><strong><font color="#228B22">#define taoappsetmonitor_                        TAOAPPSETMONITOR</font></strong>
+<a name="line22"> 22: </a><strong><font color="#228B22">#define taoappgetksp_                            TAOAPPGETKSP</font></strong>
+
+<a name="line24"> 24: </a><font color="#B22222">/* Grid application */</font>
+<a name="line25"> 25: </a><strong><font color="#228B22">#define daappsethessianroutine_                         DAAPPSETHESSIANROUTINE</font></strong>
+<a name="line26"> 26: </a><strong><font color="#228B22">#define daappsetobjectiveandgradientroutine_            DAAPPSETOBJECTIVEANDGRADIENTROUTINE</font></strong>
+<a name="line27"> 27: </a><strong><font color="#228B22">#define daappsetobjectiveandgradientrou_                DAAPPSETOBJECTIVEANDGRADIENTROU</font></strong>
+<a name="line28"> 28: </a><strong><font color="#228B22">#define daappsetgradientroutine_                        DAAPPSETGRADIENTROUTINE</font></strong>
+<a name="line29"> 29: </a><strong><font color="#228B22">#define daappsetobjectiveroutine_                       DAAPPSETOBJECTIVEROUTINE</font></strong>
+<a name="line30"> 30: </a><strong><font color="#228B22">#define daappsetvariableboundsroutine_                  DAAPPSETVARIABLEBOUNDSROUTINE</font></strong>
+<a name="line31"> 31: </a><strong><font color="#228B22">#define daappsetconstraintroutine_                      DAAPPSETCONSTRAINTROUTINE</font></strong>
+<a name="line32"> 32: </a><strong><font color="#228B22">#define daappsetjacobianroutine_                        DAAPPSETJACOBIANROUTINE</font></strong>
+<a name="line33"> 33: </a><strong><font color="#228B22">#define daappsetbeforemonitor_                          DAAPPSETBEFOREMONITOR</font></strong>
+<a name="line34"> 34: </a><strong><font color="#228B22">#define daappsetaftermonitor_                           DAAPPSETAFTERMONITOR</font></strong>
+<a name="line35"> 35: </a><strong><font color="#228B22">#define daappsetelementobjectiveandgradientroutine_     DAAPPSETELEMENTOBJECTIVEANDGRADIENTROUTINE</font></strong>
+<a name="line36"> 36: </a><strong><font color="#228B22">#define daappsetelementobjectiveandgrad_                DAAPPSETELEMENTOBJECTIVEANDGRAD</font></strong>
+<a name="line37"> 37: </a><strong><font color="#228B22">#define daappsetelementhessianroutine_                  DAAPPSETELEMENTHESSIANROUTINE</font></strong>
+
+
+<a name="line40"> 40: </a><strong><font color="#228B22">#define taodefaultcomputehessian_   TAODEFAULTCOMPUTEHESSIAN</font></strong>
+<a name="line41"> 41: </a><strong><font color="#228B22">#define taodefaultcomputehessiancolor_ TAODEFAULTCOMPUTEHESSIANCOLOR</font></strong>
+
+<a name="line43"> 43: </a><strong><font color="#228B22">#define taogetksp_                      TAOGETKSP</font></strong>
+
+<a name="line45"> 45: </a><font color="#A020F0">#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)</font>
+
+<a name="line47"> 47: </a><strong><font color="#228B22">#define taopetscapplicationcreate_     taopetscapplicationcreate </font></strong>
+<a name="line48"> 48: </a><strong><font color="#228B22">#define taoapplicationcreate_                taoapplicationcreate </font></strong>
+<a name="line49"> 49: </a><strong><font color="#228B22">#define taoapplicationdestroy_                taoapplicationdestroy </font></strong>
+<a name="line50"> 50: </a><strong><font color="#228B22">#define taosetapplication_                taosetapplication </font></strong>
+
+
+<a name="line53"> 53: </a><strong><font color="#228B22">#define taoappsetobjectiveandgradientroutine_    taoappsetobjectiveandgradientroutine</font></strong>
+<a name="line54"> 54: </a><strong><font color="#228B22">#define taoappsetobjectiveandgradientro_         taoappsetobjectiveandgradientro</font></strong>
+<a name="line55"> 55: </a><strong><font color="#228B22">#define taoappsetobjectiveroutine_               taoappsetobjectiveroutine</font></strong>
+<a name="line56"> 56: </a><strong><font color="#228B22">#define taoappsetgradientroutine_                taoappsetgradientroutine</font></strong>
+<a name="line57"> 57: </a><strong><font color="#228B22">#define taoappsethessianroutine_                 taoappsethessianroutine</font></strong>
+<a name="line58"> 58: </a><strong><font color="#228B22">#define taoappsetvariableboundsroutine_          taoappsetvariableboundsroutine</font></strong>
+<a name="line59"> 59: </a><strong><font color="#228B22">#define taoappsetjacobianroutine_                taoappsetjacobianroutine</font></strong>
+<a name="line60"> 60: </a><strong><font color="#228B22">#define taoappsetconstraintroutine_              taoappsetconstraintroutine</font></strong>
+<a name="line61"> 61: </a><strong><font color="#228B22">#define taoappsetmonitor_                        taoappsetmonitor</font></strong>
+<a name="line62"> 62: </a><strong><font color="#228B22">#define taoappgetksp_                            taoappgetksp</font></strong>
+
+
+<a name="line65"> 65: </a><font color="#B22222">/* Grid application */</font>
+<a name="line66"> 66: </a><strong><font color="#228B22">#define daappsethessianroutine_                         daappsethessianroutine</font></strong>
+<a name="line67"> 67: </a><strong><font color="#228B22">#define daappsetobjectiveandgradientroutine_            daappsetobjectiveandgradientroutine</font></strong>
+<a name="line68"> 68: </a><strong><font color="#228B22">#define daappsetobjectiveandgradientrou_                daappsetobjectiveandgradientrou</font></strong>
+<a name="line69"> 69: </a><strong><font color="#228B22">#define daappsetgradientroutine_                        daappsetgradientroutine</font></strong>
+<a name="line70"> 70: </a><strong><font color="#228B22">#define daappsetobjectiveroutine_                       daappsetobjectiveroutine</font></strong>
+<a name="line71"> 71: </a><strong><font color="#228B22">#define daappsetvariableboundsroutine_                  daappsetvariableboundsroutine</font></strong>
+<a name="line72"> 72: </a><strong><font color="#228B22">#define daappsetconstraintroutine_                      daappsetconstraintroutine</font></strong>
+<a name="line73"> 73: </a><strong><font color="#228B22">#define daappsetjacobianroutine_                        daappsetjacobianroutine</font></strong>
+<a name="line74"> 74: </a><strong><font color="#228B22">#define daappsetbeforemonitor_                          daappsetbeforemonitor</font></strong>
+<a name="line75"> 75: </a><strong><font color="#228B22">#define daappsetaftermonitor_                           daappsetaftermonitor</font></strong>
+<a name="line76"> 76: </a><strong><font color="#228B22">#define daappsetelementobjectiveandgradientroutine_     daappsetelementobjectiveandgradientroutine</font></strong>
+<a name="line77"> 77: </a><strong><font color="#228B22">#define daappsetelementobjectiveandgrad_                daappsetelementobjectiveandgrad</font></strong>
+<a name="line78"> 78: </a><strong><font color="#228B22">#define daappsetelementhessianroutine_                  daappsetelementhessianroutine</font></strong>
+
+<a name="line80"> 80: </a><strong><font color="#228B22">#define taodefaultcomputehessian_   taodefaultcomputehessian</font></strong>
+<a name="line81"> 81: </a><strong><font color="#228B22">#define taodefaultcomputehessiancolor_ taodefaultcomputehessiancolor</font></strong>
+
+<a name="line83"> 83: </a><strong><font color="#228B22">#define taogetksp_                      taogetksp</font></strong>
+
+<a name="line85"> 85: </a><font color="#A020F0">#endif</font>
+
+
+<a name="line89"> 89: </a><strong><font color="#4169E1">void PETSC_STDCALL taopetscapplicationcreate_(MPI_Comm *comm,TAO_APPLICATION  *outtao,int *ierr)</font></strong>{
+
+<a name="line91"> 91: </a>  *TaoPetscApplicationCreate(MPI_Comm_f2c(*(MPI_Fint *)&amp;*comm),outtao);
+
+<a name="line93"> 93: </a>}
+
+<a name="line95"> 95: </a><strong><font color="#4169E1"><a name="taoapplicationcreate_"></a>void PETSC_STDCALL taoapplicationcreate_(MPI_Comm *comm,TAO_APPLICATION  *outtao,int *ierr)</font></strong>{
+
+<a name="line97"> 97: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(MPI_Comm_f2c(*(MPI_Fint *)&amp;*comm),outtao);
+
+<a name="line99"> 99: </a>}
+
+<a name="line101">101: </a><strong><font color="#4169E1"><a name="taoapplicationdestroy_"></a>void PETSC_STDCALL taoapplicationdestroy_(TAO_APPLICATION  *outtao,int *ierr)</font></strong>{
+
+<a name="line103">103: </a>  *TaoApplicationDestroy(*outtao);
+
+<a name="line105">105: </a>}
+
+<a name="line107">107: </a><font color="#B22222">/* -------------- Setting call-back routines ---------------- */</font>
+
+
+
+<a name="line112">112: </a><strong><font color="#4169E1">static int ourtaominfunctiongradientroutine(TAO_APPLICATION taoapp,Vec x,double *f,Vec r,void *ctx)</font></strong>
+<a name="line113">113: </a>{
+<a name="line114">114: </a>  int 0;
+<a name="line115">115: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,Vec*,double*,Vec*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[1]))(&amp;taoapp,&amp;x,f,&amp;r,ctx,&amp;ierr);
+<a name="line116">116: </a>  <font color="#4169E1">return</font> 0;
+<a name="line117">117: </a>}
+
+
+
+<a name="line122">122: </a><strong><font color="#4169E1">void PETSC_STDCALL taoappsetobjectiveandgradientroutine_(TAO_APPLICATION  *taoapp,void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,double*,Vec*,void*,int*),void *ctx,int *ierr)</font></strong>{
+<a name="line123">123: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line124">124: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line125">125: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[1] = (PetscVoidFunction)func;
+<a name="line126">126: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(*taoapp,ourtaominfunctiongradientroutine,ctx);
+<a name="line127">127: </a>}
+<a name="line128">128: </a><strong><font color="#4169E1"><a name="taoappsetobjectiveandgradientro_"></a>void PETSC_STDCALL taoappsetobjectiveandgradientro_(TAO_APPLICATION  *taoapp,void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,double*,Vec*,void*,int*),void *ctx,int *ierr)</font></strong>{
+<a name="line129">129: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line130">130: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line131">131: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[1] = (PetscVoidFunction)func;
+<a name="line132">132: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(*taoapp,ourtaominfunctiongradientroutine,ctx);
+<a name="line133">133: </a>}
+
+
+<a name="line137">137: </a><strong><font color="#4169E1">static int ourtaominfunction(TAO_APPLICATION taoapp,Vec x,double* d,void *ctx)</font></strong>
+<a name="line138">138: </a>{
+<a name="line139">139: </a>  int 0;
+<a name="line140">140: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,Vec*,double*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[2]))(&amp;taoapp,&amp;x,d,ctx,&amp;ierr);
+<a name="line141">141: </a>  <font color="#4169E1">return</font> 0;
+<a name="line142">142: </a>}
+
+
+<a name="line146">146: </a><strong><font color="#4169E1">void PETSC_STDCALL taoappsetobjectiveroutine_(TAO_APPLICATION  *taoapp,</font></strong>
+<a name="line147">147: </a><strong><font color="#4169E1">          void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,double*,void*,int*),void *ctx,int *ierr)</font></strong>{
+<a name="line148">148: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line149">149: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line150">150: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[2] = (PetscVoidFunction)func;
+<a name="line151">151: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>(*taoapp,ourtaominfunction,ctx);
+<a name="line152">152: </a>}
+
+
+
+
+<a name="line158">158: </a><strong><font color="#4169E1">static int ourtaogradientfunction(TAO_APPLICATION taoapp,Vec x,Vec d,void *ctx)</font></strong>
+<a name="line159">159: </a>{
+<a name="line160">160: </a>  int 0;
+<a name="line161">161: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,Vec*,Vec*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[3]))(&amp;taoapp,&amp;x,&amp;d,ctx,&amp;ierr);
+<a name="line162">162: </a>  <font color="#4169E1">return</font> 0;
+<a name="line163">163: </a>}
+
+
+<a name="line167">167: </a><strong><font color="#4169E1">void PETSC_STDCALL taoappsetgradientroutine_(TAO_APPLICATION *taoapp,void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,Vec*,void*,int*),void *ctx,int *ierr)</font></strong>{
+<a name="line168">168: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line169">169: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line170">170: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[3] = (PetscVoidFunction)func;
+<a name="line171">171: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>(*taoapp,ourtaogradientfunction,ctx);
+<a name="line172">172: </a>}
+
+
+<a name="line175">175: </a><font color="#B22222">/* ---------------------------------------------------------*/</font>
+<a name="line176">176: </a><font color="#B22222">/*</font>
+<a name="line177">177: </a><font color="#B22222">  taodefaultcomputehessian() and taodefaultcomputehessiancolor().</font>
+<a name="line178">178: </a><font color="#B22222">  These routines can be used directly from Fortran, but the following is done</font>
+<a name="line179">179: </a><font color="#B22222">  primarily so that a Fortran call to TaoAppSetPetscHessian() will properly handle the</font>
+<a name="line180">180: </a><font color="#B22222">  defaults being passed in.</font>
+
+<a name="line182">182: </a><font color="#B22222">  functions, hence no STDCALL</font>
+<a name="line183">183: </a><font color="#B22222">*/</font>
+<a name="line184">184: </a><strong><font color="#4169E1"><a name="taodefaultcomputehessian_"></a>void taodefaultcomputehessian_(TAO_APPLICATION *tao,Vec *x,Mat *m,Mat *p,MatStructure* type,</font></strong>
+<a name="line185">185: </a><strong><font color="#4169E1">                               void *ctx,int *ierr)</font></strong>
+<a name="line186">186: </a>{
+<a name="line187">187: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>(*tao,*x,m,p,type,ctx);
+<a name="line188">188: </a>}
+
+<a name="line190">190: </a><strong><font color="#4169E1"><a name="taodefaultcomputehessiancolor_"></a>void  taodefaultcomputehessiancolor_(TAO_APPLICATION *tao,Vec *x,Mat *m,Mat *p,</font></strong>
+<a name="line191">191: </a><strong><font color="#4169E1">                                     MatStructure* type,void *ctx,int *ierr)</font></strong>
+<a name="line192">192: </a>{
+<a name="line193">193: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>(*tao,*x,m,p,type,*(MatFDColoring*)ctx);
+<a name="line194">194: </a>}
+
+
+<a name="line198">198: </a><strong><font color="#4169E1">static int ourtaohessian(TAO_APPLICATION taoapp,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)</font></strong>
+<a name="line199">199: </a>{
+<a name="line200">200: </a>  int 0;
+<a name="line201">201: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,Vec*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[4]))(&amp;taoapp,&amp;x,m,p,type,ctx,&amp;ierr);
+<a name="line202">202: </a>  <font color="#4169E1">return</font> 0;
+<a name="line203">203: </a>}
+
+
+
+<a name="line208">208: </a><strong><font color="#4169E1">void PETSC_STDCALL taoappsethessianroutine_(TAO_APPLICATION  *taoapp,void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,Mat*,Mat*,</font></strong>
+<a name="line209">209: </a><strong><font color="#4169E1">                                  MatStructure*,void*,int*),void *ctx,int *ierr)</font></strong>
+<a name="line210">210: </a>{
+<a name="line211">211: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line212">212: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line213">213: </a>  <font color="#4169E1">if</font> ((void(*)())func == (void(*)()) taodefaultcomputehessian_) {
+<a name="line214">214: </a>    *<A href="../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(*taoapp,<A href="../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>,ctx);
+<a name="line215">215: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ( (void(*)()) func == (void(*)()) taodefaultcomputehessiancolor_) {
+<a name="line216">216: </a>    *<A href="../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(*taoapp,<A href="../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>,*(MatFDColoring*)ctx);
+<a name="line217">217: </a>  } <font color="#4169E1">else</font> {
+
+<a name="line219">219: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[4] = (PetscVoidFunction)func;
+<a name="line220">220: </a>    *<A href="../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(*taoapp,ourtaohessian,ctx);
+<a name="line221">221: </a>  }
+<a name="line222">222: </a>}
+
+
+
+
+<a name="line228">228: </a><strong><font color="#4169E1">static int ourtaovariableboundsroutine(TAO_APPLICATION taoapp, Vec x,Vec d,void *ctx)</font></strong>
+<a name="line229">229: </a>{
+<a name="line230">230: </a>  int 0;
+<a name="line231">231: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,Vec*,Vec*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[5]))(&amp;taoapp,&amp;x,&amp;d,ctx,&amp;ierr);
+<a name="line232">232: </a>  <font color="#4169E1">return</font> 0;
+<a name="line233">233: </a>}
+
+
+
+<a name="line238">238: </a><strong><font color="#4169E1">void PETSC_STDCALL taoappsetvariableboundsroutine_(TAO_APPLICATION *taoapp,void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,Vec*,void*,int*),void *ctx,int *ierr)</font></strong>{
+<a name="line239">239: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line240">240: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line241">241: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[5] = (PetscVoidFunction)func;
+<a name="line242">242: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetVariableBoundsRoutine.html#TaoAppSetVariableBoundsRoutine">TaoAppSetVariableBoundsRoutine</A>(*taoapp,ourtaovariableboundsroutine,ctx);
+<a name="line243">243: </a>}
+
+
+<a name="line247">247: </a><strong><font color="#4169E1">static int ourtaoconstraintsfunction(TAO_APPLICATION taoapp,Vec x,Vec d,void *ctx)</font></strong>
+<a name="line248">248: </a>{
+<a name="line249">249: </a>  int 0;
+<a name="line250">250: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,Vec*,Vec*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[6]))(&amp;taoapp,&amp;x,&amp;d,ctx,&amp;ierr);
+<a name="line251">251: </a>  <font color="#4169E1">return</font> 0;
+<a name="line252">252: </a>}
+
+<a name="line254">254: </a><strong><font color="#4169E1"><a name="ourtaoappsetmonitor"></a>static int ourtaoappsetmonitor(TAO_APPLICATION taoapp, void *ctx)</font></strong> {
+<a name="line255">255: </a>  int 0;
+<a name="line256">256: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[7]))(&amp;taoapp,ctx,&amp;ierr); 
+<a name="line257">257: </a>  <font color="#4169E1">return</font> 0;
+<a name="line258">258: </a>}
+
+
+<a name="line262">262: </a><strong><font color="#4169E1">void PETSC_STDCALL taoappsetconstraintroutine_(TAO_APPLICATION  *taoapp,void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,Vec*,void*,int*),void *ctx,int *ierr)</font></strong>{
+<a name="line263">263: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line264">264: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line265">265: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[6] = (PetscVoidFunction)func;
+<a name="line266">266: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>(*taoapp,ourtaoconstraintsfunction,ctx);
+<a name="line267">267: </a>}
+
+<a name="line269">269: </a><strong><font color="#4169E1"><a name="taoappsetmonitor_"></a>void PETSC_STDCALL taoappsetmonitor_(TAO_APPLICATION *taoapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*,void *, int*), void *ctx, int *ierr)</font></strong>{
+<a name="line270">270: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line271">271: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line272">272: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[7] = (PetscVoidFunction)func;
+<a name="line273">273: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetMonitor.html#TaoAppSetMonitor">TaoAppSetMonitor</A>(*taoapp,ourtaoappsetmonitor,ctx);
+<a name="line274">274: </a>}
+
+
+
+<a name="line279">279: </a><strong><font color="#4169E1">static int ourtaojacobianfunction(TAO_APPLICATION taoapp,Vec x,Mat *J,Mat *JP, MatStructure *flag,void *ctx)</font></strong>
+<a name="line280">280: </a>{
+<a name="line281">281: </a>  int 0;
+<a name="line282">282: </a>  (*(void (PETSC_STDCALL *)(TAO_APPLICATION*,Vec*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)taoapp)-&gt;fortran_func_pointers[8]))(&amp;taoapp,&amp;x,J,JP,flag,ctx,&amp;ierr);
+<a name="line283">283: </a>  <font color="#4169E1">return</font> 0;
+<a name="line284">284: </a>}
+
+
+<a name="line288">288: </a><strong><font color="#4169E1">void PETSC_STDCALL taoappsetjacobianroutine_(TAO_APPLICATION  *taoapp,void (PETSC_STDCALL *func)(TAO_APPLICATION*,Vec*,Mat*,Mat*,MatStructure*,void*,int*),void *ctx,int *ierr)</font></strong>{
+<a name="line289">289: </a>  CHKFORTRANNULLFUNCTION(func);
+<a name="line290">290: </a>  PetscObjectAllocateFortranPointers(*taoapp,12);
+<a name="line291">291: </a>  ((PetscObject)*taoapp)-&gt;fortran_func_pointers[8] = (PetscVoidFunction)func;
+<a name="line292">292: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>(*taoapp,ourtaojacobianfunction,ctx);
+<a name="line293">293: </a>}
+<a name="line294">294: </a><strong><font color="#4169E1"><a name="taoappgetksp_"></a>void PETSC_STDCALL taoappgetksp_(TAO_APPLICATION *taoapp,KSP *tksp, int *ierr )</font></strong>{
+<a name="line295">295: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoAppGetKSP.html#TaoAppGetKSP">TaoAppGetKSP</A>(*taoapp,tksp);
+<a name="line296">296: </a>}
+
+
+<a name="line299">299: </a><strong><font color="#4169E1"><a name="taogetksp_"></a>void PETSC_STDCALL taogetksp_(TAO_SOLVER  *tao,KSP *tksp, int *ierr )</font></strong>{
+<a name="line300">300: </a>  *<A href="../../../docs/manualpages/ptaopages/TaoGetKSP.html#TaoGetKSP">TaoGetKSP</A>(*tao,tksp);
+<a name="line301">301: </a>}
+
+
+
+<a name="line306">306: </a><font color="#A020F0">#include </font><font color="#666666">"taodaapplication.h"</font><font color="#A020F0"></font>
+
+<a name="line308">308: </a><font color="#B22222">/* Grid Application routines */</font>
+<a name="line310">310: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid1)(TAO_APPLICATION*, DA*, Vec*, Mat*, void*, int*)</font></strong>;
+<a name="line311">311: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid2)(TAO_APPLICATION*, DA*, Vec*, double*, Vec*, void*, int*)</font></strong>;
+<a name="line312">312: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid3)(TAO_APPLICATION*, DA*, Vec*, Vec*, void*, int*)</font></strong>;
+<a name="line313">313: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid4)(TAO_APPLICATION*, DA*, Vec*, double*, void*, int*)</font></strong>;
+<a name="line314">314: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid5)(TAO_APPLICATION*, DA*, Vec*, Vec*, void*, int*)</font></strong>;
+<a name="line315">315: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid6)(TAO_APPLICATION*, DA*, Vec*, Vec*, void*, int*)</font></strong>;
+<a name="line316">316: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid7)(TAO_APPLICATION*, DA*, Vec*, Mat*, void*, int*)</font></strong>;
+<a name="line317">317: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid8)(TAO_APPLICATION*, DA*, TaoInt*, void*, int*)</font></strong>;
+<a name="line318">318: </a><strong><font color="#4169E1">static void (PETSC_STDCALL *grid9)(TAO_APPLICATION*, DA*, TaoInt*, void*, int*)</font></strong>;
+<a name="line319">319: </a><font color="#B22222">/* Grid Application Element routines */</font>
+<a name="line320">320: </a><strong><font color="#4169E1"><a name="void"></a>static void (PETSC_STDCALL *grid10)</font></strong>(TaoInt[2], double[4], double*, double[4], void*, int*);
+<a name="line321">321: </a><strong><font color="#4169E1"><a name="void"></a>static void (PETSC_STDCALL *grid11)</font></strong>(TaoInt[2], double[4], double[4][4], void*, int*);
+<a name="line323">323: </a><strong><font color="#4169E1">static int ourdaappsethessianroutine(TAO_APPLICATION daapp, DA da, Vec x, Mat H, void *ctx)</font></strong> {
+<a name="line324">324: </a>  int 0;
+<a name="line325">325: </a>  (*grid1)(&amp;daapp, &amp;da, &amp;x, &amp;H, ctx, &amp;ierr);
+<a name="line326">326: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line327">327: </a>}
+<a name="line328">328: </a><strong><font color="#4169E1"><a name="ourdaappsetobjectiveandgradientroutine"></a>static int ourdaappsetobjectiveandgradientroutine(TAO_APPLICATION daapp, DA da, Vec x, double *f, Vec G, void *ctx)</font></strong> {
+<a name="line329">329: </a>  int 0;
+<a name="line330">330: </a>  (*grid2)(&amp;daapp, &amp;da, &amp;x, f, &amp;G, ctx, &amp;ierr);
+<a name="line331">331: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line332">332: </a>}
+<a name="line333">333: </a><strong><font color="#4169E1"><a name="ourdaappsetgradientroutine"></a>static int ourdaappsetgradientroutine(TAO_APPLICATION daapp, DA da, Vec x, Vec g, void *ctx)</font></strong> {
+<a name="line334">334: </a>  int 0;
+<a name="line335">335: </a>  (*grid3)(&amp;daapp, &amp;da, &amp;x, &amp;g, ctx, &amp;ierr);
+<a name="line336">336: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line337">337: </a>}
+<a name="line338">338: </a><strong><font color="#4169E1"><a name="ourdaappsetobjectiveroutine"></a>static int ourdaappsetobjectiveroutine(TAO_APPLICATION daapp, DA da, Vec x, double *f, void *ctx)</font></strong> {
+<a name="line339">339: </a>  int 0;
+<a name="line340">340: </a>  (*grid4)(&amp;daapp, &amp;da, &amp;x, f, ctx, &amp;ierr);
+<a name="line341">341: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line342">342: </a>}
+<a name="line343">343: </a><strong><font color="#4169E1"><a name="ourdaappsetvariableboundsroutine"></a>static int ourdaappsetvariableboundsroutine(TAO_APPLICATION daapp, DA da, Vec L, Vec U, void *ctx)</font></strong> {
+<a name="line344">344: </a>  int 0;
+<a name="line345">345: </a>  (*grid5)(&amp;daapp, &amp;da, &amp;L, &amp;U, ctx, &amp;ierr);
+<a name="line346">346: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line347">347: </a>}
+<a name="line348">348: </a><strong><font color="#4169E1"><a name="ourdaappsetconstraintroutine"></a>static int ourdaappsetconstraintroutine(TAO_APPLICATION daapp, DA da, Vec X, Vec R, void *ctx)</font></strong> {
+<a name="line349">349: </a>  int 0;
+<a name="line350">350: </a>  (*grid6)(&amp;daapp, &amp;da, &amp;X, &amp;R, ctx, &amp;ierr);
+<a name="line351">351: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line352">352: </a>}
+<a name="line353">353: </a><strong><font color="#4169E1"><a name="ourdaappsetjacobianroutine"></a>static int ourdaappsetjacobianroutine(TAO_APPLICATION daapp, DA da, Vec X, Mat J, void *ctx)</font></strong> {
+<a name="line354">354: </a>  int 0;
+<a name="line355">355: </a>  (*grid7)(&amp;daapp, &amp;da, &amp;X, &amp;J, ctx, &amp;ierr);
+<a name="line356">356: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line357">357: </a>}
+<a name="line358">358: </a><strong><font color="#4169E1"><a name="ourdaappsetbeforemonitor"></a>static int ourdaappsetbeforemonitor(TAO_APPLICATION daapp, DA da, TaoInt levels, void *ctx)</font></strong> {
+<a name="line359">359: </a>  int 0;
+<a name="line360">360: </a>  (*grid8)(&amp;daapp, &amp;da, &amp;levels, ctx, &amp;ierr);
+<a name="line361">361: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line362">362: </a>}
+<a name="line363">363: </a><strong><font color="#4169E1"><a name="ourdaappsetaftermonitor"></a>static int ourdaappsetaftermonitor(TAO_APPLICATION daapp, DA da, TaoInt levels, void *ctx)</font></strong> {
+<a name="line364">364: </a>  int 0;
+<a name="line365">365: </a>  (*grid9)(&amp;daapp, &amp;da, &amp;levels, ctx, &amp;ierr);
+<a name="line366">366: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line367">367: </a>}
+<a name="line368">368: </a>static int ourdaappsetelementobjectiveandgradientroutine(PetscInt coord[2], double x[4], double *f, double g[4], void *ctx) {
+<a name="line369">369: </a>  int 0;
+<a name="line370">370: </a>  (*grid10)(coord, x, f, g, ctx, &amp;ierr);
+<a name="line371">371: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line372">372: </a>}
+<a name="line373">373: </a>static int ourdaappsetelementhessianroutine(PetscInt coord[2], double x[4], double H[4][4], void *ctx) {
+<a name="line374">374: </a>  int 0;
+<a name="line375">375: </a>  (*grid11)(coord, x, H, ctx, &amp;ierr);
+<a name="line376">376: </a>  <font color="#4169E1">return</font> ierr;
+<a name="line377">377: </a>}
+<a name="line379">379: </a><strong><font color="#4169E1">void PETSC_STDCALL daappsethessianroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*,DA*,Vec*, Mat*, void*, int*),void *ctx, int *ierr)</font></strong> {
+<a name="line380">380: </a>  grid1 = func;
+<a name="line381">381: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetHessianRoutine.html#DAAppSetHessianRoutine">DAAppSetHessianRoutine</A>(*daapp, ourdaappsethessianroutine, ctx);
+<a name="line382">382: </a>}
+<a name="line383">383: </a><strong><font color="#4169E1"><a name="daappsetobjectiveandgradientroutine_"></a>void PETSC_STDCALL daappsetobjectiveandgradientroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, Vec*, double*, Vec*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line384">384: </a>  grid2 = func;
+<a name="line385">385: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>(*daapp, ourdaappsetobjectiveandgradientroutine, ctx);
+<a name="line386">386: </a>}
+<a name="line387">387: </a><strong><font color="#4169E1"><a name="daappsetobjectiveandgradientrou_"></a>void PETSC_STDCALL daappsetobjectiveandgradientrou_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, Vec*, double*, Vec*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line388">388: </a>  grid2 = func;
+<a name="line389">389: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>(*daapp, ourdaappsetobjectiveandgradientroutine, ctx);
+<a name="line390">390: </a>}
+
+<a name="line392">392: </a><strong><font color="#4169E1"><a name="daappsetgradientroutine_"></a>void PETSC_STDCALL daappsetgradientroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, Vec*, Vec*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line393">393: </a>  grid3 = func;
+<a name="line394">394: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetGradientRoutine.html#DAAppSetGradientRoutine">DAAppSetGradientRoutine</A>(*daapp, ourdaappsetgradientroutine, ctx);
+<a name="line395">395: </a>}
+<a name="line396">396: </a><strong><font color="#4169E1"><a name="daappsetobjectiveroutine_"></a>void PETSC_STDCALL daappsetobjectiveroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, Vec*, double*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line397">397: </a>  grid4 = func;
+<a name="line398">398: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetObjectiveRoutine.html#DAAppSetObjectiveRoutine">DAAppSetObjectiveRoutine</A>(*daapp, ourdaappsetobjectiveroutine, ctx);
+<a name="line399">399: </a>}
+<a name="line400">400: </a><strong><font color="#4169E1"><a name="daappsetvariableboundsroutine_"></a>void PETSC_STDCALL daappsetvariableboundsroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, Vec*, Vec*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line401">401: </a>  grid5 = func;
+<a name="line402">402: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetVariableBoundsRoutine.html#DAAppSetVariableBoundsRoutine">DAAppSetVariableBoundsRoutine</A>(*daapp, ourdaappsetvariableboundsroutine, ctx);
+<a name="line403">403: </a>}
+<a name="line404">404: </a><strong><font color="#4169E1"><a name="daappsetconstraintroutine_"></a>void PETSC_STDCALL daappsetconstraintroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, Vec*, Vec*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line405">405: </a>  grid6 = func;
+<a name="line406">406: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetConstraintRoutine.html#DAAppSetConstraintRoutine">DAAppSetConstraintRoutine</A>(*daapp, ourdaappsetconstraintroutine, ctx);
+<a name="line407">407: </a>}
+<a name="line408">408: </a><strong><font color="#4169E1"><a name="daappsetjacobianroutine_"></a>void PETSC_STDCALL daappsetjacobianroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, Vec*, Mat*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line409">409: </a>  grid7 = func;
+<a name="line410">410: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetJacobianRoutine.html#DAAppSetJacobianRoutine">DAAppSetJacobianRoutine</A>(*daapp, ourdaappsetjacobianroutine, ctx);
+<a name="line411">411: </a>}
+<a name="line412">412: </a><strong><font color="#4169E1"><a name="daappsetbeforemonitor_"></a>void PETSC_STDCALL daappsetbeforemonitor_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, PetscInt*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line413">413: </a>  grid8 = func;
+<a name="line414">414: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetBeforeMonitor.html#DAAppSetBeforeMonitor">DAAppSetBeforeMonitor</A>(*daapp, ourdaappsetbeforemonitor, ctx);
+<a name="line415">415: </a>}
+<a name="line416">416: </a><strong><font color="#4169E1"><a name="daappsetaftermonitor_"></a>void PETSC_STDCALL daappsetaftermonitor_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)(TAO_APPLICATION*, DA*, PetscInt*, void*, int*), void *ctx, int *ierr)</font></strong> {
+<a name="line417">417: </a>  grid9 = func;
+<a name="line418">418: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetAfterMonitor.html#DAAppSetAfterMonitor">DAAppSetAfterMonitor</A>(*daapp, ourdaappsetaftermonitor, ctx);
+<a name="line419">419: </a>}
+<a name="line420">420: </a><strong><font color="#4169E1"><a name="daappsetelementobjectiveandgradientroutine_"></a>void PETSC_STDCALL daappsetelementobjectiveandgradientroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)</font></strong>(PetscInt[2], double[4], double*, double[4], void*, int*), PetscInt *flops, void *ctx, int *ierr) {
+<a name="line421">421: </a>  grid10 = func;
+<a name="line422">422: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetElementObjectiveAndGradientRoutine.html#DAAppSetElementObjectiveAndGradientRoutine">DAAppSetElementObjectiveAndGradientRoutine</A>(*daapp, ourdaappsetelementobjectiveandgradientroutine, *flops, ctx);
+<a name="line423">423: </a>}
+<a name="line424">424: </a><strong><font color="#4169E1"><a name="daappsetelementobjectiveandgrad_"></a>void PETSC_STDCALL daappsetelementobjectiveandgrad_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)</font></strong>(PetscInt[2], double[4], double*, double[4], void*, int*), PetscInt *flops, void *ctx, int *ierr) {
+<a name="line425">425: </a>  grid10 = func;
+<a name="line426">426: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetElementObjectiveAndGradientRoutine.html#DAAppSetElementObjectiveAndGradientRoutine">DAAppSetElementObjectiveAndGradientRoutine</A>(*daapp, ourdaappsetelementobjectiveandgradientroutine, *flops, ctx);
+<a name="line427">427: </a>}
+<a name="line428">428: </a><strong><font color="#4169E1"><a name="daappsetelementhessianroutine_"></a>void PETSC_STDCALL daappsetelementhessianroutine_(TAO_APPLICATION *daapp, void (PETSC_STDCALL *func)</font></strong>(PetscInt[2], double[4], double[4][4], void*, int*), PetscInt *flops, void *ctx, int *ierr) {
+<a name="line429">429: </a>  grid11 = func;
+<a name="line430">430: </a>  *<A href="../../../docs/manualpages/daapp/DAAppSetElementHessianRoutine.html#DAAppSetElementHessianRoutine">DAAppSetElementHessianRoutine</A>(*daapp, ourdaappsetelementhessianroutine, *flops, ctx);
+<a name="line431">431: </a>}
+</pre>
+</body>
+
+</html>

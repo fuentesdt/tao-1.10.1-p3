@@ -1,0 +1,64 @@
+<center><a href="tao_general.h">Actual source code: tao_general.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:15+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   This is the a main TAO include file (for C and C++).  It is included</font>
+<a name="line3">  3: </a><font color="#B22222">   in other TAO include files such as "tao_solver.h", so TAO applications and</font>
+<a name="line4">  4: </a><font color="#B22222">   solvers almost never have to specifically include it.  It should be</font>
+<a name="line5">  5: </a><font color="#B22222">   included when extending the TaoVec, TaoMat, TaoIndexSet, TaoLinearSolver,</font>
+<a name="line6">  6: </a><font color="#B22222">   or TaoApplication class.</font>
+<a name="line7">  7: </a><font color="#B22222">*/</font>
+
+
+<a name="line12"> 12: </a><font color="#B22222">/* ========================================================================== */</font>
+<a name="line13"> 13: </a><font color="#B22222">/* </font>
+<a name="line14"> 14: </a><font color="#B22222">   Current TAO version number and release date</font>
+<a name="line15"> 15: </a><font color="#B22222">*/</font>
+<a name="line16"> 16: </a><font color="#A020F0">#include </font><font color="#666666">"tao_version.h"</font><font color="#A020F0"></font>
+
+<a name="line18"> 18: </a><font color="#B22222">/* ========================================================================== */</font>
+
+<a name="line20"> 20: </a><font color="#B22222">/* </font>
+<a name="line21"> 21: </a><font color="#B22222">   TAO logging/profiling information</font>
+<a name="line22"> 22: </a><font color="#B22222">*/</font>
+<a name="line23"> 23: </a><font color="#B22222">/* #include "tao_log.h" */</font>
+<a name="line24"> 24: </a><font color="#A020F0">#include </font><font color="#666666">"tao_log.h"</font><font color="#A020F0"></font>
+<a name="line25"> 25: </a><font color="#B22222">/* ========================================================================== */</font>
+
+
+<a name="line28"> 28: </a><font color="#B22222">/*  </font>
+<a name="line29"> 29: </a><font color="#B22222">   TAO utilities for basic system-level portability. </font>
+<a name="line30"> 30: </a><font color="#B22222">   such as collecting runtime options, printing, registering solvers,</font>
+<a name="line31"> 31: </a><font color="#B22222">   error handling macros, memory management, strings.</font>
+<a name="line32"> 32: </a><font color="#B22222">*/</font>
+<a name="line33"> 33: </a><strong><font color="#228B22">#define  TAO_USE_PETSC</font></strong>
+<a name="line34"> 34: </a><font color="#A020F0">#include </font><font color="#666666">"tao_sys.h"</font><font color="#A020F0"></font>
+<a name="line35"> 35: </a><font color="#B22222">/* Determine this basic functionality at compile time */</font>
+<a name="line36"> 36: </a><font color="#B22222">/* Use PETSc for this functionality */</font>
+
+
+<a name="line39"> 39: </a><font color="#A020F0">#ifdef TAO_NO_PETSC</font>
+<a name="line40"> 40: </a><strong><font color="#228B22">#undef TAO_USE_PETSC </font></strong>
+<a name="line41"> 41: </a><font color="#A020F0">#endif</font>
+
+<a name="line43"> 43: </a><font color="#A020F0">#ifdef TAO_USE_PETSC</font>
+<a name="line44"> 44: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/include/tao_pkernal.h"</font><font color="#A020F0"></font>
+<a name="line45"> 45: </a><font color="#A020F0">#endif</font>
+
+<a name="line47"> 47: </a><font color="#B22222">/* In a uniprocessor environment, PETSc does not have to be used for this kind of support */</font>
+<a name="line48"> 48: </a><font color="#A020F0">#ifndef TAO_USE_PETSC</font>
+<a name="line49"> 49: </a><font color="#A020F0">#include </font><font color="#666666">"src/sys/tao_unigeneral.h"</font><font color="#A020F0"></font>
+<a name="line50"> 50: </a><font color="#A020F0">#endif</font>
+
+<a name="line52"> 52: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,547 @@
+<center><a href="taomat_petsc.c">Actual source code: taomat_petsc.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+
+<a name="line3">  3: </a><font color="#A020F0">#ifdef TAO_USE_PETSC</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"taomat_petsc.h"</font><font color="#A020F0"></font>
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"../vector/taovec_petsc.h"</font><font color="#A020F0"></font>
+<a name="line7">  7: </a><font color="#A020F0">#include </font><font color="#666666">"../indexset/taois_petsc.h"</font><font color="#A020F0"></font>
+
+<a name="line9">  9: </a><strong><font color="#4169E1">int MatD_Fischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec)</font></strong>;
+<a name="line10"> 10: </a><strong><font color="#4169E1">int MatD_SFischer(Mat, Vec, Vec, Vec, Vec, double, Vec, Vec, Vec, Vec, Vec)</font></strong>;
+<a name="line11"> 11: </a><strong><font color="#4169E1">int MatSMFResetRowColumn(Mat,IS,IS)</font></strong>;
+
+<a name="line15"> 15: </a><font color="#B22222">/*@C</font>
+<a name="line16"> 16: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A> - Creates a new TaoMat object using a PETSc matrix.</font>
+
+<a name="line18"> 18: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line19"> 19: </a><font color="#B22222">+  M -  a PETSc matrix</font>
+<a name="line20"> 20: </a><font color="#B22222">-  MM -  the address of a pointer to a TaoMatPetsc</font>
+
+<a name="line22"> 22: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line23"> 23: </a><font color="#B22222">.  MM - the address of a pointer to new TaoMat</font>
+
+<a name="line25"> 25: </a><font color="#B22222">   Note:  </font>
+<a name="line26"> 26: </a><font color="#B22222">   A TaoMatPetsc is an object with the methods of an abstract</font>
+<a name="line27"> 27: </a><font color="#B22222">   TaoMat object.  A TaoMatPetsc contains an implementation of the TaoMat</font>
+<a name="line28"> 28: </a><font color="#B22222">   methods.  Routines using these vectors should declare a pointer to </font>
+<a name="line29"> 29: </a><font color="#B22222">   a TaoMat, assign this pointer to the address of a TaoMat object, </font>
+<a name="line30"> 30: </a><font color="#B22222">   use the pointer to invoke methods on the object, and use this pointer</font>
+<a name="line31"> 31: </a><font color="#B22222">   as an argument when calling other routines.  This usage is different</font>
+<a name="line32"> 32: </a><font color="#B22222">   from the usage of a PETSc Mat.  In PETSc, applications will typically</font>
+<a name="line33"> 33: </a><font color="#B22222">   declare a Mat, and pass it as an argument into routines.  That is,</font>
+<a name="line34"> 34: </a><font color="#B22222">   applications will typically declare a pointer to a TaoMat and use the</font>
+<a name="line35"> 35: </a><font color="#B22222">   pointer, or declare a Mat and use it directly.</font>
+
+<a name="line37"> 37: </a><font color="#B22222">   Note:</font>
+<a name="line38"> 38: </a><font color="#B22222">   The user is repsonsible for destroying the Mat M, in addition to</font>
+<a name="line39"> 39: </a><font color="#B22222">   to TaoMatPetsc vector MM.  The Mat can be destroyed immediately</font>
+<a name="line40"> 40: </a><font color="#B22222">   after this routine.</font>
+
+<a name="line42"> 42: </a><font color="#B22222">  Level: developer</font>
+
+<a name="line44"> 44: </a><font color="#B22222">.seealso TaoMatGetPetscMat(), <A href="../../../docs/manualpages/matrix/TaoMatDestroy.html#TaoMatDestroy">TaoMatDestroy</A>()</font>
+<a name="line45"> 45: </a><font color="#B22222">@*/</font>
+<a name="line46"> 46: </a><strong><font color="#4169E1"><a name="TaoWrapPetscMat"></a>int <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A>( Mat M, TaoMatPetsc* *MM)</font></strong>{
+<a name="line48"> 48: </a>  <font color="#4169E1">if</font> (MM){ *MM = new  TaoMatPetsc(M);}
+<a name="line49"> 49: </a>  <font color="#4169E1">return</font>(0);
+<a name="line50"> 50: </a>}
+
+<a name="line54"> 54: </a><font color="#B22222">/* @C</font>
+<a name="line55"> 55: </a><font color="#B22222">   TaoMatPetsc - Creates a new TaoMat object using a PETSc matrix.</font>
+
+<a name="line57"> 57: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line58"> 58: </a><font color="#B22222">+  MM -  a PETSc matrix</font>
+
+<a name="line60"> 60: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line62"> 62: </a><font color="#B22222">   Note:</font>
+<a name="line63"> 63: </a><font color="#B22222">   The method TaoMatPetsc::SetMatrix(Mat M, Mat MPre, MatStructure) replaces the matrix MM with M.</font>
+<a name="line64"> 64: </a><font color="#B22222">   The method TaoMatPetsc::GetMatrix() returns a pointer to the matrix MM, its preconditioner, and KSP flag</font>
+
+<a name="line66"> 66: </a><font color="#B22222">@ */</font>
+<a name="line67"> 67: </a><strong><font color="#FF0000">TaoMatPetsc:</font></strong>:TaoMatPetsc(Mat MM) : TaoMat()
+<a name="line68"> 68: </a>{
+<a name="line69"> 69: </a>  int info;
+<a name="line70"> 70: </a>  pm=0; pm_pre=0;
+<a name="line71"> 71: </a>  preflag=DIFFERENT_NONZERO_PATTERN;
+<a name="line72"> 72: </a>  MPI_Comm comm;
+<a name="line73"> 73: </a>  <font color="#4169E1">if</font> (MM) { 
+<a name="line74"> 74: </a>    PetscObjectGetComm((PetscObject)MM,&amp;comm);
+<a name="line75"> 75: </a>    pmatviewer=PETSC_VIEWER_STDOUT_(comm);
+<a name="line76"> 76: </a>    SetMatrix(MM,MM,preflag);  
+<a name="line77"> 77: </a>    info = PetscInfo(MM,<font color="#666666">"Wrap a PETSc Mat to create a TaoMat .\n"</font>);
+<a name="line78"> 78: </a>  }
+<a name="line79"> 79: </a>  <font color="#4169E1">return</font>;
+<a name="line80"> 80: </a>}
+
+<a name="line84"> 84: </a><strong><font color="#FF0000">TaoMatPetsc:</font></strong>:~TaoMatPetsc()
+<a name="line85"> 85: </a>{
+<a name="line86"> 86: </a>  int info;
+<a name="line87"> 87: </a>  <font color="#4169E1">if</font> (pm) {
+<a name="line88"> 88: </a>    info = PetscInfo(pm,<font color="#666666">"TAO: Destroy a PETSc Mat within a TaoMat .\n"</font>);
+<a name="line89"> 89: </a>    PetscObjectDereference((PetscObject)pm);
+<a name="line90"> 90: </a>    PetscObjectDereference((PetscObject)pm_pre);
+<a name="line91"> 91: </a>  }
+<a name="line92"> 92: </a>  pm=0; pm_pre=0;
+<a name="line93"> 93: </a>  <font color="#4169E1">return</font>;
+<a name="line94"> 94: </a>}
+
+<a name="line98"> 98: </a><font color="#B22222">/* @C</font>
+<a name="line99"> 99: </a><font color="#B22222">   GetMatrix - Gets the underlying PETSc matrix information</font>
+
+<a name="line101">101: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line102">102: </a><font color="#B22222">+  M -  a PETSc matrix</font>
+<a name="line103">103: </a><font color="#B22222">.  MPre -  a PETSc preconditioning matrix (use PETSC_NULL for no change)</font>
+<a name="line104">104: </a><font color="#B22222">-  flag -  flag associated with KSPSetOperators (PETSC_NULL for no change).</font>
+
+<a name="line106">106: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line108">108: </a><font color="#B22222">.seealso TaoMatPetsc::SetMatrix()</font>
+<a name="line109">109: </a><font color="#B22222"> </font>
+<a name="line110">110: </a><font color="#B22222">@ */</font>
+<a name="line111">111: </a>int TaoMatPetsc::GetMatrix(Mat *M, Mat *MPre, MatStructure *flag){
+<a name="line113">113: </a>  <font color="#4169E1">if</font> (M) *M = pm;
+<a name="line114">114: </a>  <font color="#4169E1">if</font> (flag) *flag = preflag;
+<a name="line115">115: </a>  <font color="#4169E1">if</font> (MPre) *MPre = pm_pre;
+<a name="line116">116: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line117">117: </a>}
+
+
+<a name="line122">122: </a><font color="#B22222">/* @C</font>
+<a name="line123">123: </a><font color="#B22222">   SetMatrix - Changes the underlying PETSc matrix structrure</font>
+
+<a name="line125">125: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line126">126: </a><font color="#B22222">+  M -  a PETSc matrix</font>
+<a name="line127">127: </a><font color="#B22222">.  MPre -  a PETSc preconditioning matrix (use PETSC_NULL for no change)</font>
+<a name="line128">128: </a><font color="#B22222">-  flag -  flag associated with KSPSetOperators (PETSC_NULL for no change).</font>
+
+<a name="line130">130: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line132">132: </a><font color="#B22222">   Note:</font>
+<a name="line133">133: </a><font color="#B22222">   The method TaoMatPetsc::GetMatrix() returns a pointer to the matrix M</font>
+
+<a name="line135">135: </a><font color="#B22222">@ */</font>
+<a name="line136">136: </a>int TaoMatPetsc::SetMatrix(Mat M, Mat MPre, MatStructure flag){
+<a name="line137">137: </a>  int info;
+<a name="line138">138: </a>  PetscInt r1,r2,c1,c2,R1,R2,C1,C2;
+<a name="line140">140: </a>  <font color="#4169E1">if</font> (M || MPre){
+<a name="line143">143: </a>    <font color="#4169E1">if</font> (M!=MPre){
+<a name="line144">144: </a>      info = MatGetSize(M,&amp;R1,&amp;C1);CHKERRQ(info);
+<a name="line145">145: </a>      info = MatGetSize(MPre,&amp;R2, &amp;C2);CHKERRQ(info);
+<a name="line146">146: </a>      info = MatGetLocalSize(M,&amp;r1,&amp;c1);CHKERRQ(info);
+<a name="line147">147: </a>      info = MatGetLocalSize(MPre,&amp;r2,&amp;c2);CHKERRQ(info);
+<a name="line148">148: </a>      <font color="#4169E1">if</font> (R1!=R2 || C1!=C2 || r1!=r2 || c1!=c2) {
+<a name="line149">149: </a>        SETERRQ(1,<font color="#666666">"TAO Error: Preconditioning Matrix does not match the Solution matrix"</font>);
+<a name="line150">150: </a>      }
+<a name="line151">151: </a>    }
+<a name="line152">152: </a>    
+<a name="line153">153: </a>    info = PetscObjectReference((PetscObject)M);CHKERRQ(info);
+<a name="line154">154: </a>    info = PetscObjectReference((PetscObject)MPre);CHKERRQ(info); 
+<a name="line155">155: </a>  }
+
+<a name="line157">157: </a>  <font color="#4169E1">if</font> (pm&amp;&amp;pm_pre){
+<a name="line158">158: </a>    info = PetscObjectDereference((PetscObject)pm);CHKERRQ(info);
+<a name="line159">159: </a>    info = PetscObjectDereference((PetscObject)pm_pre);CHKERRQ(info); 
+<a name="line160">160: </a>  }
+
+<a name="line162">162: </a>  pm=M;
+<a name="line163">163: </a>  pm_pre=MPre; 
+<a name="line164">164: </a>  preflag=flag;
+<a name="line165">165: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line166">166: </a>}
+
+
+
+<a name="line172">172: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A>(TaoVec* xx, TaoVec* yy, TaoTruth *flag){
+<a name="line173">173: </a>  int info;
+<a name="line174">174: </a>  PetscInt pmCol,pmRow,pmrow,pmcol,xN,yN,yn;
+<a name="line175">175: </a>  Vec x,y;
+
+<a name="line178">178: </a>  *flag=TAO_TRUE;
+<a name="line179">179: </a>  <font color="#4169E1">if</font> (xx==0 || yy==0){
+<a name="line180">180: </a>    *flag=TAO_FALSE;
+<a name="line181">181: </a>    <font color="#4169E1">return</font>(0);
+<a name="line182">182: </a>  }
+<a name="line183">183: </a>  x=((TaoVecPetsc*)xx)-&gt;GetVec();
+<a name="line184">184: </a>  y=((TaoVecPetsc*)yy)-&gt;GetVec();
+<a name="line185">185: </a>  info = MatGetSize(pm,&amp;pmRow,&amp;pmCol); CHKERRQ(info);
+<a name="line186">186: </a>  info = MatGetLocalSize(pm,&amp;pmrow,&amp;pmcol); CHKERRQ(info);
+<a name="line187">187: </a>  info = VecGetSize(x,&amp;xN); CHKERRQ(info);
+<a name="line188">188: </a>  info = VecGetSize(y,&amp;yN); CHKERRQ(info);
+<a name="line189">189: </a>  info = VecGetLocalSize(y,&amp;yn); CHKERRQ(info);
+<a name="line190">190: </a>  <font color="#4169E1">if</font> ((pmCol != xN) || (pmRow != yN) || (pmrow != yn)) {
+<a name="line191">191: </a>    *flag=TAO_FALSE;
+<a name="line192">192: </a>    <font color="#4169E1">return</font>(0);
+<a name="line193">193: </a>  }
+<a name="line194">194: </a>  
+<a name="line198">198: </a>  
+<a name="line199">199: </a>  <font color="#4169E1">return</font>(0);
+<a name="line200">200: </a>}
+
+<a name="line204">204: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(TaoMat* *ntm){
+<a name="line205">205: </a>  int info;
+<a name="line206">206: </a>  TaoMatPetsc *nptm;
+<a name="line207">207: </a>  Mat M,MPre,npm,nmpre;
+<a name="line208">208: </a>  MatStructure flag;
+
+<a name="line211">211: </a>  info = GetMatrix(&amp;M,&amp;MPre,&amp;flag); CHKERRQ(info);
+<a name="line212">212: </a>  info = MatDuplicate(M,MAT_COPY_VALUES,&amp;npm); CHKERRQ(info);
+<a name="line213">213: </a>  info = MatAssemblyBegin(npm,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line214">214: </a>  info = MatAssemblyEnd(npm,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line215">215: </a>  <font color="#4169E1">if</font> (M!=MPre){
+<a name="line216">216: </a>    info = MatDuplicate(MPre,MAT_COPY_VALUES,&amp;nmpre); CHKERRQ(info);
+<a name="line217">217: </a>    info = MatAssemblyBegin(nmpre,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line218">218: </a>    info = MatAssemblyEnd(nmpre,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line219">219: </a>  }
+<a name="line220">220: </a>  info = <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A>(npm, &amp;nptm);   CHKERRQ(info);
+<a name="line221">221: </a>  *ntm = nptm;
+<a name="line222">222: </a>  info = nptm-&gt;SetMatrix(npm,nmpre,flag); CHKERRQ(info);
+<a name="line223">223: </a>  info = MatDestroy(npm); CHKERRQ(info);
+<a name="line224">224: </a>  <font color="#4169E1">if</font> (M!=MPre){
+<a name="line225">225: </a>    info = MatDestroy(nmpre); CHKERRQ(info);
+<a name="line226">226: </a>  }
+<a name="line227">227: </a>  <font color="#4169E1">return</font>(0);
+<a name="line228">228: </a>}
+
+<a name="line232">232: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(TaoMat* tm){
+<a name="line233">233: </a>  int info;
+<a name="line234">234: </a>  TaoMatPetsc* tmm=(TaoMatPetsc*)tm;
+<a name="line235">235: </a>  Mat M,MPre;
+<a name="line236">236: </a>  MatStructure flag;
+
+<a name="line239">239: </a>  info = tmm-&gt;GetMatrix(&amp;M,&amp;MPre,&amp;flag);CHKERRQ(info);
+<a name="line240">240: </a>  info = MatCopy(M,pm,SAME_NONZERO_PATTERN); 
+<a name="line241">241: </a>  CHKERRQ(info);
+<a name="line242">242: </a>  <font color="#4169E1">if</font> (pm!=pm_pre){
+<a name="line243">243: </a>    info = MatCopy(MPre,pm_pre,SAME_NONZERO_PATTERN); CHKERRQ(info);
+<a name="line244">244: </a>  }
+<a name="line245">245: </a>  <font color="#4169E1">return</font>(0);
+<a name="line246">246: </a>}
+
+<a name="line250">250: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/GetDimensions.html#GetDimensions">GetDimensions</A>( TaoInt *m, TaoInt *n ){
+<a name="line251">251: </a>  int info;
+<a name="line253">253: </a>  info=MatGetSize(pm,m,n); CHKERRQ(info);
+<a name="line254">254: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line255">255: </a>}
+
+<a name="line259">259: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A>(TaoVec *tv, TaoVec *tw)
+<a name="line260">260: </a>{
+<a name="line261">261: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line262">262: </a>  TaoVecPetsc *pw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+
+<a name="line264">264: </a>  int info;
+<a name="line266">266: </a>  info=MatMult(pm,pv-&gt;GetVec(),pw-&gt;GetVec()); CHKERRQ(info);
+<a name="line267">267: </a>  <font color="#4169E1">return</font>(0);
+<a name="line268">268: </a>}
+
+<a name="line272">272: </a>int TaoMatPetsc::MultiplyAdd(TaoVec* tv,TaoVec* tw,TaoVec* ty)
+<a name="line273">273: </a>{
+<a name="line274">274: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line275">275: </a>  TaoVecPetsc *pw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line276">276: </a>  TaoVecPetsc *py = dynamic_cast &lt;TaoVecPetsc *&gt; (ty);
+<a name="line277">277: </a>  int info;
+<a name="line279">279: </a>  info=MatMultAdd(pm,pv-&gt;GetVec(),pw-&gt;GetVec(),py-&gt;GetVec()); CHKERRQ(info);
+<a name="line280">280: </a>  <font color="#4169E1">return</font>(0);
+<a name="line281">281: </a>}
+
+<a name="line285">285: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/MultiplyTranspose.html#MultiplyTranspose">MultiplyTranspose</A>(TaoVec* tv,TaoVec* tw)
+<a name="line286">286: </a>{
+<a name="line287">287: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line288">288: </a>  TaoVecPetsc *pw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line289">289: </a>  int info;
+<a name="line291">291: </a>  info=MatMultTranspose(pm,pv-&gt;GetVec(),pw-&gt;GetVec()); CHKERRQ(info);
+<a name="line292">292: </a>  <font color="#4169E1">return</font>(0);
+<a name="line293">293: </a>}
+
+<a name="line297">297: </a>int TaoMatPetsc::MultiplyTransposeAdd(TaoVec* tv,TaoVec* tw,TaoVec* ty)
+<a name="line298">298: </a>{
+<a name="line299">299: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line300">300: </a>  TaoVecPetsc *pw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line301">301: </a>  TaoVecPetsc *py = dynamic_cast &lt;TaoVecPetsc *&gt; (ty);
+<a name="line302">302: </a>  int info;
+<a name="line304">304: </a>  info=MatMultTransposeAdd(pm,pv-&gt;GetVec(),pw-&gt;GetVec(),py-&gt;GetVec()); CHKERRQ(info);
+<a name="line305">305: </a>  <font color="#4169E1">return</font>(0);
+<a name="line306">306: </a>}
+
+<a name="line310">310: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/SetDiagonal.html#SetDiagonal">SetDiagonal</A>(TaoVec* tv)
+<a name="line311">311: </a>{
+<a name="line312">312: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line313">313: </a>  int info;
+<a name="line315">315: </a>  info = MatDiagonalSet(pm,pv-&gt;GetVec(),INSERT_VALUES); CHKERRQ(info);
+<a name="line316">316: </a>  <font color="#4169E1">if</font> (pm != pm_pre){
+<a name="line317">317: </a>    info = MatDiagonalSet(pm_pre,pv-&gt;GetVec(),INSERT_VALUES); CHKERRQ(info);
+<a name="line318">318: </a>  }
+<a name="line319">319: </a>  <font color="#4169E1">return</font>(0);
+<a name="line320">320: </a>}
+
+<a name="line324">324: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/AddDiagonal.html#AddDiagonal">AddDiagonal</A>(TaoVec* tv)
+<a name="line325">325: </a>{
+<a name="line326">326: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line327">327: </a>  int info;
+<a name="line329">329: </a>  info = MatDiagonalSet(pm,pv-&gt;GetVec(),ADD_VALUES); CHKERRQ(info);
+<a name="line330">330: </a>  <font color="#4169E1">if</font> (pm != pm_pre){
+<a name="line331">331: </a>    info = MatDiagonalSet(pm_pre,pv-&gt;GetVec(),ADD_VALUES); CHKERRQ(info);
+<a name="line332">332: </a>  }
+<a name="line333">333: </a>  <font color="#4169E1">return</font>(0);
+<a name="line334">334: </a>}
+
+<a name="line338">338: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/GetDiagonal.html#GetDiagonal">GetDiagonal</A>(TaoVec* tv)
+<a name="line339">339: </a>{
+<a name="line340">340: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line341">341: </a>  int info;
+<a name="line343">343: </a>  info = MatGetDiagonal(pm,pv-&gt;GetVec()); CHKERRQ(info);
+<a name="line344">344: </a>  <font color="#4169E1">return</font>(0);
+<a name="line345">345: </a>}
+
+<a name="line349">349: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/ShiftDiagonal.html#ShiftDiagonal">ShiftDiagonal</A>(double c)
+<a name="line350">350: </a>{
+<a name="line351">351: </a>  int info;
+<a name="line352">352: </a>  PetscScalar cc=c;
+<a name="line354">354: </a>  info = MatShift(pm,cc); CHKERRQ(info);
+<a name="line355">355: </a>  <font color="#4169E1">if</font> (pm != pm_pre) {
+<a name="line356">356: </a>    info = MatShift(pm_pre,cc); CHKERRQ(info);
+<a name="line357">357: </a>  }
+<a name="line358">358: </a>  <font color="#4169E1">return</font>(0);
+<a name="line359">359: </a>}
+
+<a name="line363">363: </a><font color="#B22222">/*@C</font>
+<a name="line364">364: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/SetPetscViewer.html#SetPetscViewer">SetPetscViewer</A></font>
+
+<a name="line366">366: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line367">367: </a><font color="#B22222">.  viewer - a viewer object to be used with <A href="../../../docs/manualpages/lsolver/View.html#View">View</A>() and MatView()</font>
+
+<a name="line369">369: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line371">371: </a><font color="#B22222">@*/</font>
+<a name="line372">372: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/ptaopages/SetPetscViewer.html#SetPetscViewer">SetPetscViewer</A>(PetscViewer viewer){
+<a name="line374">374: </a>  pmatviewer= viewer;
+<a name="line375">375: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line376">376: </a>}
+
+
+<a name="line381">381: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/lsolver/View.html#View">View</A>()
+<a name="line382">382: </a>{
+<a name="line383">383: </a>  int info;
+<a name="line384">384: </a>  PetscTruth flg=PETSC_FALSE;
+<a name="line386">386: </a>  info = PetscOptionsHasName(PETSC_NULL,<font color="#666666">"-tao_mat_draw"</font>,&amp;flg); CHKERRQ(info);
+<a name="line387">387: </a>  <font color="#4169E1">if</font> (flg){
+<a name="line388">388: </a>    info = MatView(pm,PETSC_VIEWER_DRAW_WORLD); CHKERRQ(info);
+<a name="line389">389: </a>  } <font color="#4169E1">else</font> {
+<a name="line390">390: </a>    info = MatView(pm,pmatviewer); CHKERRQ(info);
+<a name="line391">391: </a>  }
+<a name="line392">392: </a>  <font color="#4169E1">return</font>(0);
+<a name="line393">393: </a>}
+
+
+<a name="line398">398: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/RowScale.html#RowScale">RowScale</A>(TaoVec* tv)
+<a name="line399">399: </a>{
+<a name="line400">400: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line401">401: </a>  int info;
+
+<a name="line404">404: </a>  info = MatDiagonalScale(pm, pv-&gt;GetVec(), PETSC_NULL); CHKERRQ(info);
+<a name="line405">405: </a>  <font color="#4169E1">if</font> (pm!=pm_pre){
+<a name="line406">406: </a>    info = MatDiagonalScale(pm_pre,pv-&gt;GetVec(),PETSC_NULL); CHKERRQ(info);
+<a name="line407">407: </a>  }
+<a name="line408">408: </a>  <font color="#4169E1">return</font>(0);
+<a name="line409">409: </a>}
+
+<a name="line413">413: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/ColScale.html#ColScale">ColScale</A>(TaoVec* tv){
+<a name="line414">414: </a>  Vec vv = ((TaoVecPetsc *)tv)-&gt;GetVec();
+<a name="line415">415: </a>  int info;
+
+<a name="line418">418: </a>  info = MatDiagonalScale(pm, PETSC_NULL, vv); CHKERRQ(info);
+<a name="line419">419: </a>  <font color="#4169E1">if</font> (pm!=pm_pre){
+<a name="line420">420: </a>    info = MatDiagonalScale(pm_pre,PETSC_NULL,vv); CHKERRQ(info);
+<a name="line421">421: </a>  }
+<a name="line422">422: </a>  <font color="#4169E1">return</font>(0);
+<a name="line423">423: </a>}
+
+<a name="line427">427: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/CreateReducedMatrix.html#CreateReducedMatrix">CreateReducedMatrix</A>(TaoIndexSet* S1,TaoIndexSet* S2,TaoMat* *MM){
+<a name="line428">428: </a>  TaoIndexSetPetsc *prows = dynamic_cast &lt;TaoIndexSetPetsc *&gt; (S1);
+<a name="line429">429: </a>  TaoIndexSetPetsc *pcols = dynamic_cast &lt;TaoIndexSetPetsc *&gt; (S2);
+<a name="line430">430: </a>  int info;
+<a name="line431">431: </a>  TaoMatPetsc *M;
+<a name="line432">432: </a>  Mat B=0,BPre,A,APre;
+<a name="line433">433: </a>  TaoPetscISType type;
+<a name="line434">434: </a>  MatStructure flag;
+<a name="line435">435: </a>  PetscTruth assembled,flg;
+
+<a name="line438">438: </a>  info = prows-&gt;GetReducedType(&amp;type); CHKERRQ(info);
+<a name="line439">439: </a>  <font color="#4169E1">if</font> (type==TaoMaskFullSpace){
+<a name="line440">440: </a>    info = GetMatrix(&amp;B,&amp;BPre,&amp;flag); CHKERRQ(info);
+<a name="line441">441: </a>    PetscOptionsHasName(0,<font color="#666666">"-different_submatrix"</font>,&amp;flg);
+<a name="line442">442: </a>    <font color="#4169E1">if</font> (flg==PETSC_TRUE){
+<a name="line443">443: </a>      info = <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A>(B, &amp;M); CHKERRQ(info);
+<a name="line444">444: </a>      info = MatAssembled(B,&amp;assembled); CHKERRQ(info);
+<a name="line445">445: </a>      <font color="#4169E1">if</font> (assembled==PETSC_TRUE){
+<a name="line446">446: </a>        info = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&amp;A); CHKERRQ(info);
+<a name="line447">447: </a>        info = M-&gt;SetMatrix(A,A,flag); CHKERRQ(info);
+<a name="line448">448: </a>        info = MatDestroy(A); CHKERRQ(info);
+<a name="line449">449: </a>      }
+<a name="line450">450: </a>      info = MatAssembled(BPre,&amp;assembled); CHKERRQ(info);
+<a name="line451">451: </a>      <font color="#4169E1">if</font> (B != BPre &amp;&amp; assembled==PETSC_TRUE){
+<a name="line452">452: </a>        info = MatDuplicate(BPre,MAT_DO_NOT_COPY_VALUES,&amp;APre); CHKERRQ(info);
+<a name="line453">453: </a>        info = M-&gt;SetMatrix(A,APre,flag); CHKERRQ(info);
+<a name="line454">454: </a>        info = MatDestroy(APre); CHKERRQ(info);
+<a name="line455">455: </a>      }
+<a name="line456">456: </a>    } <font color="#4169E1">else</font> {
+<a name="line457">457: </a>      info = GetMatrix(&amp;B,&amp;BPre,&amp;flag); CHKERRQ(info);
+<a name="line458">458: </a>      info = <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A>(B, &amp;M); CHKERRQ(info);
+<a name="line459">459: </a>      info = M-&gt;SetMatrix(B,BPre,flag); CHKERRQ(info);
+<a name="line460">460: </a>    }    
+<a name="line461">461: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (type==TaoMatrixFree){
+<a name="line462">462: </a>    info = GetMatrix(&amp;B,&amp;BPre,&amp;flag); CHKERRQ(info);
+<a name="line463">463: </a>    info = <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A>(B,prows-&gt;GetIS(), pcols-&gt;GetIS(), &amp;A); CHKERRQ(info);
+<a name="line464">464: </a>    info = <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A>(A, &amp;M); CHKERRQ(info);
+<a name="line465">465: </a>    info = M-&gt;SetMatrix(A,BPre,flag); CHKERRQ(info);
+<a name="line466">466: </a>    info = PetscObjectDereference((PetscObject)A);CHKERRQ(info);
+<a name="line467">467: </a>  } <font color="#4169E1">else</font> {
+<a name="line468">468: </a>    info = GetMatrix(&amp;B,&amp;BPre,&amp;flag); CHKERRQ(info);
+<a name="line469">469: </a>    info = <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A>(B, &amp;M); CHKERRQ(info);
+<a name="line470">470: </a>    info = M-&gt;SetMatrix(B,BPre,flag); CHKERRQ(info);
+<a name="line471">471: </a>  }
+<a name="line472">472: </a>  *MM=M;
+
+<a name="line474">474: </a>  <font color="#4169E1">return</font>(0);
+<a name="line475">475: </a>}
+
+<a name="line479">479: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(TaoMat* M,TaoIndexSet* S1,TaoIndexSet* S2)
+<a name="line480">480: </a>{
+<a name="line481">481: </a>  TaoIndexSetPetsc *prows = dynamic_cast &lt;TaoIndexSetPetsc *&gt; (S1);
+<a name="line482">482: </a>  TaoIndexSetPetsc *pcols = dynamic_cast &lt;TaoIndexSetPetsc *&gt; (S2);
+
+<a name="line484">484: </a>  int info;
+<a name="line485">485: </a>  TaoPetscISType type;
+<a name="line486">486: </a>  TaoMatPetsc *MM=((TaoMatPetsc *)M);
+<a name="line487">487: </a>  Mat A,Apre,B,BPre;
+<a name="line488">488: </a>  MatStructure flag;
+
+<a name="line491">491: </a>  info=GetMatrix(&amp;B,&amp;BPre,0); CHKERRQ(info);
+<a name="line492">492: </a>  info=MM-&gt;GetMatrix(&amp;A,&amp;Apre,0); CHKERRQ(info);
+<a name="line493">493: </a>  info = prows-&gt;GetReducedType(&amp;type); CHKERRQ(info);
+<a name="line494">494: </a>  <font color="#4169E1">if</font> (type==TaoMaskFullSpace){
+<a name="line495">495: </a>    Vec DDiag,VRow,VCol;
+<a name="line496">496: </a>    info = GetMatrix(&amp;B,&amp;BPre,&amp;flag); CHKERRQ(info);
+<a name="line497">497: </a>    info = MM-&gt;GetMatrix(&amp;A,&amp;Apre,&amp;flag); CHKERRQ(info);
+<a name="line498">498: </a>    <font color="#4169E1">if</font> (!A){
+<a name="line499">499: </a>      info = MatDuplicate(B,MAT_COPY_VALUES,&amp;A); CHKERRQ(info);    
+<a name="line500">500: </a>      <font color="#4169E1">if</font> (B!=BPre){info = MatDuplicate(BPre,MAT_COPY_VALUES,&amp;Apre); CHKERRQ(info);}
+<a name="line501">501: </a>      info = MM-&gt;SetMatrix(A,Apre,flag); CHKERRQ(info);
+<a name="line502">502: </a>      info=MatDestroy(A); CHKERRQ(info);
+<a name="line503">503: </a>      <font color="#4169E1">if</font> (B!=BPre){info=MatDestroy(Apre); CHKERRQ(info);}
+<a name="line504">504: </a>    }
+<a name="line505">505: </a>    <font color="#4169E1">if</font> (A!=B){ info=MatCopy(A,B,SAME_NONZERO_PATTERN); CHKERRQ(info); }
+<a name="line506">506: </a>    <font color="#4169E1">if</font> (B!=BPre &amp;&amp; Apre!=BPre){ info=MatCopy(Apre,BPre,SAME_NONZERO_PATTERN); CHKERRQ(info); }
+<a name="line507">507: </a>    info=prows-&gt;GetMask(&amp;VRow); CHKERRQ(info);
+<a name="line508">508: </a>    info=pcols-&gt;GetMask(&amp;VCol); CHKERRQ(info);
+<a name="line509">509: </a>    info=VecDuplicate(VRow,&amp;DDiag); CHKERRQ(info);
+<a name="line510">510: </a>    info=MatGetDiagonal(A,DDiag); CHKERRQ(info);
+<a name="line511">511: </a>    info=MatDiagonalScale(B,VRow,VCol); CHKERRQ(info);
+<a name="line512">512: </a>    info=MatDiagonalSet(B,DDiag,INSERT_VALUES); CHKERRQ(info);
+<a name="line513">513: </a>    <font color="#4169E1">if</font> (B!=BPre){
+<a name="line514">514: </a>      info=MatGetDiagonal(Apre,DDiag); CHKERRQ(info);
+<a name="line515">515: </a>      info=MatDiagonalScale(BPre,VRow,VCol); CHKERRQ(info);
+<a name="line516">516: </a>      info=MatDiagonalSet(BPre,DDiag,INSERT_VALUES); CHKERRQ(info);
+<a name="line517">517: </a>    }
+<a name="line518">518: </a>    info=VecDestroy(DDiag); CHKERRQ(info);
+<a name="line519">519: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (type==TaoMatrixFree){
+<a name="line520">520: </a>    info = MM-&gt;GetMatrix(&amp;A,&amp;Apre,&amp;flag); CHKERRQ(info);
+<a name="line521">521: </a>    info = <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A>(A,prows-&gt;GetIS(),pcols-&gt;GetIS(),&amp;B); CHKERRQ(info);
+<a name="line522">522: </a>    info = SetMatrix(B,Apre,flag); CHKERRQ(info);
+<a name="line523">523: </a>    info = PetscObjectDereference((PetscObject)B);CHKERRQ(info);
+<a name="line524">524: </a>  } <font color="#4169E1">else</font> {
+<a name="line525">525: </a>    IS LocalRows, LocalCols, AllCols;
+<a name="line526">526: </a>    PetscInt nn;
+<a name="line527">527: </a>    //    info = GetMatrix(&amp;B,&amp;BPre,&amp;flag); CHKERRQ(info);
+<a name="line528">528: </a>    info = MM-&gt;GetMatrix(&amp;A,&amp;Apre,&amp;flag); CHKERRQ(info);
+<a name="line529">529: </a>    info = prows-&gt;RedistributeIS(&amp;LocalRows); CHKERRQ(info);
+<a name="line530">530: </a>    info = pcols-&gt;RedistributeIS(&amp;LocalCols); CHKERRQ(info);
+<a name="line531">531: </a>    info = pcols-&gt;GetWholeIS(&amp;AllCols); CHKERRQ(info);
+<a name="line532">532: </a>    info = ISGetLocalSize(LocalCols,&amp;nn); CHKERRQ(info);
+<a name="line533">533: </a>    info = MatGetSubMatrix(A,LocalRows,AllCols,MAT_INITIAL_MATRIX,&amp;B);
+<a name="line534">534: </a>    CHKERRQ(info);
+<a name="line535">535: </a>    BPre=B;
+
+<a name="line537">537: </a>    <font color="#4169E1">if</font> (A != Apre){      
+<a name="line538">538: </a>      info = MatGetSubMatrix(Apre,LocalRows,AllCols,MAT_INITIAL_MATRIX,&amp;BPre);
+<a name="line539">539: </a>      CHKERRQ(info);
+<a name="line540">540: </a>    } <font color="#4169E1">else</font> {
+<a name="line541">541: </a>      info = PetscObjectReference((PetscObject)BPre);CHKERRQ(info);
+<a name="line542">542: </a>    }
+<a name="line543">543: </a>    
+<a name="line544">544: </a>    info = SetMatrix(B,BPre,flag); CHKERRQ(info);
+<a name="line545">545: </a>    info = PetscObjectDereference((PetscObject)B);CHKERRQ(info);
+<a name="line546">546: </a>    info = PetscObjectDereference((PetscObject)BPre);CHKERRQ(info);
+<a name="line547">547: </a>  }
+
+<a name="line549">549: </a>  <font color="#4169E1">return</font>(0);
+<a name="line550">550: </a>}
+
+<a name="line554">554: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/D_Fischer.html#D_Fischer">D_Fischer</A>(TaoVec* tx, TaoVec* tf, TaoVec* tl, TaoVec* tu,
+<a name="line555">555: </a>                           TaoVec* tt1, TaoVec* tt2, TaoVec* tda, TaoVec* tdb) 
+<a name="line556">556: </a>{
+<a name="line557">557: </a>  Vec x = ((TaoVecPetsc *)tx)-&gt;GetVec();
+<a name="line558">558: </a>  Vec f = ((TaoVecPetsc *)tf)-&gt;GetVec();
+<a name="line559">559: </a>  Vec l = ((TaoVecPetsc *)tl)-&gt;GetVec();
+<a name="line560">560: </a>  Vec u = ((TaoVecPetsc *)tu)-&gt;GetVec();
+<a name="line561">561: </a>  Vec da = ((TaoVecPetsc *)tda)-&gt;GetVec();
+<a name="line562">562: </a>  Vec db = ((TaoVecPetsc *)tdb)-&gt;GetVec();
+<a name="line563">563: </a>  Vec t1 = ((TaoVecPetsc *)tt1)-&gt;GetVec();
+<a name="line564">564: </a>  Vec t2 = ((TaoVecPetsc *)tt2)-&gt;GetVec();
+<a name="line565">565: </a>  int info;
+
+<a name="line568">568: </a>  info = MatD_Fischer(pm, x, f, l, u, t1, t2, da, db); CHKERRQ(info);
+<a name="line569">569: </a>  <font color="#4169E1">return</font>(0);
+<a name="line570">570: </a>}
+
+<a name="line574">574: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/matrix/D_SFischer.html#D_SFischer">D_SFischer</A>(TaoVec* tx, TaoVec* tf, TaoVec* tl, TaoVec* tu,
+<a name="line575">575: </a>                            double mu,
+<a name="line576">576: </a>                            TaoVec* tt1, TaoVec* tt2,
+<a name="line577">577: </a>                            TaoVec* tda, TaoVec* tdb, TaoVec* tdm)
+<a name="line578">578: </a>{
+<a name="line579">579: </a>  Vec x = ((TaoVecPetsc *)tx)-&gt;GetVec();
+<a name="line580">580: </a>  Vec f = ((TaoVecPetsc *)tf)-&gt;GetVec();
+<a name="line581">581: </a>  Vec l = ((TaoVecPetsc *)tl)-&gt;GetVec();
+<a name="line582">582: </a>  Vec u = ((TaoVecPetsc *)tu)-&gt;GetVec();
+<a name="line583">583: </a>  Vec t1 = ((TaoVecPetsc *)tt1)-&gt;GetVec();
+<a name="line584">584: </a>  Vec t2 = ((TaoVecPetsc *)tt2)-&gt;GetVec();
+<a name="line585">585: </a>  Vec da = ((TaoVecPetsc *)tda)-&gt;GetVec();
+<a name="line586">586: </a>  Vec db = ((TaoVecPetsc *)tdb)-&gt;GetVec();
+<a name="line587">587: </a>  Vec dm = ((TaoVecPetsc *)tdm)-&gt;GetVec();
+<a name="line588">588: </a>  int info;
+
+<a name="line591">591: </a>  <font color="#4169E1">if</font> ((mu &gt;= -TAO_EPSILON) &amp;&amp; (mu &lt;= TAO_EPSILON)) {
+<a name="line592">592: </a>    tdm-&gt;<A href="../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>();
+<a name="line593">593: </a>    <A href="../../../docs/manualpages/matrix/D_Fischer.html#D_Fischer">D_Fischer</A>(tx, tf, tl, tu, tt1, tt2, tda, tdb);
+<a name="line594">594: </a>  }
+<a name="line595">595: </a>  <font color="#4169E1">else</font> {
+<a name="line596">596: </a>    info = MatD_SFischer(pm, x, f, l, u, mu, t1, t2, da, db, dm); CHKERRQ(info);
+<a name="line597">597: </a>  }
+<a name="line598">598: </a>  <font color="#4169E1">return</font>(0);
+<a name="line599">599: </a>}
+
+<a name="line603">603: </a>int TaoMatPetsc::<A href="../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(double *nm){
+<a name="line604">604: </a>  int info;
+<a name="line605">605: </a>  PetscReal nnmm;
+<a name="line607">607: </a>  info = MatNorm(pm,NORM_1,&amp;nnmm);CHKERRQ(info);
+<a name="line608">608: </a>  *nm=nnmm;
+<a name="line609">609: </a>  <font color="#4169E1">return</font>(0);
+<a name="line610">610: </a>}
+
+<a name="line612">612: </a><font color="#A020F0">#endif</font>
+
+
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetHessianRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetHessianRoutine"><H1>DAAppSetHessianRoutine</H1></A>
+Set a routine that will evaluate the hessian on the given DA at the given point. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taodaapplication.h" 
+int DAAppSetHessianRoutine(TAO_APPLICATION daapplication, int (*hess)(TAO_APPLICATION,DA,Vec,Mat,void*),void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the DA Application object
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>hess </B></TD><TD>- the function pointer for the hessian evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- the hessian context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of hess</FONT></H2>
+<pre>
+    hess(TAO_APPLICATION daapplication,DA da, Vec x,Mat H,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>da </B></TD><TD>- the Distributed Array
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>H </B></TD><TD>- hessian matrix
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user-defined hessian context set from <A HREF="../daapp/DAAppSetHessianRoutine.html#DAAppSetHessianRoutine">DAAppSetHessianRoutine</A>()
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Key</FONT></H2>
+<DT><B>-tao_view_hessian </B> -view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+  DA, hessian
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>();
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/interface/daapp.c.html#DAAppSetHessianRoutine">src/petsctao/gridapplication/interface/daapp.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c.html">src/petsctao/gridapplication/examples/eptorsion3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c.html">src/petsctao/gridapplication/examples/jbearing3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c.html">src/petsctao/gridapplication/examples/minsurf3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c.html">src/petsctao/gridapplication/examples/combustion3.c.html</A><BR>
+</BODY></HTML>

@@ -1,0 +1,225 @@
+<center><a href="bkernal.c">Actual source code: bkernal.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:07+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0">      </font><font color="#B22222">/*I "tao_general.h"  I*/</font><font color="#A020F0"></font>
+
+<a name="line3">  3: </a><font color="#A020F0">#ifndef TAO_USE_PETSC</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"src/tao_impl.h"</font><font color="#A020F0"></font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;stdlib.h&gt;</font>
+<a name="line7">  7: </a><font color="#A020F0">#include &lt;string.h&gt;</font>
+
+<a name="line9">  9: </a><strong><font color="#228B22">#define MAX_SOLVER_NAME_LENGTH 20</font></strong>
+<a name="line10"> 10: </a><strong><font color="#228B22">#define MAX_NUMBER_OF_SOLVERS 20</font></strong>
+
+<a name="line12"> 12: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line13"> 13: </a>  int (*rr)(TAO_SOLVER);
+<a name="line14"> 14: </a>  char identifier[MAX_SOLVER_NAME_LENGTH+1];
+<a name="line15"> 15: </a>} _P_TSolver;
+
+<a name="line17"> 17: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line18"> 18: </a>  _P_TSolver  TSolver[MAX_NUMBER_OF_SOLVERS];
+<a name="line19"> 19: </a>  int nsolvers;
+<a name="line20"> 20: </a>  int maxsolvers;
+<a name="line21"> 21: </a>  int argc;
+<a name="line22"> 22: </a>  char **args;
+<a name="line23"> 23: </a>} TaoSolverList;
+
+<a name="line25"> 25: </a>static TaoSolverList TaoList;
+
+
+<a name="line30"> 30: </a><strong><font color="#4169E1"><a name="TaoPrintStatement"></a>int <A href="../../docs/manualpages/solver/TaoPrintStatement.html#TaoPrintStatement">TaoPrintStatement</A>(TAO_SOLVER tao, const char *statement)</font></strong>{
+<a name="line31"> 31: </a>  TaoFunctionBegin;
+<a name="line32"> 32: </a>  printf(statement);
+<a name="line33"> 33: </a>  TaoFunctionReturn(0);
+<a name="line34"> 34: </a>}
+
+<a name="line38"> 38: </a><strong><font color="#4169E1"><a name="TaoPrintInt"></a>int TaoPrintInt(TAO_SOLVER tao, const char *statement, int n)</font></strong>{
+<a name="line39"> 39: </a>  TaoFunctionBegin;
+<a name="line40"> 40: </a>  printf(statement,n);
+<a name="line41"> 41: </a>  TaoFunctionReturn(0);
+<a name="line42"> 42: </a>}
+
+<a name="line46"> 46: </a><strong><font color="#4169E1"><a name="TaoPrintDouble"></a>int TaoPrintDouble(TAO_SOLVER tao, const char *statement,double dd)</font></strong>{
+<a name="line47"> 47: </a>  TaoFunctionBegin;
+<a name="line48"> 48: </a>  printf(statement,dd);
+<a name="line49"> 49: </a>  TaoFunctionReturn(0);
+<a name="line50"> 50: </a>}
+
+<a name="line54"> 54: </a><strong><font color="#4169E1"><a name="TaoPrintString"></a>int TaoPrintString(TAO_SOLVER tao, const char *statement,const char *str)</font></strong>{
+<a name="line55"> 55: </a>  TaoFunctionBegin;
+<a name="line56"> 56: </a>  printf(statement,str);
+<a name="line57"> 57: </a>  TaoFunctionReturn(0);
+<a name="line58"> 58: </a>}
+
+<a name="line62"> 62: </a><strong><font color="#4169E1"><a name="TaoOptionsHead"></a>int TaoOptionsHead(const char *heading)</font></strong>{
+<a name="line63"> 63: </a>  TaoFunctionBegin;
+<a name="line64"> 64: </a>  TaoFunctionReturn(0);
+<a name="line65"> 65: </a>}
+
+<a name="line69"> 69: </a><strong><font color="#4169E1"><a name="TaoOptionsTail"></a>int TaoOptionsTail()</font></strong>{
+<a name="line70"> 70: </a>  TaoFunctionBegin;
+<a name="line71"> 71: </a>  TaoFunctionReturn(0);
+<a name="line72"> 72: </a>}
+
+<a name="line76"> 76: </a><strong><font color="#4169E1"><a name="TaoOptionInt"></a>int TaoOptionInt(const char *opt,const char *text,const char *man,int defaultv,int *value,TaoTruth *set)</font></strong>{
+<a name="line77"> 77: </a>  TaoFunctionBegin;
+<a name="line78"> 78: </a>  <font color="#4169E1">if</font> (set) *set=TAO_FALSE;
+<a name="line79"> 79: </a>  TaoFunctionReturn(0);
+<a name="line80"> 80: </a>}
+
+<a name="line84"> 84: </a><strong><font color="#4169E1"><a name="TaoOptionDouble"></a>int TaoOptionDouble(const char *opt,const char *text,const char *man,double defaultv,double *value,TaoTruth *set)</font></strong>{
+<a name="line85"> 85: </a>  TaoFunctionBegin;
+<a name="line86"> 86: </a>  <font color="#4169E1">if</font> (set) *set=TAO_FALSE;
+<a name="line87"> 87: </a>  TaoFunctionReturn(0);
+<a name="line88"> 88: </a>}
+
+<a name="line92"> 92: </a><strong><font color="#4169E1"><a name="TaoOptionString"></a>int TaoOptionString(const char *opt,const char *text,const char *man,const char* defaultv,char *value, int len, TaoTruth *set)</font></strong>{
+<a name="line93"> 93: </a>  TaoFunctionBegin;
+<a name="line94"> 94: </a>  <font color="#4169E1">if</font> (set) *set=TAO_FALSE;
+<a name="line95"> 95: </a>  TaoFunctionReturn(0);
+<a name="line96"> 96: </a>}
+
+<a name="line100">100: </a><strong><font color="#4169E1"><a name="TaoOptionName"></a>int TaoOptionName(const char *opt,const char *text,const char *man,TaoTruth *set)</font></strong>{
+<a name="line101">101: </a>  TaoFunctionBegin;
+<a name="line102">102: </a>  <font color="#4169E1">if</font> (set) *set=TAO_FALSE;
+<a name="line103">103: </a>  TaoFunctionReturn(0);
+<a name="line104">104: </a>}
+
+<a name="line108">108: </a><strong><font color="#4169E1"><a name="TaoOptionList"></a>int TaoOptionList(const char *opt, const char *ltext, const char *man,</font></strong>
+<a name="line109">109: </a><strong><font color="#4169E1">                  const char **list, int nlist, const char *defaultv,</font></strong>
+<a name="line110">110: </a><strong><font color="#4169E1">                  int *value, TaoTruth *set)</font></strong>
+<a name="line111">111: </a>{
+<a name="line112">112: </a>  TaoFunctionBegin;
+<a name="line113">113: </a>  <font color="#4169E1">if</font> (set) *set=TAO_FALSE;
+<a name="line114">114: </a>  TaoFunctionReturn(0);
+<a name="line115">115: </a>}
+
+<a name="line119">119: </a><strong><font color="#4169E1"><a name="TaoMethodsList"></a>int TaoMethodsList(const char *opt,const char *ltext,const char *man,const char *defaultv,char *value,int len,TaoTruth *set)</font></strong>{
+<a name="line120">120: </a>  TaoFunctionBegin;
+<a name="line121">121: </a>  <font color="#4169E1">if</font> (set)  *set=TAO_FALSE;
+<a name="line122">122: </a>  TaoFunctionReturn(0);
+<a name="line123">123: </a>}
+
+
+<a name="line128">128: </a><strong><font color="#4169E1"><a name="TaoFindSolver"></a>int TaoFindSolver(TAO_SOLVER tao, TaoMethod type,  int (**r)(TAO_SOLVER) )</font></strong>{
+<a name="line129">129: </a>  int i;
+<a name="line130">130: </a>  int nsolvers=TaoList.nsolvers;
+<a name="line131">131: </a>  TaoFunctionBegin;
+<a name="line132">132: </a>  *r=0;
+<a name="line133">133: </a>  <font color="#4169E1">for</font> (i=0; i&lt;nsolvers; i++){
+<a name="line134">134: </a>    <font color="#4169E1">if</font> (strncmp(type,TaoList.TSolver[i].identifier,MAX_SOLVER_NAME_LENGTH)==0){
+<a name="line135">135: </a>      *r=TaoList.TSolver[i].rr;
+<a name="line136">136: </a>      strncpy(tao-&gt;type_name,type,MAX_SOLVER_NAME_LENGTH);
+<a name="line137">137: </a>      <font color="#4169E1">break</font>;
+<a name="line138">138: </a>    }
+<a name="line139">139: </a>  }
+<a name="line140">140: </a>  TaoFunctionReturn(0);
+<a name="line141">141: </a>}
+
+<a name="line145">145: </a><strong><font color="#4169E1"><a name="TaoRegisterDestroy"></a>int <A href="../../docs/manualpages/solver/TaoRegisterDestroy.html#TaoRegisterDestroy">TaoRegisterDestroy</A>()</font></strong>{
+<a name="line146">146: </a>  TaoFunctionBegin;
+<a name="line147">147: </a>  TaoList.nsolvers=0;
+<a name="line148">148: </a>  TaoFunctionReturn(0);
+<a name="line149">149: </a>}
+
+
+<a name="line155">155: </a><strong><font color="#4169E1"><a name="TaoRegisterDynamic"></a>int <A href="../../docs/manualpages/solver/TaoRegisterDynamic.html#TaoRegisterDynamic">TaoRegisterDynamic</A>(const char *sname,const char *path,const char *name,int (*function)(TAO_SOLVER))</font></strong>
+<a name="line156">156: </a>{
+<a name="line157">157: </a>  int i=TaoList.nsolvers;
+
+<a name="line159">159: </a>  TaoFunctionBegin;
+<a name="line160">160: </a>  <font color="#4169E1">if</font> (TaoList.nsolvers&gt;TaoList.maxsolvers-1){
+<a name="line161">161: </a>    <font color="#4169E1">return</font> 1;
+<a name="line162">162: </a>  } 
+<a name="line163">163: </a>  TaoList.TSolver[i].rr=function;
+<a name="line164">164: </a>  strncpy(TaoList.TSolver[i].identifier,sname,MAX_SOLVER_NAME_LENGTH);
+<a name="line165">165: </a>  TaoList.nsolvers++;
+<a name="line166">166: </a>  TaoFunctionReturn(0);
+<a name="line167">167: </a>}
+
+<a name="line172">172: </a><strong><font color="#4169E1"><a name="TaoCompareMethod"></a>int <A href="../../docs/manualpages/solver/TaoCompareMethod.html#TaoCompareMethod">TaoCompareMethod</A>(TAO_SOLVER tao, TaoMethod type, TaoTruth *issame)</font></strong>{
+<a name="line173">173: </a>  int info;
+<a name="line174">174: </a>  TaoMethod currenttype;
+<a name="line175">175: </a>  TaoFunctionBegin;
+<a name="line176">176: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line177">177: </a>  info = <A href="../../docs/manualpages/solver/TaoGetMethod.html#TaoGetMethod">TaoGetMethod</A>(tao,&amp;currenttype);CHKERRQ(info);
+<a name="line178">178: </a>  <font color="#4169E1">if</font> (currenttype &amp;&amp; type){
+<a name="line179">179: </a>    info = strncmp(type,currenttype,MAX_SOLVER_NAME_LENGTH);  
+<a name="line180">180: </a>    <font color="#4169E1">if</font> (info==0){
+<a name="line181">181: </a>      *issame=TAO_TRUE; 
+<a name="line182">182: </a>    } <font color="#4169E1">else</font> {
+<a name="line183">183: </a>      *issame=TAO_FALSE;
+<a name="line184">184: </a>    }
+<a name="line185">185: </a>  } <font color="#4169E1">else</font> {
+<a name="line186">186: </a>    *issame=TAO_FALSE;
+<a name="line187">187: </a>  }
+<a name="line188">188: </a>  TaoFunctionReturn(0);
+<a name="line189">189: </a>}
+
+
+<a name="line194">194: </a><strong><font color="#4169E1"><a name="TaoObjectCreate"></a>int TaoObjectCreate( TAO_SOLVER *newsolver, MPI_Comm comm)</font></strong>{
+<a name="line195">195: </a>  TAO_SOLVER solver;
+<a name="line196">196: </a>  int info;
+<a name="line197">197: </a>  
+<a name="line198">198: </a>  TaoFunctionBegin;
+<a name="line199">199: </a>  info=TaoNew(<font color="#4169E1">struct _p_TAO_SOLVER</font>,(void**)&amp;solver);CHKERRQ(info);
+<a name="line200">200: </a>  //solver=(TAO_SOLVER)malloc(<font color="#4169E1">sizeof</font>(<font color="#4169E1">struct _p_TAO_SOLVER</font>)); 
+<a name="line201">201: </a>  *newsolver = solver;
+<a name="line202">202: </a>  TaoFunctionReturn(0);
+<a name="line203">203: </a>}
+
+<a name="line207">207: </a><strong><font color="#4169E1"><a name="TaoObjectDestroy"></a>int TaoObjectDestroy( TAO_SOLVER solver)</font></strong>{
+<a name="line208">208: </a>  int info;
+<a name="line209">209: </a>  TaoFunctionBegin;
+<a name="line210">210: </a>  info=TaoFree(solver);
+<a name="line211">211: </a>  TaoFunctionReturn(0);
+<a name="line212">212: </a>}
+
+<a name="line216">216: </a><strong><font color="#4169E1"><a name="TaoStrcpy"></a>int TaoStrcpy(char* str1,const char*str2)</font></strong>{
+<a name="line217">217: </a>  TaoFunctionBegin;
+<a name="line218">218: </a>  strcpy(str1,str2);
+<a name="line219">219: </a>  TaoFunctionReturn(0);
+<a name="line220">220: </a>}
+
+<a name="line224">224: </a><strong><font color="#4169E1"><a name="TaoStrcmp"></a>int TaoStrcmp(const char *str1,const char *str2,TaoTruth *flag)</font></strong>{
+<a name="line225">225: </a>  int info;
+<a name="line226">226: </a>  TaoFunctionBegin;
+<a name="line227">227: </a>  info = strcmp(str1,str2);
+<a name="line228">228: </a>  <font color="#4169E1">if</font> (info) *flag=TAO_FALSE; <font color="#4169E1">else</font> *flag=TAO_TRUE;
+<a name="line229">229: </a>  TaoFunctionReturn(0);
+<a name="line230">230: </a>}
+
+<a name="line234">234: </a><strong><font color="#4169E1"><a name="TaoLogClassRegister"></a>int TaoLogClassRegister(int*,const char*)</font></strong>{
+<a name="line235">235: </a>  int i,info;
+<a name="line236">236: </a>  TaoFunctionBegin;
+<a name="line237">237: </a>  TaoList.nsolvers=0;
+<a name="line238">238: </a>  TaoList.maxsolvers=MAX_NUMBER_OF_SOLVERS;
+<a name="line239">239: </a>  <font color="#4169E1">for</font> (i=0;i&lt;TaoList.maxsolvers;i++){
+<a name="line240">240: </a>    //    TaoList.TSolver[i].identifier[0]='';
+<a name="line241">241: </a>    TaoList.TSolver[i].rr=0;
+<a name="line242">242: </a>  }
+<a name="line243">243: </a>  info = <A href="../../docs/manualpages/solver/TaoGetArgs.html#TaoGetArgs">TaoGetArgs</A>(&amp;TaoList.argc,&amp;TaoList.args);CHKERRQ(info);
+<a name="line244">244: </a>  TaoFunctionReturn(0);
+<a name="line245">245: </a>}
+
+<a name="line247">247: </a><strong><font color="#4169E1"><a name="TaoHelpPrintf"></a>int TaoHelpPrintf(MPI_Comm,const char*,...)</font></strong>{
+<a name="line248">248: </a>  <font color="#4169E1">return</font> 0;
+<a name="line249">249: </a>}
+
+
+<a name="line252">252: </a><strong><font color="#228B22">#define PetscInfo  (a)   0;</font></strong>
+
+
+<a name="line255">255: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

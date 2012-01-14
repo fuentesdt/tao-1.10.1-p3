@@ -1,0 +1,48 @@
+#! /bin/csh
+#
+# Defines the configuration for $TAO_DIR/maint/buildtest; this file is 
+# sourced by that script. See $TAO_DIR/bmake/tao_common_variables for job 
+# definitions.
+#
+set TMP1=/sandbox/aotools/taotest
+set MACH=lava
+set TEST=testexamples_
+set NICE=''
+set PDIR=/home/curfman/petsc
+#
+set day=`date | cut -f1 -d" "`
+if ($day == Sun) then
+  set ARCH=solaris_uni
+  set BOPT=O
+  set JOBS=(4 9)
+else if ($day == Mon) then
+  set ARCH=solaris_uni
+  set BOPT=O
+  set JOBS=(4 9)
+else if ($day == Tue) then
+  set ARCH=solaris_gnu
+  set BOPT=g
+  set JOBS=(4 9)
+else if ($day == Wed) then
+  set ARCH=solaris_gnu
+  set BOPT=O_c++
+  set JOBS=(4 9)
+else if ($day == Thu) then
+  set ARCH=solaris64
+  set BOPT=O
+  set JOBS=(4 9)
+else if ($day == Fri) then
+  set ARCH=solaris64
+  set BOPT=O
+  set JOBS=(4 9)
+else if ($day == Sat) then
+  set ARCH=solaris_uni
+  set BOPT=O
+  set JOBS=(4 9)
+endif
+
+
+
+
+
+

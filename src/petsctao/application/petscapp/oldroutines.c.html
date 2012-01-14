@@ -1,0 +1,328 @@
+<center><a href="oldroutines.c">Actual source code: oldroutines.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0">   </font><font color="#B22222">/*I  "tao.h"  I*/</font><font color="#A020F0"></font>
+
+
+<a name="line4">  4: </a>class TaoPetscApplication;
+<a name="line5">  5: </a><strong><font color="#4169E1">int TaoAppGetTaoPetscApp(TAO_APPLICATION, TaoPetscApplication**)</font></strong>;
+
+<a name="line7">  7: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line8">  8: </a>  <font color="#B22222">/* Function Gradient Evaluation over single element  */</font>
+<a name="line9">  9: </a>  int  (*computef)(TAO_SOLVER, Vec, double*, void*); 
+<a name="line10"> 10: </a>  int  (*computeg)(TAO_SOLVER, Vec, Vec, void*); 
+<a name="line11"> 11: </a>  int  (*computefg)(TAO_SOLVER, Vec, double*, Vec, void*); 
+<a name="line12"> 12: </a>  int  (*computeh)(TAO_SOLVER, Vec, Mat*, Mat*, MatStructure*, void*); 
+<a name="line13"> 13: </a>  int  (*computer)(TAO_SOLVER, Vec, Vec, void*); 
+<a name="line14"> 14: </a>  int  (*computej)(TAO_SOLVER, Vec, Mat*, void*); 
+<a name="line15"> 15: </a>  TAO_SOLVER tao;
+<a name="line16"> 16: </a>  void *fctx;
+<a name="line17"> 17: </a>  void *fgctx;
+<a name="line18"> 18: </a>  void *gctx;
+<a name="line19"> 19: </a>  void *hctx;
+<a name="line20"> 20: </a>  void *rctx;
+<a name="line21"> 21: </a>  void *jctx;
+<a name="line22"> 22: </a>} TaoPETScOLD;
+
+
+<a name="line27"> 27: </a><strong><font color="#4169E1"><a name="TaoPetscAppF"></a>static int TaoPetscAppF(TAO_APPLICATION taoapp , Vec X , double *f, void*ctx)</font></strong>{
+<a name="line28"> 28: </a>  int info;
+<a name="line29"> 29: </a>  TaoPETScOLD* mctx= (TaoPETScOLD*)ctx;
+<a name="line31"> 31: </a>  info=(*mctx-&gt;computef)(mctx-&gt;tao,X,f,mctx-&gt;fctx); CHKERRQ(info);
+<a name="line32"> 32: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line33"> 33: </a>}
+
+<a name="line37"> 37: </a><strong><font color="#4169E1"><a name="TaoPetscAppG"></a>static int TaoPetscAppG(TAO_APPLICATION taoapp , Vec X , Vec G, void*ctx)</font></strong>{
+<a name="line38"> 38: </a>  int info;
+<a name="line39"> 39: </a>  TaoPETScOLD* mctx= (TaoPETScOLD*)ctx;
+<a name="line41"> 41: </a>  info=(*mctx-&gt;computeg)(mctx-&gt;tao,X,G,mctx-&gt;gctx); CHKERRQ(info);
+<a name="line42"> 42: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line43"> 43: </a>}
+
+<a name="line47"> 47: </a><strong><font color="#4169E1"><a name="TaoPetscAppFG"></a>static int TaoPetscAppFG(TAO_APPLICATION taoapp , Vec X , double *f, Vec G, void* ctx)</font></strong>{
+<a name="line48"> 48: </a>  int info;
+<a name="line49"> 49: </a>  TaoPETScOLD* mctx= (TaoPETScOLD*)ctx;
+<a name="line51"> 51: </a>  info=(*mctx-&gt;computefg)(mctx-&gt;tao,X,f,G,mctx-&gt;fgctx); CHKERRQ(info);
+<a name="line52"> 52: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line53"> 53: </a>}
+
+<a name="line57"> 57: </a><strong><font color="#4169E1"><a name="TaoPetscAppH"></a>static int TaoPetscAppH(TAO_APPLICATION taoapp , Vec X , Mat *H, Mat *HP, MatStructure *flag, void* ctx)</font></strong>{
+<a name="line58"> 58: </a>  int info;
+<a name="line59"> 59: </a>  TaoPETScOLD* mctx= (TaoPETScOLD*)ctx;
+<a name="line61"> 61: </a>  info=(*mctx-&gt;computeh)(mctx-&gt;tao,X,H,HP,flag,mctx-&gt;hctx); CHKERRQ(info);
+<a name="line62"> 62: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line63"> 63: </a>}
+
+<a name="line67"> 67: </a><strong><font color="#4169E1"><a name="TaoPetscAppR"></a>static int TaoPetscAppR(TAO_APPLICATION taoapp , Vec X , Vec R, void*ctx)</font></strong>{
+<a name="line68"> 68: </a>  int info;
+<a name="line69"> 69: </a>  TaoPETScOLD* mctx= (TaoPETScOLD*)ctx;
+<a name="line71"> 71: </a>  info=(*mctx-&gt;computer)(mctx-&gt;tao,X,R,mctx-&gt;rctx); CHKERRQ(info);
+<a name="line72"> 72: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line73"> 73: </a>}
+
+<a name="line77"> 77: </a><strong><font color="#4169E1"><a name="TaoPetscAppJ"></a>static int TaoPetscAppJ(TAO_APPLICATION taoapp , Vec X , Mat *J, Mat *JP, MatStructure *flag, void* ctx)</font></strong>{
+<a name="line78"> 78: </a>  int info;
+<a name="line79"> 79: </a>  TaoPETScOLD* mctx= (TaoPETScOLD*)ctx;
+<a name="line81"> 81: </a>  info=(*mctx-&gt;computej)(mctx-&gt;tao,X,J,mctx-&gt;jctx); CHKERRQ(info);
+<a name="line82"> 82: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line83"> 83: </a>}
+
+
+<a name="line88"> 88: </a><font color="#B22222">/* @C</font>
+<a name="line89"> 89: </a><font color="#B22222">   TaoSetPetscFunction - Sets a routine that evaluates the function at</font>
+<a name="line90"> 90: </a><font color="#B22222">the specified point.</font>
+
+<a name="line92"> 92: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line94"> 94: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line95"> 95: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line96"> 96: </a><font color="#B22222">.  x - variable vector that stores the solution</font>
+<a name="line97"> 97: </a><font color="#B22222">.  func - function evaluation routine</font>
+<a name="line98"> 98: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line99"> 99: </a><font color="#B22222">         function and gradient evaluation routine (may be TAO_NULL)</font>
+
+<a name="line101">101: </a><font color="#B22222">   Note: This function is no longer supported. Use TaoSetObjectiveFunction() and TaoSetVariableVec() instead.</font>
+
+<a name="line103">103: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line105">105: </a><font color="#B22222">.seealso:  <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>()</font>
+<a name="line106">106: </a><font color="#B22222">@ */</font>
+<a name="line107">107: </a><strong><font color="#4169E1"><a name="TaoSetPetscFunction"></a>int TaoSetPetscFunction(TAO_APPLICATION taoapp, Vec X, int (*func)(TAO_SOLVER,Vec,double*,void*),void *ctx)</font></strong>{
+<a name="line108">108: </a>  int info;
+<a name="line109">109: </a>  TaoPETScOLD* fgctx= (TaoPETScOLD*)ctx;
+<a name="line111">111: </a>  PetscNew(TaoPETScOLD,&amp;fgctx);
+<a name="line112">112: </a>  fgctx-&gt;computef = func;
+<a name="line113">113: </a>  fgctx-&gt;fctx=ctx;
+<a name="line114">114: </a>  fgctx-&gt;tao = 0;
+<a name="line115">115: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(taoapp,X); CHKERRQ(info);
+<a name="line116">116: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>(taoapp,TaoPetscAppF,(void*)fgctx); CHKERRQ(info);
+<a name="line117">117: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoApplicationFreeMemory.html#TaoApplicationFreeMemory">TaoApplicationFreeMemory</A>, (void*)fgctx); CHKERRQ(info);
+<a name="line118">118: </a>  <font color="#4169E1">return</font>(0);
+<a name="line119">119: </a>}
+
+
+<a name="line124">124: </a><font color="#B22222">/* @C</font>
+<a name="line125">125: </a><font color="#B22222">   TaoSetPetscGradient - Sets the gradient evaluation routine and gradient</font>
+<a name="line126">126: </a><font color="#B22222">   vector for use by the TAO_SOLVER routines.</font>
+
+<a name="line128">128: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line130">130: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line131">131: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line132">132: </a><font color="#B22222">.  g - vector to store gradient</font>
+<a name="line133">133: </a><font color="#B22222">.  grad - gradient evaluation routine</font>
+<a name="line134">134: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line136">136: </a><font color="#B22222">   Note:</font>
+<a name="line137">137: </a><font color="#B22222">   This routine is no longer supported.</font>
+
+<a name="line139">139: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>()</font>
+
+<a name="line141">141: </a><font color="#B22222">@ */</font>
+<a name="line142">142: </a><strong><font color="#4169E1"><a name="TaoSetPetscGradient"></a>int TaoSetPetscGradient(TAO_APPLICATION taoapp, Vec g, int (*grad)(TAO_SOLVER,Vec,Vec,void*),void *ctx)</font></strong>{
+<a name="line143">143: </a>  int info;
+<a name="line144">144: </a>  TaoPETScOLD* fgctx= (TaoPETScOLD*)ctx;
+<a name="line146">146: </a>  PetscNew(TaoPETScOLD,&amp;fgctx);
+<a name="line147">147: </a>  fgctx-&gt;computeg = grad;
+<a name="line148">148: </a>  fgctx-&gt;gctx=ctx;
+<a name="line149">149: </a>  fgctx-&gt;tao = 0;
+<a name="line150">150: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>(taoapp,TaoPetscAppG,(void*)fgctx); CHKERRQ(info);
+<a name="line151">151: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoApplicationFreeMemory.html#TaoApplicationFreeMemory">TaoApplicationFreeMemory</A>, (void*)fgctx); CHKERRQ(info);
+<a name="line152">152: </a>  <font color="#4169E1">return</font>(0);
+<a name="line153">153: </a>}
+
+<a name="line157">157: </a><font color="#B22222">/* @C</font>
+<a name="line158">158: </a><font color="#B22222">   TaoSetPetscFunctionGradient - Sets a routine for function and gradient evaluation.</font>
+
+<a name="line160">160: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line162">162: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line163">163: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line164">164: </a><font color="#B22222">.  x - vector to store solution</font>
+<a name="line165">165: </a><font color="#B22222">.  g - vector to store gradient</font>
+<a name="line166">166: </a><font color="#B22222">.  funcgrad - routine for evaluating the function and gradient</font>
+<a name="line167">167: </a><font color="#B22222">-  ctx - optional user-defined context for private data for the </font>
+<a name="line168">168: </a><font color="#B22222">         function and gradient evaluation routine (may be TAO_NULL)</font>
+
+<a name="line170">170: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line172">172: </a><font color="#B22222">   Note: </font>
+<a name="line173">173: </a><font color="#B22222">   This routine is no longer supported.</font>
+
+<a name="line175">175: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), TaoSetVariableVec()</font>
+
+<a name="line177">177: </a><font color="#B22222">@ */</font>
+<a name="line178">178: </a><strong><font color="#4169E1"><a name="TaoSetPetscFunctionGradient"></a>int TaoSetPetscFunctionGradient(TAO_APPLICATION taoapp, Vec x, Vec g, int (*funcgrad)(TAO_SOLVER,Vec,double*,Vec, void*),void *ctx)</font></strong>{
+<a name="line179">179: </a>  int info;
+<a name="line180">180: </a>  TaoPETScOLD* fgctx= (TaoPETScOLD*)ctx;
+<a name="line182">182: </a>  PetscNew(TaoPETScOLD,&amp;fgctx);
+<a name="line183">183: </a>  fgctx-&gt;computefg = funcgrad;
+<a name="line184">184: </a>  fgctx-&gt;fgctx=ctx;
+<a name="line185">185: </a>  fgctx-&gt;tao = 0;
+<a name="line186">186: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(taoapp,TaoPetscAppFG,(void*)fgctx); CHKERRQ(info);
+<a name="line187">187: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoApplicationFreeMemory.html#TaoApplicationFreeMemory">TaoApplicationFreeMemory</A>, (void*)fgctx); CHKERRQ(info);
+<a name="line188">188: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(taoapp,x); CHKERRQ(info);
+<a name="line189">189: </a>  <font color="#4169E1">return</font>(0);
+<a name="line190">190: </a>}
+
+<a name="line194">194: </a><font color="#B22222">/* @C</font>
+<a name="line195">195: </a><font color="#B22222">   TaoSetPetscHessian - Sets the function to compute the Hessian as well as the</font>
+<a name="line196">196: </a><font color="#B22222">   location to store the matrix.</font>
+
+<a name="line198">198: </a><font color="#B22222">   Collective on TAO_SOLVER and Mat</font>
+
+<a name="line200">200: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line201">201: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line202">202: </a><font color="#B22222">.  H - Hessian matrix</font>
+<a name="line203">203: </a><font color="#B22222">.  Hpre - preconditioner matrix (usually same as the Hessian)</font>
+<a name="line204">204: </a><font color="#B22222">.  hess - Hessian evaluation routine</font>
+<a name="line205">205: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line206">206: </a><font color="#B22222">         Hessian evaluation routine (may be TAO_NULL)</font>
+
+<a name="line208">208: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line210">210: </a><font color="#B22222">   Note: This routine is no longer supported.</font>
+
+<a name="line212">212: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>()</font>
+<a name="line213">213: </a><font color="#B22222">@ */</font>
+<a name="line214">214: </a><strong><font color="#4169E1"><a name="TaoSetPetscHessian"></a>int TaoSetPetscHessian(TAO_APPLICATION taoapp, Mat H, Mat Hpre, int (*hess)(TAO_SOLVER,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)</font></strong>{
+<a name="line215">215: </a>  int info;
+<a name="line216">216: </a>  TaoPETScOLD* fgctx= (TaoPETScOLD*)ctx;
+<a name="line218">218: </a>  PetscNew(TaoPETScOLD,&amp;fgctx);
+<a name="line219">219: </a>  fgctx-&gt;computeh = hess;
+<a name="line220">220: </a>  fgctx-&gt;hctx=ctx;
+<a name="line221">221: </a>  fgctx-&gt;tao = 0;
+<a name="line222">222: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(taoapp,TaoPetscAppH,(void*)fgctx);CHKERRQ(info);
+<a name="line223">223: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(taoapp,H,Hpre);CHKERRQ(info);
+<a name="line224">224: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoApplicationFreeMemory.html#TaoApplicationFreeMemory">TaoApplicationFreeMemory</A>, (void*)fgctx); CHKERRQ(info);
+<a name="line225">225: </a>  <font color="#4169E1">return</font>(0);
+<a name="line226">226: </a>}
+
+
+<a name="line231">231: </a><font color="#B22222">/* @C</font>
+<a name="line232">232: </a><font color="#B22222">   TaoSetPetscConstraintsFunction - Sets the routine that evaluates</font>
+<a name="line233">233: </a><font color="#B22222">equality constraint functions.</font>
+
+<a name="line235">235: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line237">237: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line238">238: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line239">239: </a><font color="#B22222">.  r - vector to constrainf function values</font>
+<a name="line240">240: </a><font color="#B22222">.  func - the constraint function evaluation routine</font>
+<a name="line241">241: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line243">243: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line244">244: </a><font color="#B22222">$     func (TAO_SOLVER solver,Vec x,Vec r,void *ctx);</font>
+
+<a name="line246">246: </a><font color="#B22222">+  solver - the TAO_SOLVER solver context</font>
+<a name="line247">247: </a><font color="#B22222">.  x - input vector</font>
+<a name="line248">248: </a><font color="#B22222">.  r - constraint vector</font>
+<a name="line249">249: </a><font color="#B22222">-  ctx - user-defined function gradient context set from TaoSetPetscFunction()</font>
+
+<a name="line251">251: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line253">253: </a><font color="#B22222">.keywords: TAO_SOLVER, set, function</font>
+
+<a name="line255">255: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/solver/TaoGetGradient.html#TaoGetGradient">TaoGetGradient</A>(), TaoSetPetscHessian()</font>
+
+<a name="line257">257: </a><font color="#B22222">@ */</font>
+<a name="line258">258: </a><strong><font color="#4169E1"><a name="TaoSetPetscConstraintsFunction"></a>int TaoSetPetscConstraintsFunction(TAO_APPLICATION taoapp, Vec r, int (*func)(TAO_SOLVER,Vec,Vec,void*),void </font></strong>
+<a name="line259">259: </a><strong><font color="#4169E1">                                   *ctx)</font></strong>{
+<a name="line260">260: </a>  int info;
+<a name="line261">261: </a>  TaoPETScOLD* fgctx= (TaoPETScOLD*)ctx;
+<a name="line263">263: </a>  PetscNew(TaoPETScOLD,&amp;fgctx);
+<a name="line264">264: </a>  fgctx-&gt;computer = func;
+<a name="line265">265: </a>  fgctx-&gt;rctx=ctx;
+<a name="line266">266: </a>  fgctx-&gt;tao = 0;
+<a name="line267">267: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>(taoapp,TaoPetscAppR,(void*)fgctx); CHKERRQ(info);
+<a name="line268">268: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoApplicationFreeMemory.html#TaoApplicationFreeMemory">TaoApplicationFreeMemory</A>, (void*)fgctx); CHKERRQ(info);
+<a name="line269">269: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetFunctionVec.html#TaoAppSetFunctionVec">TaoAppSetFunctionVec</A>(taoapp,r); CHKERRQ(info);
+<a name="line270">270: </a>  <font color="#4169E1">return</font>(0);
+<a name="line271">271: </a>}
+
+
+<a name="line276">276: </a><font color="#B22222">/* @C</font>
+<a name="line277">277: </a><font color="#B22222">   TaoSetPetscJacobian - Sets the function to compute the Jacobian of</font>
+<a name="line278">278: </a><font color="#B22222">the equality constraint function as well as the</font>
+<a name="line279">279: </a><font color="#B22222">   location to store the matrix.</font>
+
+<a name="line281">281: </a><font color="#B22222">   Collective on TAO_APPLICATION and Mat</font>
+
+<a name="line283">283: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line284">284: </a><font color="#B22222">+  solver - the TAO_APPLICATION context</font>
+<a name="line285">285: </a><font color="#B22222">.  J - Jacobian matrix</font>
+<a name="line286">286: </a><font color="#B22222">.  jac - Jacobian evaluation routine</font>
+<a name="line287">287: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line288">288: </a><font color="#B22222">         Hessian evaluation routine (may be TAO_NULL)</font>
+
+<a name="line290">290: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line291">291: </a><font color="#B22222">$    jac (TAO_SOLVER solver,Vec x,Mat *J,void *ctx);</font>
+
+<a name="line293">293: </a><font color="#B22222">+  solver - the TAO_SOLVER solver context</font>
+<a name="line294">294: </a><font color="#B22222">.  x - input vector</font>
+<a name="line295">295: </a><font color="#B22222">.  J - Jacobian matrix</font>
+<a name="line296">296: </a><font color="#B22222">-  ctx - [optional] user-defined Hessian context</font>
+
+<a name="line298">298: </a><font color="#B22222">   Notes: </font>
+
+<a name="line300">300: </a><font color="#B22222">   The function jac() takes Mat * as the matrix arguments rather than Mat.  </font>
+<a name="line301">301: </a><font color="#B22222">   This allows the Jacobian evaluation routine to replace J with a </font>
+<a name="line302">302: </a><font color="#B22222">   completely new new matrix structure (not just different matrix elements)</font>
+<a name="line303">303: </a><font color="#B22222">   when appropriate, for instance, if the nonzero structure is changing</font>
+<a name="line304">304: </a><font color="#B22222">   throughout the global iterations.</font>
+
+<a name="line306">306: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line308">308: </a><font color="#B22222">.keywords: TAO_SOLVER, Jacobian</font>
+
+<a name="line310">310: </a><font color="#B22222">.seealso: TaoSetPetscFunction(), TaoSetPetscConstraintsFunction()</font>
+<a name="line311">311: </a><font color="#B22222">@ */</font>
+<a name="line312">312: </a><strong><font color="#4169E1"><a name="TaoSetPetscJacobian"></a>int TaoSetPetscJacobian(TAO_APPLICATION taoapp,Mat J,int (*jac)(TAO_SOLVER,Vec,Mat*,void*),void *ctx)</font></strong>{
+<a name="line313">313: </a>  int info;
+<a name="line314">314: </a>  TaoPETScOLD* fgctx= (TaoPETScOLD*)ctx;
+<a name="line316">316: </a>  PetscNew(TaoPETScOLD,&amp;fgctx);
+<a name="line317">317: </a>  fgctx-&gt;computej = jac;
+<a name="line318">318: </a>  fgctx-&gt;jctx=ctx;
+<a name="line319">319: </a>  fgctx-&gt;tao = 0;
+<a name="line320">320: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>(taoapp,TaoPetscAppJ,(void*)fgctx);CHKERRQ(info);
+<a name="line321">321: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoApplicationFreeMemory.html#TaoApplicationFreeMemory">TaoApplicationFreeMemory</A>, (void*)fgctx); CHKERRQ(info);
+<a name="line322">322: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(taoapp,J,J); CHKERRQ(info);
+<a name="line323">323: </a>  <font color="#4169E1">return</font>(0);
+<a name="line324">324: </a>}
+
+
+
+
+<a name="line331">331: </a><strong><font color="#4169E1"><a name="TaoSetFromOptions"></a>int <A href="../../../../docs/manualpages/solver/TaoSetFromOptions.html#TaoSetFromOptions">TaoSetFromOptions</A>(TAO_APPLICATION taoapp)</font></strong>{
+<a name="line332">332: </a>  int info;
+<a name="line334">334: </a>  info=<A href="../../../../docs/manualpages/ptaopages/TaoAppSetFromOptions.html#TaoAppSetFromOptions">TaoAppSetFromOptions</A>(taoapp); CHKERRQ(info);
+<a name="line335">335: </a>  <font color="#4169E1">return</font>(0);
+<a name="line336">336: </a>}
+
+<a name="line338">338: </a>class TaoApplication;
+
+<a name="line343">343: </a><strong><font color="#4169E1"><a name="TaoSetApplication"></a>int <A href="../../../../docs/manualpages/solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>(TAO_SOLVER tao, TAO_APPLICATION taoapp)</font></strong>{
+<a name="line344">344: </a>  int info;
+<a name="line345">345: </a>  TaoPetscApplication* tpapp;
+<a name="line347">347: </a>  info=TaoAppGetTaoPetscApp(taoapp, &amp;tpapp); CHKERRQ(info);
+<a name="line348">348: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>(tao,(TaoApplication*)(tpapp)); CHKERRQ(info);
+<a name="line349">349: </a>  <font color="#4169E1">return</font>(0);
+<a name="line350">350: </a>}
+
+
+<a name="line355">355: </a><strong><font color="#4169E1"><a name="TaoApplicationDestroy"></a>int TaoApplicationDestroy(TAO_APPLICATION taoapp)</font></strong>{
+<a name="line356">356: </a>  int info;
+<a name="line358">358: </a>  info=<A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>(taoapp); CHKERRQ(info);
+<a name="line359">359: </a>  <font color="#4169E1">return</font>(0);
+<a name="line360">360: </a>}
+</pre>
+</body>
+
+</html>

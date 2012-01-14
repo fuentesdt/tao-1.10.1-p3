@@ -1,0 +1,118 @@
+<center><a href="unit.c">Actual source code: unit.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:10+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0">  </font><font color="#B22222">/*I "tao_solver.h" I*/</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"src/tao_impl.h"</font><font color="#A020F0"></font>
+
+<a name="line7">  7: </a><strong><font color="#4169E1"><a name="TaoDestroy_UnitStep"></a>static int TaoDestroy_UnitStep(TAO_SOLVER tao,void *linectx)</font></strong>
+<a name="line8">  8: </a>{
+<a name="line9">  9: </a>  TaoFunctionBegin;
+<a name="line10"> 10: </a>  TaoFunctionReturn(0);
+<a name="line11"> 11: </a>}
+
+<a name="line15"> 15: </a><strong><font color="#4169E1"><a name="TaoSetOptions_UnitStep"></a>static int TaoSetOptions_UnitStep(TAO_SOLVER tao,void *linectx)</font></strong>
+<a name="line16"> 16: </a>{
+<a name="line17"> 17: </a>  int info;
+<a name="line18"> 18: </a>  TaoFunctionBegin;
+<a name="line19"> 19: </a>  info = TaoOptionsHead(<font color="#666666">"No Unit line search options"</font>);CHKERRQ(info);
+<a name="line20"> 20: </a>  info = TaoOptionsTail();CHKERRQ(info);
+<a name="line21"> 21: </a>  TaoFunctionReturn(0);
+<a name="line22"> 22: </a>}
+
+<a name="line26"> 26: </a><strong><font color="#4169E1"><a name="TaoView_UnitStep"></a>static int TaoView_UnitStep(TAO_SOLVER tao,void *ctx)</font></strong>
+<a name="line27"> 27: </a>{
+<a name="line28"> 28: </a>  int info;
+<a name="line29"> 29: </a>  TaoFunctionBegin;
+<a name="line30"> 30: </a>  info=<A href="../../../../docs/manualpages/solver/TaoPrintStatement.html#TaoPrintStatement">TaoPrintStatement</A>(tao,<font color="#666666">"  Line Search: Unit Step.\n"</font>);CHKERRQ(info);
+<a name="line31"> 31: </a>  TaoFunctionReturn(0);
+<a name="line32"> 32: </a>}
+
+<a name="line36"> 36: </a><font color="#B22222">/* @ TaoApply_LineSearch - This routine takes step length of 1.0.</font>
+
+<a name="line38"> 38: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line39"> 39: </a><font color="#B22222">+  tao - TAO_SOLVER context</font>
+<a name="line40"> 40: </a><font color="#B22222">.  X - current iterate (on output X contains new iterate, X + step*S)</font>
+<a name="line41"> 41: </a><font color="#B22222">.  S - search direction</font>
+<a name="line42"> 42: </a><font color="#B22222">.  f - objective function evaluated at X</font>
+<a name="line43"> 43: </a><font color="#B22222">.  G - gradient evaluated at X</font>
+<a name="line44"> 44: </a><font color="#B22222">.  W - work vector</font>
+<a name="line45"> 45: </a><font color="#B22222">.  gdx - inner product of gradient and the direction of the first linear manifold being searched</font>
+<a name="line46"> 46: </a><font color="#B22222">-  step - initial estimate of step length</font>
+
+<a name="line48"> 48: </a><font color="#B22222">   Output parameters:</font>
+<a name="line49"> 49: </a><font color="#B22222">+  f - objective function evaluated at new iterate, X + step*S</font>
+<a name="line50"> 50: </a><font color="#B22222">.  G - gradient evaluated at new iterate, X + step*S</font>
+<a name="line51"> 51: </a><font color="#B22222">.  X - new iterate</font>
+<a name="line52"> 52: </a><font color="#B22222">-  step - final step length</font>
+
+<a name="line54"> 54: </a><font color="#B22222">   Info is set to 0.</font>
+
+<a name="line56"> 56: </a><font color="#B22222">@ */</font>
+<a name="line57"> 57: </a><strong><font color="#4169E1"><a name="TaoApply_UnitStep"></a>static int TaoApply_UnitStep(TAO_SOLVER tao,TaoVec* X,TaoVec* G,TaoVec* S,TaoVec* W,double *f, double *f_full,</font></strong>
+<a name="line58"> 58: </a><strong><font color="#4169E1">                        double *step,TaoInt *info2,void*ctx)</font></strong>
+<a name="line59"> 59: </a>{
+<a name="line60"> 60: </a>  int       info;
+<a name="line61"> 61: </a>  double fnew;
+<a name="line62"> 62: </a>  TaoVec *XL,*XU;
+
+<a name="line64"> 64: </a>  TaoFunctionBegin;
+<a name="line65"> 65: </a>  tao-&gt;new_search=TAO_TRUE;
+<a name="line66"> 66: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X); CHKERRQ(info);
+<a name="line67"> 67: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(*step,S);CHKERRQ(info);
+<a name="line68"> 68: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao,&amp;XL,&amp;XU); CHKERRQ(info);
+<a name="line69"> 69: </a>  <font color="#4169E1">if</font> (XL &amp;&amp; XU){
+<a name="line70"> 70: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Median.html#Median">Median</A>(XL,W,XU);CHKERRQ(info);
+<a name="line71"> 71: </a>  }
+<a name="line72"> 72: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunctionGradient.html#TaoComputeMeritFunctionGradient">TaoComputeMeritFunctionGradient</A>(tao,W,&amp;fnew,G); CHKERRQ(info);
+<a name="line73"> 73: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(W); CHKERRQ(info);
+<a name="line74"> 74: </a>  info = PetscInfo1(tao,<font color="#666666">"Tao Apply Unit Step: %4.4e\n"</font>,*step);
+<a name="line75"> 75: </a>         CHKERRQ(info);
+<a name="line76"> 76: </a>  <font color="#4169E1">if</font> (*f&lt;fnew){
+<a name="line77"> 77: </a>    info = PetscInfo2(tao,<font color="#666666">"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n"</font>,*f,fnew); CHKERRQ(info);
+<a name="line78"> 78: </a>  }
+<a name="line79"> 79: </a>  *f=fnew;
+<a name="line80"> 80: </a>  *f_full = fnew;
+<a name="line81"> 81: </a>  *info2 = 0;
+<a name="line82"> 82: </a>  TaoFunctionReturn(0);
+<a name="line83"> 83: </a>}
+
+<a name="line87"> 87: </a><font color="#B22222">/*@C</font>
+<a name="line88"> 88: </a><font color="#B22222">   <A href="../../../../docs/manualpages/solver/TaoCreateUnitLineSearch.html#TaoCreateUnitLineSearch">TaoCreateUnitLineSearch</A> - Always use step length of 1.0</font>
+
+<a name="line90"> 90: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line91"> 91: </a><font color="#B22222">.  tao - TAO_SOLVER context</font>
+
+<a name="line93"> 93: </a><font color="#B22222">   Note:</font>
+<a name="line94"> 94: </a><font color="#B22222">   This routine is never used by default.</font>
+
+<a name="line96"> 96: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line98"> 98: </a><font color="#B22222">.keywords: TAO_SOLVER, linesearch</font>
+<a name="line99"> 99: </a><font color="#B22222">@*/</font>
+<a name="line100">100: </a><strong><font color="#4169E1"><a name="TaoCreateUnitLineSearch"></a>int <A href="../../../../docs/manualpages/solver/TaoCreateUnitLineSearch.html#TaoCreateUnitLineSearch">TaoCreateUnitLineSearch</A>(TAO_SOLVER tao)</font></strong>
+<a name="line101">101: </a>{
+<a name="line102">102: </a>  int info;
+
+<a name="line104">104: </a>  TaoFunctionBegin;
+<a name="line105">105: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLineSearch.html#TaoSetLineSearch">TaoSetLineSearch</A>(tao,0,
+<a name="line106">106: </a>                          TaoSetOptions_UnitStep,
+<a name="line107">107: </a>                          TaoApply_UnitStep,
+<a name="line108">108: </a>                          TaoView_UnitStep,
+<a name="line109">109: </a>                          TaoDestroy_UnitStep,
+<a name="line110">110: </a>                          0);CHKERRQ(info);
+
+<a name="line112">112: </a>  TaoFunctionReturn(0);
+<a name="line113">113: </a>}
+
+</pre>
+</body>
+
+</html>

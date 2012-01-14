@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGAAppSetHessianRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGAAppSetHessianRoutine"><H1>TaoGAAppSetHessianRoutine</H1></A>
+Sets the function to compute the Hessian as well as the location to store the matrix. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp_ga.h" 
+int TaoGAAppSetHessianRoutine(TAO_GA_APPLICATION gaapp, int (*hess)(TAO_GA_APPLICATION, GAVec, GAMat,void*),void *ctx)</PRE>
+Collective on TAO_GA_APPLICATION and Mat
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gaapp </B></TD><TD>- the TAO_GA_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>hess </B></TD><TD>- Hessian evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined context for private data for the 
+Hessian evaluation routine (may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of hess</FONT></H2>
+<pre>
+   hess (TAO_GA_APPLICATION gaapp,GAVec x,GAMat H,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gaapp </B></TD><TD>- the TAO_GA_APPLICATION application context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>H </B></TD><TD>- Hessian matrix
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined Hessian context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<DT><B>-tao_view_hessian </B> -view the hessian after each evaluation
+<br>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ GAApplication, Hessian
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A>(), <A HREF="../gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/external/globalarraytao/taoapp_ga.c.html#TaoGAAppSetHessianRoutine">src/external/globalarraytao/taoapp_ga.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

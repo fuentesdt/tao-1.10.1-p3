@@ -1,0 +1,74 @@
+<center><a href="daapp_impl.h">Actual source code: daapp_impl.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef PETSCDAAPPIMPL_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define PETSCDAAPPIMPL_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"petscmat.h"</font><font color="#A020F0"></font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"petscda.h"</font><font color="#A020F0"></font>
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"dagridctx.h"</font><font color="#A020F0"></font>
+
+<a name="line8">  8: </a><font color="#4169E1">typedef struct _p_DA_APPLICATION* DA_APPLICATION;</font>
+<a name="line9">  9: </a><font color="#4169E1">typedef struct _p_TAOAPPLICATION* TAO_APPLICATION;</font>
+
+
+<a name="line12"> 12: </a><strong><font color="#228B22">#define PETSCDAAPPMAXGRIDS 20</font></strong>
+<a name="line13"> 13: </a><strong><font color="#228B22">#define MAX_DAAP_MONITORS 10</font></strong>
+
+<a name="line15"> 15: </a><font color="#4169E1"><a name="_p_DA_APPLICATION"></a>struct _p_DA_APPLICATION </font>{
+
+<a name="line17"> 17: </a>  PETSCHEADER(int);
+
+<a name="line19"> 19: </a>  GridCtx grid[PETSCDAAPPMAXGRIDS];
+
+<a name="line21"> 21: </a>  PetscInt ndamax;        <font color="#B22222">/* Max number of levels */</font>
+<a name="line22"> 22: </a>  PetscInt nda;           <font color="#B22222">/* Number of levels in current application */</font>
+<a name="line23"> 23: </a>  PetscInt currentlevel;  <font color="#B22222">/* The current level being solved */</font>
+
+<a name="line25"> 25: </a>  PetscTruth IsComplementarity;
+<a name="line26"> 26: </a>  MatStructure kspflag;
+<a name="line27"> 27: </a>  char HessianMatrixType[20];
+<a name="line28"> 28: </a>  
+<a name="line29"> 29: </a>  <font color="#B22222">/* Function Gradient Evaluation over entire DA */</font>
+<a name="line30"> 30: </a>  int  (*computedafunction)(TAO_APPLICATION,DA,Vec,double*,void*); 
+<a name="line31"> 31: </a>  int  (*computedagradient)(TAO_APPLICATION,DA,Vec,Vec,void*); 
+<a name="line32"> 32: </a>  int  (*computedafunctiongradient)(TAO_APPLICATION,DA,Vec,double*,Vec,void*); 
+<a name="line33"> 33: </a>  void *usrdafctx;
+<a name="line34"> 34: </a>  void *usrdagctx;
+<a name="line35"> 35: </a>  void *usrdafgctx;
+
+<a name="line37"> 37: </a>  <font color="#B22222">/* Hessian Evaluation over entire DA */</font>
+<a name="line38"> 38: </a>  int  (*computedahessian)(TAO_APPLICATION,DA,Vec,Mat,void*);
+<a name="line39"> 39: </a>  void *usrdahctx;
+
+<a name="line41"> 41: </a>  <font color="#B22222">/* Evaluate bounds over entire DA */</font>
+<a name="line42"> 42: </a>  void* bounddactx;
+<a name="line43"> 43: </a>  int  (*computedabounds)(TAO_APPLICATION,DA,Vec,Vec,void*);
+
+<a name="line45"> 45: </a>  <font color="#B22222">/* User monitors before and after each Optimization <A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> */</font>
+<a name="line46"> 46: </a>  PetscInt   nbeforemonitors;
+<a name="line47"> 47: </a>  void *beforemonitorctx[MAX_DAAP_MONITORS];
+<a name="line48"> 48: </a>  int  (*beforemonitor[MAX_DAAP_MONITORS])(TAO_APPLICATION,DA,PetscInt,void*); 
+
+<a name="line50"> 50: </a>  PetscInt   naftermonitors;
+<a name="line51"> 51: </a>  void *aftermonitorctx[MAX_DAAP_MONITORS];
+<a name="line52"> 52: </a>  int  (*aftermonitor[MAX_DAAP_MONITORS])(TAO_APPLICATION,DA,PetscInt,void*); 
+
+<a name="line54"> 54: </a>};
+
+<a name="line56"> 56: </a>//#include <font color="#666666">"taodaapplication.h"</font>
+
+<a name="line58"> 58: </a><font color="#A020F0">#endif</font>
+
+
+</pre>
+</body>
+
+</html>

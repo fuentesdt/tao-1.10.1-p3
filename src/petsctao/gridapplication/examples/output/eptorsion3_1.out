@@ -1,0 +1,31 @@
+
+---- Elastic-Plastic Torsion Problem -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value -3.625, Residual: 0.150000 
+iter = 1, Function value -3.62781, Residual: < 1.0e-11 
+
+---- Elastic-Plastic Torsion Problem -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value -3.625, Residual: 0.150000 
+iter = 1, Function value -3.62781, Residual: < 1.0e-11 
+Grid: 1,    mx: 21     my: 21   
+iter = 0, Function value -3.64977, Residual: 0.379144 
+iter = 1, Function value -3.66485, Residual: 0.026518 
+iter = 2, Function value -3.66494, Residual: < 1.0e-11 
+Grid: 2,    mx: 41     my: 41   
+iter = 0, Function value -3.67048, Residual: 0.218018 
+iter = 1, Function value -3.67686, Residual: 0.000133 
+iter = 2, Function value -3.67686, Residual: < 1.0e-6 
+iter = 3, Function value -3.67686, Residual: < 1.0e-6 
+Grid: 3,    mx: 81     my: 81   
+iter = 0, Function value -3.67861, Residual: 0.112195 
+iter = 1, Function value -3.67981, Residual: 0.001344 
+iter = 2, Function value -3.67981, Residual: 0.000002 
+iter = 3, Function value -3.67981, Residual: < 1.0e-6 
+Grid: 4,    mx: 161     my: 161   
+iter = 0, Function value -3.68025, Residual: 0.052388 
+iter = 1, Function value -3.68051, Residual: 0.002284 
+iter = 2, Function value -3.68051, Residual: 0.000005 
+iter = 3, Function value -3.68051, Residual: < 1.0e-6 

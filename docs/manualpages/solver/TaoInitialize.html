@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoInitialize</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoInitialize"><H1>TaoInitialize</H1></A>
+Initializes the TAO component and many of the packages associated with it. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h" 
+int TaoInitialize(int *argc,char ***args,char file[],const char help[])
+</PRE>
+Collective on MPI_COMM_WORLD
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>argc </B></TD><TD>- [optional] count of number of command line arguments
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>args </B></TD><TD>- [optional] the command line arguments
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>file </B></TD><TD>- [optional] PETSc database file, defaults to ~username/.petscrc
+(use TAO_NULL for default)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>help </B></TD><TD>- [optional] Help message to print, use TAO_NULL for no message
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+<A HREF="../solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>() should always be called near the beginning of your
+program.  However, this command should come after PetscInitialize()
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+The input arguments are required if the options database is to be used.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, initialize
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoInitializeFortran.html#TaoInitializeFortran">TaoInitializeFortran</A>(), <A HREF="../solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>(), PetscInitialize()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao_init.c.html#TaoInitialize">src/interface/tao_init.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/bound/examples/tutorials/plate2.c.html">src/bound/examples/tutorials/plate2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/jbearing2.c.html">src/bound/examples/tutorials/jbearing2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/plate2f.F.html">src/bound/examples/tutorials/plate2f.F.html</A><BR>
+<A HREF="../../../src/complementarity/examples/tutorials/minsurf1.c.html">src/complementarity/examples/tutorials/minsurf1.c.html</A><BR>
+<A HREF="../../../src/complementarity/examples/tutorials/blackscholes.c.html">src/complementarity/examples/tutorials/blackscholes.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion1.c.html">src/unconstrained/examples/tutorials/eptorsion1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2.c.html">src/unconstrained/examples/tutorials/eptorsion2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1.c.html">src/unconstrained/examples/tutorials/rosenbrock1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2f.F.html">src/unconstrained/examples/tutorials/eptorsion2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1f.F.html">src/unconstrained/examples/tutorials/rosenbrock1f.F.html</A><BR>
+</BODY></HTML>

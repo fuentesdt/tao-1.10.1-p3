@@ -1,0 +1,101 @@
+<center><a href="bqpip.h">Actual source code: bqpip.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef __TAO_BQPIP_H</font>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font>{
+
+<a name="line8">  8: </a>  <font color="#B22222">/* Parameters */</font>
+<a name="line9">  9: </a>  TaoInt predcorr;
+<a name="line10"> 10: </a>  double ksp_tol;
+
+<a name="line12"> 12: </a>  <font color="#B22222">/* Problem variables, vectors and index sets */</font>
+<a name="line13"> 13: </a>  TaoInt n;   <font color="#B22222">/* Dimension of the Problem */</font>
+<a name="line14"> 14: </a>  TaoInt m;  <font color="#B22222">/* Number of constraints */</font>
+
+<a name="line16"> 16: </a>  <font color="#B22222">/* Problem statistics */</font>
+<a name="line17"> 17: </a>  double dinfeas;
+<a name="line18"> 18: </a>  double pinfeas;
+<a name="line19"> 19: </a>  double pobj;
+<a name="line20"> 20: </a>  double dobj;
+<a name="line21"> 21: </a>  double gap;
+<a name="line22"> 22: </a>  double rgap;
+<a name="line23"> 23: </a>  double mu;
+<a name="line24"> 24: </a>  double sigma;
+<a name="line25"> 25: </a>  double pathnorm;
+<a name="line26"> 26: </a>  double pre_sigma;
+<a name="line27"> 27: </a>  double psteplength;
+<a name="line28"> 28: </a>  double dsteplength;
+<a name="line29"> 29: </a>  double rnorm;
+
+<a name="line31"> 31: </a>  <font color="#B22222">/* Variable Vectors */</font>
+<a name="line32"> 32: </a>  TaoVec* XY;
+<a name="line33"> 33: </a>  TaoVec* DXY;
+<a name="line34"> 34: </a>  TaoVec* G;
+<a name="line35"> 35: </a>  TaoVec* DG;
+<a name="line36"> 36: </a>  TaoVec* T;
+<a name="line37"> 37: </a>  TaoVec* DT;
+<a name="line38"> 38: </a>  TaoVec* Z;
+<a name="line39"> 39: </a>  TaoVec* DZ;
+<a name="line40"> 40: </a>  TaoVec* S;
+<a name="line41"> 41: </a>  TaoVec* DS;
+<a name="line42"> 42: </a>  TaoVec* GZwork;
+<a name="line43"> 43: </a>  TaoVec* TSwork;
+
+<a name="line45"> 45: </a>  <font color="#B22222">/* Work Vectors */</font>
+<a name="line46"> 46: </a>  TaoVec* R12;
+<a name="line47"> 47: </a>  TaoVec* R3;
+<a name="line48"> 48: </a>  TaoVec* R5;
+<a name="line49"> 49: </a>  TaoVec* HDiag;
+<a name="line50"> 50: </a>  TaoVec* Work;
+
+<a name="line52"> 52: </a>  TaoVec* DiagAxpy;
+<a name="line53"> 53: </a>  TaoVec* RHS;
+<a name="line54"> 54: </a>  TaoVec* RHS2;
+
+<a name="line56"> 56: </a>  TaoMat *ProjXL, *ProjXU;
+
+<a name="line58"> 58: </a>  <font color="#B22222">/* Data */</font>
+<a name="line59"> 59: </a>  TaoMat* H;
+<a name="line60"> 60: </a>  TaoVec* B;
+<a name="line61"> 61: </a>  TaoVec* C0;
+<a name="line62"> 62: </a>  double c;
+<a name="line63"> 63: </a>  TaoVec* XU;
+<a name="line64"> 64: </a>  TaoVec* XL;
+
+<a name="line66"> 66: </a>}TAO_BQPIP;
+
+<a name="line68"> 68: </a><strong><font color="#4169E1">static int QPIPSetInitialPoint(TAO_SOLVER,TAO_BQPIP *)</font></strong>;
+<a name="line69"> 69: </a><strong><font color="#4169E1">static int QPComputeStepDirection(TAO_BQPIP *)</font></strong>;
+<a name="line70"> 70: </a><strong><font color="#4169E1">static int QPIPComputeResidual(TAO_BQPIP *)</font></strong>;
+<a name="line71"> 71: </a><strong><font color="#4169E1">static int QPStepLength(TAO_BQPIP *)</font></strong>;
+
+<a name="line74"> 74: </a><strong><font color="#4169E1">int TaoGetDualVariables_BQPIP(TAO_SOLVER,TaoVec*,TaoVec*)</font></strong>;
+<a name="line76"> 76: </a><strong><font color="#4169E1">int TAOComputeNormFromCentralPath_BQPIP(TAO_SOLVER,double *)</font></strong>;
+
+<a name="line78"> 78: </a><font color="#A020F0">#endif</font>
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</body>
+
+</html>

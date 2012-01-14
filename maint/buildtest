@@ -1,0 +1,96 @@
+#! /bin/csh
+# $Id: buildtest,v 1.2 2001/10/19 16:20:25 petsc Exp $ 
+# 
+# Compiles and tests TAO in our nightly builds.
+# Run as 'buildtest ARCH PETSC_DIR' where ARCH is one of the default PETSc archs
+# of a configure arch - and PETSC_DIR is the location of PETSc
+#
+set day=`date | cut -f1 -d" "`
+#
+set nTAO_DIR=`pwd`
+if ( ! -f ${nTAO_DIR}/include/tao.h ) then
+  set maintdir=`dirname $0`
+  set nTAO_DIR=`dirname $maintdir`
+  if ( ( ${nTAO_DIR} !~ /*) || (! -f ${nTAO_DIR}/include/tao.h )) then
+    if (${?TAO_DIR}) then 
+      set nTAO_DIR=${TAO_DIR}
+      if ( ! -f ${nTAO_DIR}/include/tao.h ) then
+        echo "Unable to locate TAO directory, run with full path or in TAO directory"
+        exit
+      endif
+    else
+      echo "Unable to locate TAO directory, run with full path or in TAO directory"
+      exit
+    endif
+  endif
+endif
+
+if (${#argv} < 2) then 
+    echo "Error! usage: buildtest ARCH PETSC_DIR"
+endif
+
+set ARCH=$1
+set nPETSC_DIR=$2
+
+set MACH=`hostname`
+rm -f $nTAO_DIR/test.log
+rm -f $nTAO_DIR/buildout.tar
+echo "Build on $MACH $ARCH  `date` " > $nTAO_DIR/test.log
+
+cd $nTAO_DIR
+
+
+set DATAFILESPATH=/home/petsc/datafiles
+set NICE=''
+set TEST='testexamples_'
+
+# possibly overwrite the values above
+if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
+  source ${nPETSC_DIR}/config/${ARCH}
+endif
+
+set TAO_DIR=$nTAO_DIR
+set PETSC_DIR=$nPETSC_DIR
+set PETSC_ARCH=$ARCH
+echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nTAO_DIR "with petsc at " $nPETSC_DIR
+
+if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}.py) then
+  set CONFIGURE='yes'
+else if (${#argv} == 1 && -f ${nPETSC_DIR}/bmake/${ARCH}/variables && ! -f ${nPETSC_DIR}/bmake/${ARCH}/configure.py) then
+  # this is a non-configure PETSC_ARCH
+  set CONFIGURE='no'
+else
+  set CONFIGURE='yes'
+endif
+
+
+if ("${CONFIGURE}" == "yes") then
+  set EJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/ejobs`
+  set JOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/jobs`
+else
+  #  Get the list of packages installed on the machine
+  set EJOBS=`grep PETSC_HAVE_ $nPETSC_DIR/bmake/$PETSC_ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
+endif
+
+
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR TAO_DIR=$nTAO_DIR tao_allfortranstubs >>& $nTAO_DIR/test.log
+
+
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR TAO_DIR=$nTAO_DIR all >>& test.log
+echo '****************************************************' >>& test.log
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& test.log
+tar rf buildoutput.tar test.log
+#
+#
+# Run examples
+rm -f examples.log
+echo "Build on $MACH $PETSC_ARCH `date` " > examples.log
+foreach j ($JOBS $EJOBS)
+  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR TAO_DIR=$nTAO_DIR ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
+  echo '******************************************************' >>& $nTAO_DIR/examples.log
+end
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& $nTAO_DIR/examples.log
+echo 'X******************************************************X' >>& $nTAO_DIR/examples.log
+tar rf buildoutput.tar examples.log
+
+

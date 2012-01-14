@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoCreateMoreThuenteBoundLineSearch</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoCreateMoreThuenteBoundLineSearch"><H1>TaoCreateMoreThuenteBoundLineSearch</H1></A>
+Create a line search 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h" 
+int TaoCreateMoreThuenteBoundLineSearch(TAO_SOLVER tao, double fftol, double ggtol)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- TAO_SOLVER context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>fftol </B></TD><TD>- the sufficient descent parameter , greater than 0.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ggtol </B></TD><TD>- the curvature tolerance, greater than 0, less than 1.
+</TD></TR></TABLE>
+<P>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+If either fftol or ggtol is 0, default parameters will be used.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This algorithm is is a modification of the algorithm by More' and Thuente.
+The modifications concern bounds.  This algorithm steps in the direction
+passed into this routine.  This point get projected back into the feasible set.
+It tries to satisfy the Wolfe conditions, but in the context of bound constrained
+optimization, there may not be a point in the piecewise linear
+path that satisfies the Wolfe conditions.  When the active set
+is changing, decrease in the objective function may be sufficient
+to terminate this line search.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine is used within the following TAO bound constrained
+minimization solvers: Newton trust region (tao_tron) and limited memory variable
+metric (tao_blmvm).
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, linesearch
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/linesearch/impls/morethuente/morethuente.c.html#TaoCreateMoreThuenteBoundLineSearch">src/linesearch/impls/morethuente/morethuente.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,51 @@
+<center><a href="tvecdouble.h">Actual source code: tvecdouble.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef SIMPLEVECTOR_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define SIMPLEVECTOR_H</font></strong>
+
+<a name="line4">  4: </a>// #include <font color="#666666">"tao_basictypes.h"</font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"taovec.h"</font><font color="#A020F0"></font>
+
+<a name="line7">  7: </a>class TaoVecDoubleArray: public TaoVec{
+
+<a name="line9">  9: </a><strong><font color="#FF0000"> protected:</font></strong>
+
+<a name="line11"> 11: </a>  TaoInt n;
+<a name="line12"> 12: </a>  double *v;
+<a name="line13"> 13: </a>  TaoInt dallocated;
+<a name="line14"> 14: </a><strong><font color="#FF0000"> public:</font></strong>
+<a name="line15"> 15: </a>  
+<a name="line16"> 16: </a>  inline int GetData(double**dd,TaoInt*nn){*dd=v;*nn=n; <font color="#4169E1">return</font> 0;}
+
+<a name="line18"> 18: </a>  TaoVecDoubleArray( TaoInt nn );
+<a name="line19"> 19: </a>  TaoVecDoubleArray( TaoInt nn , double *vv);
+<a name="line20"> 20: </a>  ~TaoVecDoubleArray(){<font color="#4169E1">if</font> (n&gt;0 &amp;&amp; dallocated) delete [] v;};
+
+
+<a name="line23"> 23: </a>  int <A href="../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A> (TaoVec *v, TaoTruth*);
+<a name="line24"> 24: </a>  int <A href="../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>(TaoScalar **, TaoInt*);
+<a name="line25"> 25: </a>  int <A href="../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>(TaoScalar **, TaoInt*);
+<a name="line26"> 26: </a>  int <A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(TaoVec**);
+<a name="line27"> 27: </a>  int <A href="../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(TaoInt *);
+
+<a name="line29"> 29: </a>  int <A href="../../docs/manualpages/lsolver/View.html#View">View</A>();
+
+<a name="line31"> 31: </a>  int GetDoubles(double **, TaoInt*);
+<a name="line32"> 32: </a>  int RestoreDoubles(double **, TaoInt*);
+
+<a name="line34"> 34: </a>};
+
+<a name="line36"> 36: </a><font color="#A020F0">#endif</font>
+
+</pre>
+</body>
+
+</html>

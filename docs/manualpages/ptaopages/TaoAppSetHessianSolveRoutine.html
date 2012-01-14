@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetHessianSolveRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetHessianSolveRoutine"><H1>TaoAppSetHessianSolveRoutine</H1></A>
+Sets the routine that solves a linear system involving the Hessian operator, (or approximate Hessian). 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetHessianSolveRoutine(TAO_APPLICATION taoapp, int (*ah)(TAO_APPLICATION,Vec,Vec,PetscTruth*,void*),void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ah </B></TD><TD>- gradient evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined function context 
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of func</FONT></H2>
+<pre>
+    ah (TAO_APPLICATION taoapp,Vec vin,Vec vout, PetscTruth* success, void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION  context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>v </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user-defined function gradient context set from <A HREF="../ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>()
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine is to be used only with the LMVM and BLMVM solvers.  These solvers do not use Hessian information, but can incorporate very approximate Hessian information into the routine.
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_APPLICATION, set, hessian
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_fg.c.html#TaoAppSetHessianSolveRoutine">src/petsctao/application/petscapp/tao_app_fg.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

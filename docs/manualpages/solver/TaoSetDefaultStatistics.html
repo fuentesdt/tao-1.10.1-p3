@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetDefaultStatistics</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetDefaultStatistics"><H1>TaoSetDefaultStatistics</H1></A>
+Initialize the statistics used by TAO for all of the solvers. These statistics include the iteration number, residual norms, and convergence status. This routine gets called before solving each optimization problem. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetDefaultStatistics(TAO_SOLVER solver)</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>solver </B> -the TAO_SOLVER solver context
+<br>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ options, defaults
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoCreate.html#TaoCreate">TaoCreate</A>(), <A HREF="../solver/TaoSetDefaultParameters.html#TaoSetDefaultParameters">TaoSetDefaultParameters</A>(), <A HREF="../solver/TaoSetDefaultMonitors.html#TaoSetDefaultMonitors">TaoSetDefaultMonitors</A>(), <A HREF="../solver/TaoSolve.html#TaoSolve">TaoSolve</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/newsolver.c.html#TaoSetDefaultStatistics">src/interface/newsolver.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

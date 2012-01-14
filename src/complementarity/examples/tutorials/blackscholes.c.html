@@ -1,0 +1,488 @@
+<center><a href="blackscholes.c">Actual source code: blackscholes.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:09+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/**********************************************************************</font>
+<a name="line2">  2: </a><font color="#B22222">    American Put Options Pricing using the Black-Scholes Equation</font>
+<a name="line3">  3: </a><font color="#B22222">  </font>
+<a name="line4">  4: </a><font color="#B22222">   Background (European Options):</font>
+<a name="line5">  5: </a><font color="#B22222">     The standard European option is a contract where the holder has the right</font>
+<a name="line6">  6: </a><font color="#B22222">     to either buy (call option) or sell (put option) an underlying asset at </font>
+<a name="line7">  7: </a><font color="#B22222">     a designated future time and price.</font>
+<a name="line8">  8: </a><font color="#B22222">  </font>
+<a name="line9">  9: </a><font color="#B22222">     The classic Black-Scholes model begins with an assumption that the</font>
+<a name="line10"> 10: </a><font color="#B22222">     price of the underlying asset behaves as a lognormal random walk.  </font>
+<a name="line11"> 11: </a><font color="#B22222">     Using this assumption and a no-arbitrage argument, the following</font>
+<a name="line12"> 12: </a><font color="#B22222">     linear parabolic partial differential equation for the value of the</font>
+<a name="line13"> 13: </a><font color="#B22222">     option results:</font>
+<a name="line14"> 14: </a><font color="#B22222">  </font>
+<a name="line15"> 15: </a><font color="#B22222">       dV/dt + 0.5(sigma**2)(S**alpha)(d2V/dS2) + (r - D)S(dV/dS) - rV = 0.</font>
+<a name="line16"> 16: </a><font color="#B22222">  </font>
+<a name="line17"> 17: </a><font color="#B22222">     Here, sigma is the volatility of the underling asset, alpha is a</font>
+<a name="line18"> 18: </a><font color="#B22222">     measure of elasticity (typically two), D measures the dividend payments</font>
+<a name="line19"> 19: </a><font color="#B22222">     on the underling asset, and r is the interest rate.</font>
+<a name="line20"> 20: </a><font color="#B22222">  </font>
+<a name="line21"> 21: </a><font color="#B22222">     To completely specify the problem, we need to impose some boundary</font>
+<a name="line22"> 22: </a><font color="#B22222">     conditions.  These are as follows:</font>
+<a name="line23"> 23: </a><font color="#B22222">  </font>
+<a name="line24"> 24: </a><font color="#B22222">       V(S, T) = max(E - S, 0)</font>
+<a name="line25"> 25: </a><font color="#B22222">       V(0, t) = E for all 0 &lt;= t &lt;= T</font>
+<a name="line26"> 26: </a><font color="#B22222">       V(s, t) = 0 for all 0 &lt;= t &lt;= T and s-&gt;infinity</font>
+<a name="line27"> 27: </a><font color="#B22222">  </font>
+<a name="line28"> 28: </a><font color="#B22222">     where T is the exercise time time and E the strike price (price paid</font>
+<a name="line29"> 29: </a><font color="#B22222">     for the contract).</font>
+<a name="line30"> 30: </a><font color="#B22222">  </font>
+<a name="line31"> 31: </a><font color="#B22222">     An explicit formula for the value of an European option can be</font>
+<a name="line32"> 32: </a><font color="#B22222">     found.  See the references for examples.</font>
+<a name="line33"> 33: </a><font color="#B22222">  </font>
+<a name="line34"> 34: </a><font color="#B22222">   Background (American Options):</font>
+<a name="line35"> 35: </a><font color="#B22222">     The American option is similar to its European counterpart.  The</font>
+<a name="line36"> 36: </a><font color="#B22222">     difference is that the holder of the American option can excercise</font>
+<a name="line37"> 37: </a><font color="#B22222">     their right to buy or sell the asset at any time prior to the</font>
+<a name="line38"> 38: </a><font color="#B22222">     expiration.  This additional ability introduce a free boundary into</font>
+<a name="line39"> 39: </a><font color="#B22222">     the Black-Scholes equation which can be modeled as a linear</font>
+<a name="line40"> 40: </a><font color="#B22222">     complementarity problem.</font>
+<a name="line41"> 41: </a><font color="#B22222">  </font>
+<a name="line42"> 42: </a><font color="#B22222">       0 &lt;= -(dV/dt + 0.5(sigma**2)(S**alpha)(d2V/dS2) + (r - D)S(dV/dS) - rV)</font>
+<a name="line43"> 43: </a><font color="#B22222">         complements </font>
+<a name="line44"> 44: </a><font color="#B22222">       V(S,T) &gt;= max(E-S,0)</font>
+<a name="line45"> 45: </a><font color="#B22222">  </font>
+<a name="line46"> 46: </a><font color="#B22222">     where the variables are the same as before and we have the same boundary</font>
+<a name="line47"> 47: </a><font color="#B22222">     conditions.</font>
+<a name="line48"> 48: </a><font color="#B22222">  </font>
+<a name="line49"> 49: </a><font color="#B22222">     There is not explicit formula for calculating the value of an American</font>
+<a name="line50"> 50: </a><font color="#B22222">     option.  Therefore, we discretize the above problem and solve the</font>
+<a name="line51"> 51: </a><font color="#B22222">     resulting linear complementarity problem.</font>
+<a name="line52"> 52: </a><font color="#B22222">  </font>
+<a name="line53"> 53: </a><font color="#B22222">     We will use backward differences for the time variables and central</font>
+<a name="line54"> 54: </a><font color="#B22222">     differences for the space variables.  Crank-Nicholson averaging will</font>
+<a name="line55"> 55: </a><font color="#B22222">     also be used in the discretization.  The algorithm used by the code</font>
+<a name="line56"> 56: </a><font color="#B22222">     solves for V(S,t) for a fixed t and then uses this value in the</font>
+<a name="line57"> 57: </a><font color="#B22222">     calculation of V(S,t - dt).  The method stops when V(S,0) has been</font>
+<a name="line58"> 58: </a><font color="#B22222">     found.</font>
+<a name="line59"> 59: </a><font color="#B22222">  </font>
+<a name="line60"> 60: </a><font color="#B22222">   References:</font>
+<a name="line61"> 61: </a><font color="#B22222">     Huang and Pang, "Options Pricing and Linear Complementarity,"</font>
+<a name="line62"> 62: </a><font color="#B22222">       Journal of Computational Finance, volume 2, number 3, 1998.</font>
+<a name="line63"> 63: </a><font color="#B22222">     Wilmott, "Derivatives: The Theory and Practice of Financial Engineering,"</font>
+<a name="line64"> 64: </a><font color="#B22222">       John Wiley and Sons, New York, 1998.</font>
+<a name="line65"> 65: </a><font color="#B22222">***************************************************************************/</font>
+
+<a name="line67"> 67: </a><font color="#B22222">/*</font>
+<a name="line68"> 68: </a><font color="#B22222">  Include "tao.h" so we can use TAO solvers with PETSc support.  </font>
+<a name="line69"> 69: </a><font color="#B22222">  Include "petscda.h" so that we can use distributed arrays (DAs) for managing</font>
+<a name="line70"> 70: </a><font color="#B22222">  the parallel mesh.</font>
+<a name="line71"> 71: </a><font color="#B22222">*/</font>
+
+<a name="line73"> 73: </a><font color="#A020F0">#include </font><font color="#666666">"petscda.h"</font><font color="#A020F0"></font>
+<a name="line74"> 74: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0"></font>
+
+<a name="line76"> 76: </a>static char  help[] =
+<a name="line77"> 77: </a><font color="#666666">"This example demonstrates use of the TAO package to\n\</font>
+<a name="line78"> 78: </a><font color="#666666">solve a linear complementarity problem for pricing American put options.\n\</font>
+<a name="line79"> 79: </a><font color="#666666">The code uses backward differences in time and central differences in\n\</font>
+<a name="line80"> 80: </a><font color="#666666">space.  The command line options are:\n\</font>
+<a name="line81"> 81: </a><font color="#666666">  -rate &lt;r&gt;, where &lt;r&gt; = interest rate\n\</font>
+<a name="line82"> 82: </a><font color="#666666">  -sigma &lt;s&gt;, where &lt;s&gt; = volatility of the underlying\n\</font>
+<a name="line83"> 83: </a><font color="#666666">  -alpha &lt;a&gt;, where &lt;a&gt; = elasticity of the underlying\n\</font>
+<a name="line84"> 84: </a><font color="#666666">  -delta &lt;d&gt;, where &lt;d&gt; = dividend rate\n\</font>
+<a name="line85"> 85: </a><font color="#666666">  -strike &lt;e&gt;, where &lt;e&gt; = strike price\n\</font>
+<a name="line86"> 86: </a><font color="#666666">  -expiry &lt;t&gt;, where &lt;t&gt; = the expiration date\n\</font>
+<a name="line87"> 87: </a><font color="#666666">  -mt &lt;tg&gt;, where &lt;tg&gt; = number of grid points in time\n\</font>
+<a name="line88"> 88: </a><font color="#666666">  -ms &lt;sg&gt;, where &lt;sg&gt; = number of grid points in space\n\</font>
+<a name="line89"> 89: </a><font color="#666666">  -es &lt;se&gt;, where &lt;se&gt; = ending point of the space discretization\n\n"</font>;
+
+<a name="line91"> 91: </a><font color="#B22222">/*T</font>
+<a name="line92"> 92: </a><font color="#B22222">   Concepts: TAO - Solving a complementarity problem</font>
+<a name="line93"> 93: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(); <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>();</font>
+<a name="line94"> 94: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(); <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>();</font>
+<a name="line95"> 95: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>();</font>
+<a name="line96"> 96: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>();</font>
+<a name="line97"> 97: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>();</font>
+<a name="line98"> 98: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>();</font>
+<a name="line99"> 99: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBoundsRoutine.html#TaoAppSetVariableBoundsRoutine">TaoAppSetVariableBoundsRoutine</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>();</font>
+<a name="line100">100: </a><font color="#B22222">   Processors: 1</font>
+<a name="line101">101: </a><font color="#B22222">T*/</font>
+
+
+<a name="line104">104: </a><font color="#B22222">/*</font>
+<a name="line105">105: </a><font color="#B22222">  User-defined application context - contains data needed by the</font>
+<a name="line106">106: </a><font color="#B22222">  application-provided call-back routines, FormFunction(), and FormJacobian().</font>
+<a name="line107">107: </a><font color="#B22222">*/</font>
+
+<a name="line109">109: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line110">110: </a>  double *Vt1;                <font color="#B22222">/* Value of the option at time T + dt */</font>
+<a name="line111">111: </a>  double *c;                  <font color="#B22222">/* Constant -- (r - D)S */</font>
+<a name="line112">112: </a>  double *d;                      <font color="#B22222">/* Constant -- -0.5(sigma**2)(S**alpha) */</font>
+
+<a name="line114">114: </a>  PetscReal rate;                <font color="#B22222">/* Interest rate */</font>
+<a name="line115">115: </a>  PetscReal sigma, alpha, delta; <font color="#B22222">/* Underlying asset properties */</font>
+<a name="line116">116: </a>  PetscReal strike, expiry;      <font color="#B22222">/* Option contract properties */</font>
+
+<a name="line118">118: </a>  PetscReal es;                      <font color="#B22222">/* Finite value used for maximum asset value */</font>
+<a name="line119">119: </a>  PetscReal ds, dt;              <font color="#B22222">/* Discretization properties */</font>
+<a name="line120">120: </a>  PetscInt ms, mt;                      <font color="#B22222">/* Number of elements */</font>
+
+<a name="line122">122: </a>  DA da;
+<a name="line123">123: </a>} AppCtx;
+
+<a name="line125">125: </a><font color="#B22222">/* -------- User-defined Routines --------- */</font>
+
+<a name="line127">127: </a><strong><font color="#4169E1">int FormConstraints(TAO_APPLICATION, Vec, Vec, void *)</font></strong>;
+<a name="line128">128: </a><strong><font color="#4169E1">int FormJacobian(TAO_APPLICATION, Vec, Mat *, Mat*, MatStructure*, void *)</font></strong>;
+<a name="line129">129: </a><strong><font color="#4169E1">int ComputeVariableBounds(TAO_APPLICATION, Vec, Vec, void*)</font></strong>;
+
+<a name="line133">133: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc, char **argv)</font></strong>
+<a name="line134">134: </a>{
+<a name="line135">135: </a>  int      info;          <font color="#B22222">/* used to check for functions returning nonzeros */</font>
+<a name="line136">136: </a>  Vec      x;             <font color="#B22222">/* solution vector */</font>
+<a name="line137">137: </a>  Vec      c;             <font color="#B22222">/* Constraints function vector */</font>
+<a name="line138">138: </a>  Mat J;                  <font color="#B22222">/* jacobian matrix */</font>
+<a name="line139">139: </a>  PetscTruth flg;          <font color="#B22222">/* A return variable when checking for user options */</font>
+<a name="line140">140: </a>  TAO_SOLVER tao;          <font color="#B22222">/* TAO_SOLVER solver context */</font>
+<a name="line141">141: </a>  TAO_APPLICATION my_app; <font color="#B22222">/* The PETSc application */</font>
+<a name="line142">142: </a>  AppCtx user;                  <font color="#B22222">/* user-defined work context */</font>
+<a name="line143">143: </a>  PetscInt i, j;               
+<a name="line144">144: </a>  PetscInt    xs,xm,gxs,gxm;
+<a name="line145">145: </a>  double sval = 0;
+<a name="line146">146: </a>  PetscScalar *x_array;
+<a name="line147">147: </a>  Vec    localX;
+
+<a name="line149">149: </a>  <font color="#B22222">/* Initialize PETSc, TAO */</font>
+<a name="line150">150: </a>  PetscInitialize(&amp;argc, &amp;argv, (char *)0, help);
+<a name="line151">151: </a>  <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(&amp;argc, &amp;argv, (char *)0, help);
+
+<a name="line153">153: </a>  <font color="#B22222">/* </font>
+<a name="line154">154: </a><font color="#B22222">     Initialize the user-defined application context with reasonable </font>
+<a name="line155">155: </a><font color="#B22222">     values for the American option to price </font>
+<a name="line156">156: </a><font color="#B22222">  */</font>
+<a name="line157">157: </a>  user.rate = 0.04;
+<a name="line158">158: </a>  user.sigma = 0.40;
+<a name="line159">159: </a>  user.alpha = 2.00;
+<a name="line160">160: </a>  user.delta = 0.01;
+<a name="line161">161: </a>  user.strike = 10.0;
+<a name="line162">162: </a>  user.expiry = 1.0;
+<a name="line163">163: </a>  user.mt = 10;
+<a name="line164">164: </a>  user.ms = 150;
+<a name="line165">165: </a>  user.es = 100.0;
+<a name="line166">166: </a>  
+<a name="line167">167: </a>  <font color="#B22222">/* Read in alternative values for the American option to price */</font>
+<a name="line168">168: </a>  info = PetscOptionsGetReal(PETSC_NULL, <font color="#666666">"-alpha"</font>, &amp;user.alpha, &amp;flg); 
+<a name="line169">169: </a>         CHKERRQ(info);
+<a name="line170">170: </a>  info = PetscOptionsGetReal(PETSC_NULL, <font color="#666666">"-delta"</font>, &amp;user.delta, &amp;flg); 
+<a name="line171">171: </a>         CHKERRQ(info);
+<a name="line172">172: </a>  info = PetscOptionsGetReal(PETSC_NULL, <font color="#666666">"-es"</font>, &amp;user.es, &amp;flg); 
+<a name="line173">173: </a>         CHKERRQ(info);
+<a name="line174">174: </a>  info = PetscOptionsGetReal(PETSC_NULL, <font color="#666666">"-expiry"</font>, &amp;user.expiry, &amp;flg); 
+<a name="line175">175: </a>         CHKERRQ(info);
+<a name="line176">176: </a>  info = PetscOptionsGetInt(PETSC_NULL, <font color="#666666">"-ms"</font>, &amp;user.ms, &amp;flg); 
+<a name="line177">177: </a>         CHKERRQ(info);
+<a name="line178">178: </a>  info = PetscOptionsGetInt(PETSC_NULL, <font color="#666666">"-mt"</font>, &amp;user.mt, &amp;flg); 
+<a name="line179">179: </a>         CHKERRQ(info);
+<a name="line180">180: </a>  info = PetscOptionsGetReal(PETSC_NULL, <font color="#666666">"-rate"</font>, &amp;user.rate, &amp;flg); 
+<a name="line181">181: </a>         CHKERRQ(info);
+<a name="line182">182: </a>  info = PetscOptionsGetReal(PETSC_NULL, <font color="#666666">"-sigma"</font>, &amp;user.sigma, &amp;flg); 
+<a name="line183">183: </a>         CHKERRQ(info);
+<a name="line184">184: </a>  info = PetscOptionsGetReal(PETSC_NULL, <font color="#666666">"-strike"</font>, &amp;user.strike, &amp;flg); 
+<a name="line185">185: </a>         CHKERRQ(info);
+
+<a name="line187">187: </a>  <font color="#B22222">/* Check that the options set are allowable (needs to be done) */</font>
+
+<a name="line189">189: </a>  user.ms++;
+<a name="line190">190: </a>  info = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,user.ms,1,1,
+<a name="line191">191: </a>                    PETSC_NULL,&amp;user.da); CHKERRQ(info);
+<a name="line192">192: </a>  <font color="#B22222">/* Create appropriate vectors and matrices */</font>
+
+<a name="line194">194: </a>  info = DAGetCorners(user.da,&amp;xs,PETSC_NULL,PETSC_NULL,&amp;xm,PETSC_NULL,PETSC_NULL); CHKERRQ(info);
+<a name="line195">195: </a>  info = DAGetGhostCorners(user.da,&amp;gxs,PETSC_NULL,PETSC_NULL,&amp;gxm,PETSC_NULL,PETSC_NULL); CHKERRQ(info);
+
+<a name="line197">197: </a>  info = DACreateGlobalVector(user.da,&amp;x);CHKERRQ(info);
+<a name="line198">198: </a>  <font color="#B22222">/* </font>
+<a name="line199">199: </a><font color="#B22222">     Finish filling in the user-defined context with the values for</font>
+<a name="line200">200: </a><font color="#B22222">     dS, dt, and allocating space for the constants </font>
+<a name="line201">201: </a><font color="#B22222">  */</font>
+<a name="line202">202: </a>  user.ds = user.es / (user.ms-1);
+<a name="line203">203: </a>  user.dt = user.expiry / user.mt;
+
+<a name="line205">205: </a>  info = PetscMalloc((gxm)*<font color="#4169E1">sizeof</font>(double),&amp;(user.Vt1)); CHKERRQ(info);
+<a name="line206">206: </a>  info = PetscMalloc((gxm)*<font color="#4169E1">sizeof</font>(double),&amp;(user.c)); CHKERRQ(info);
+<a name="line207">207: </a>  info = PetscMalloc((gxm)*<font color="#4169E1">sizeof</font>(double),&amp;(user.d)); CHKERRQ(info);
+
+<a name="line209">209: </a>  <font color="#B22222">/* </font>
+<a name="line210">210: </a><font color="#B22222">     Calculate the values for the constant.  Vt1 begins with the ending </font>
+<a name="line211">211: </a><font color="#B22222">     boundary condition.  </font>
+<a name="line212">212: </a><font color="#B22222">  */</font>
+<a name="line213">213: </a>  <font color="#4169E1">for</font> (i=0; i&lt;gxm; i++) {
+<a name="line214">214: </a>    sval = (gxs+i)*user.ds;
+<a name="line215">215: </a>    user.Vt1[i] = PetscMax(user.strike - sval, 0);
+<a name="line216">216: </a>    user.c[i] = (user.delta - user.rate)*sval;
+<a name="line217">217: </a>    user.d[i] = -0.5*user.sigma*user.sigma*pow(sval, user.alpha);
+<a name="line218">218: </a>  }
+<a name="line219">219: </a>  <font color="#4169E1">if</font> (gxs+gxm==user.ms){
+<a name="line220">220: </a>    user.Vt1[gxm-1] = 0;
+<a name="line221">221: </a>  }
+
+<a name="line223">223: </a>  info = VecDuplicate(x, &amp;c); CHKERRQ(info);
+
+<a name="line225">225: </a>  <font color="#B22222">/* </font>
+<a name="line226">226: </a><font color="#B22222">     Allocate the matrix used by TAO for the Jacobian.  Each row of</font>
+<a name="line227">227: </a><font color="#B22222">     the Jacobian matrix will have at most three elements.</font>
+<a name="line228">228: </a><font color="#B22222">  */</font>
+<a name="line229">229: </a>  info = DAGetMatrix(user.da,MATAIJ,&amp;J);CHKERRQ(info);
+<a name="line230">230: </a>         
+<a name="line231">231: </a>  <font color="#B22222">/* The TAO code begins here */</font>
+
+<a name="line233">233: </a>  <font color="#B22222">/* Create TAO solver and set desired solution method  */</font>
+<a name="line234">234: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(PETSC_COMM_WORLD, <font color="#666666">"tao_ssils"</font>, &amp;tao); CHKERRQ(info);
+<a name="line235">235: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(PETSC_COMM_WORLD, &amp;my_app); CHKERRQ(info);
+
+<a name="line237">237: </a>  <font color="#B22222">/* Set routines for constraints function and Jacobian evaluation */</font>
+<a name="line238">238: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>(my_app, FormConstraints, (void *)&amp;user); 
+<a name="line239">239: </a>  CHKERRQ(info);
+<a name="line240">240: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianRoutine.html#TaoAppSetJacobianRoutine">TaoAppSetJacobianRoutine</A>(my_app, FormJacobian, (void *)&amp;user); CHKERRQ(info); 
+<a name="line241">241: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(my_app, J, J); CHKERRQ(info);
+<a name="line242">242: </a>    
+<a name="line243">243: </a>  <font color="#B22222">/* Set the variable bounds */</font>
+<a name="line244">244: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBoundsRoutine.html#TaoAppSetVariableBoundsRoutine">TaoAppSetVariableBoundsRoutine</A>(my_app,ComputeVariableBounds,(void*)&amp;user); 
+<a name="line245">245: </a>  CHKERRQ(info);
+
+<a name="line247">247: </a>  <font color="#B22222">/* Set initial solution guess */</font>
+<a name="line248">248: </a>  info = VecGetArray(x,&amp;x_array); CHKERRQ(info);
+<a name="line249">249: </a>  <font color="#4169E1">for</font> (i=0; i&lt; xm; i++) 
+<a name="line250">250: </a>    x_array[i] = user.Vt1[i-gxs+xs];
+<a name="line251">251: </a>  info = VecRestoreArray(x,&amp;x_array); CHKERRQ(info);
+<a name="line252">252: </a>  <font color="#B22222">/* Set data structure */</font> 
+<a name="line253">253: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(my_app, x); CHKERRQ(info);
+
+<a name="line255">255: </a>  <font color="#B22222">/* Set routines for function and Jacobian evaluation */</font>
+<a name="line256">256: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>(my_app,tao); CHKERRQ(info);
+
+<a name="line258">258: </a>  <font color="#B22222">/* Iteratively solve the linear complementarity problems  */</font>
+<a name="line259">259: </a>  <font color="#4169E1">for</font> (i = 1; i &lt; user.mt; i++) {
+
+<a name="line261">261: </a>    <font color="#B22222">/* <A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> the current version */</font>
+<a name="line262">262: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>(my_app,tao);  CHKERRQ(info);
+
+<a name="line264">264: </a>    <font color="#B22222">/* Update Vt1 with the solution */</font>
+<a name="line265">265: </a>    info = DAGetLocalVector(user.da,&amp;localX);CHKERRQ(info);
+<a name="line266">266: </a>    info = DAGlobalToLocalBegin(user.da,x,INSERT_VALUES,localX); CHKERRQ(info);
+<a name="line267">267: </a>    info = DAGlobalToLocalEnd(user.da,x,INSERT_VALUES,localX); CHKERRQ(info);
+<a name="line268">268: </a>    info = VecGetArray(localX,&amp;x_array); CHKERRQ(info);
+<a name="line269">269: </a>    <font color="#4169E1">for</font> (j = 0; j &lt; gxm; j++) {
+<a name="line270">270: </a>      user.Vt1[j] = x_array[j];
+<a name="line271">271: </a>    }
+<a name="line272">272: </a>    info = VecRestoreArray(x,&amp;x_array); CHKERRQ(info);
+<a name="line273">273: </a>    info = DARestoreLocalVector(user.da,&amp;localX); CHKERRQ(info);
+<a name="line274">274: </a>  }
+
+<a name="line276">276: </a>  <font color="#B22222">/* Free TAO data structures */</font>
+
+<a name="line278">278: </a>  info = <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(tao); CHKERRQ(info);
+
+<a name="line280">280: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>(my_app);  CHKERRQ(info);
+
+<a name="line282">282: </a>  <font color="#B22222">/* Free PETSc data structures */</font>
+<a name="line283">283: </a>  info = VecDestroy(x); CHKERRQ(info);
+<a name="line284">284: </a>  info = VecDestroy(c); CHKERRQ(info);
+<a name="line285">285: </a>  info = MatDestroy(J); CHKERRQ(info);
+<a name="line286">286: </a>  info = DADestroy(user.da); CHKERRQ(info);
+<a name="line287">287: </a>  <font color="#B22222">/* Free user-defined workspace */</font>
+<a name="line288">288: </a>  info = PetscFree(user.Vt1); CHKERRQ(info);
+<a name="line289">289: </a>  info = PetscFree(user.c); CHKERRQ(info);
+<a name="line290">290: </a>  info = PetscFree(user.d); CHKERRQ(info);
+
+<a name="line292">292: </a>  <font color="#B22222">/* Finalize TAO and PETSc */</font>
+<a name="line293">293: </a>  PetscFinalize();
+<a name="line294">294: </a>  <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>();
+
+<a name="line296">296: </a>  <font color="#4169E1">return</font> 0;
+<a name="line297">297: </a>}
+
+<a name="line299">299: </a><font color="#B22222">/* -------------------------------------------------------------------- */</font>
+<a name="line302">302: </a><strong><font color="#4169E1"><a name="ComputeVariableBounds"></a>int ComputeVariableBounds(TAO_APPLICATION tao, Vec xl, Vec xu, void*ctx)</font></strong>
+<a name="line303">303: </a>{
+<a name="line304">304: </a>  AppCtx *user = (AppCtx *) ctx;
+<a name="line305">305: </a>  int info;
+<a name="line306">306: </a>  PetscInt  i;
+<a name="line307">307: </a>  PetscInt  xs,xm;
+<a name="line308">308: </a>  PetscInt  ms = user-&gt;ms;
+<a name="line309">309: </a>  PetscScalar sval=0.0,*xl_array,ub= TAO_INFINITY;
+
+<a name="line311">311: </a>  <font color="#B22222">/* Set the variable bounds */</font>
+<a name="line312">312: </a>  info = VecSet(xu, ub); CHKERRQ(info);
+<a name="line313">313: </a>  info = DAGetCorners(user-&gt;da,&amp;xs,PETSC_NULL,PETSC_NULL,&amp;xm,PETSC_NULL,PETSC_NULL); CHKERRQ(info);
+
+<a name="line315">315: </a>  info = VecGetArray(xl,&amp;xl_array); CHKERRQ(info);
+<a name="line316">316: </a>  <font color="#4169E1">for</font> (i = 0; i &lt; xm; i++){
+<a name="line317">317: </a>    sval = (xs+i)*user-&gt;ds;
+<a name="line318">318: </a>    xl_array[i] = PetscMax(user-&gt;strike - sval, 0);
+<a name="line319">319: </a>  }
+<a name="line320">320: </a>  info = VecRestoreArray(xl,&amp;xl_array); CHKERRQ(info);
+
+<a name="line322">322: </a>  <font color="#4169E1">if</font> (xs==0){
+<a name="line323">323: </a>    info = VecGetArray(xu,&amp;xl_array); CHKERRQ(info);
+<a name="line324">324: </a>    xl_array[0] = PetscMax(user-&gt;strike, 0);
+<a name="line325">325: </a>    info = VecRestoreArray(xu,&amp;xl_array); CHKERRQ(info);
+<a name="line326">326: </a>  }
+<a name="line327">327: </a>  <font color="#4169E1">if</font> (xs+xm==ms){
+<a name="line328">328: </a>    info = VecGetArray(xu,&amp;xl_array); CHKERRQ(info);
+<a name="line329">329: </a>    xl_array[xm-1] = 0;
+<a name="line330">330: </a>    info = VecRestoreArray(xu,&amp;xl_array); CHKERRQ(info);
+<a name="line331">331: </a>  }
+
+<a name="line333">333: </a>  <font color="#4169E1">return</font> 0;
+<a name="line334">334: </a>}
+<a name="line335">335: </a><font color="#B22222">/* -------------------------------------------------------------------- */</font>
+
+<a name="line339">339: </a><font color="#B22222">/*  </font>
+<a name="line340">340: </a><font color="#B22222">    FormFunction - Evaluates gradient of f.             </font>
+
+<a name="line342">342: </a><font color="#B22222">    Input Parameters:</font>
+<a name="line343">343: </a><font color="#B22222">.   tao  - the TAO_SOLVER context</font>
+<a name="line344">344: </a><font color="#B22222">.   X    - input vector</font>
+<a name="line345">345: </a><font color="#B22222">.   ptr  - optional user-defined context, as set by <A href="../../../../docs/manualpages/ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>()</font>
+<a name="line346">346: </a><font color="#B22222">    </font>
+<a name="line347">347: </a><font color="#B22222">    Output Parameters:</font>
+<a name="line348">348: </a><font color="#B22222">.   F - vector containing the newly evaluated gradient</font>
+<a name="line349">349: </a><font color="#B22222">*/</font>
+<a name="line350">350: </a><strong><font color="#4169E1"><a name="FormConstraints"></a>int FormConstraints(TAO_APPLICATION tao, Vec X, Vec F, void *ptr)</font></strong> 
+<a name="line351">351: </a>{
+<a name="line352">352: </a>  AppCtx *user = (AppCtx *) ptr;
+<a name="line353">353: </a>  PetscScalar *x, *f;
+<a name="line354">354: </a>  double *Vt1 = user-&gt;Vt1, *c = user-&gt;c, *d = user-&gt;d;
+<a name="line355">355: </a>  double rate = user-&gt;rate;
+<a name="line356">356: </a>  double dt = user-&gt;dt, ds = user-&gt;ds;
+<a name="line357">357: </a>  PetscInt ms = user-&gt;ms;
+<a name="line358">358: </a>  int    info;
+<a name="line359">359: </a>  PetscInt i, xs,xm,gxs,gxm;
+<a name="line360">360: </a>  Vec    localX,localF;
+<a name="line361">361: </a>  double zero=0.0;
+
+<a name="line363">363: </a>  info = DAGetLocalVector(user-&gt;da,&amp;localX);CHKERRQ(info);
+<a name="line364">364: </a>  info = DAGetLocalVector(user-&gt;da,&amp;localF);CHKERRQ(info);
+<a name="line365">365: </a>  info = DAGlobalToLocalBegin(user-&gt;da,X,INSERT_VALUES,localX); CHKERRQ(info);
+<a name="line366">366: </a>  info = DAGlobalToLocalEnd(user-&gt;da,X,INSERT_VALUES,localX); CHKERRQ(info);
+<a name="line367">367: </a>  info = DAGetCorners(user-&gt;da,&amp;xs,PETSC_NULL,PETSC_NULL,&amp;xm,PETSC_NULL,PETSC_NULL); CHKERRQ(info);
+<a name="line368">368: </a>  info = DAGetGhostCorners(user-&gt;da,&amp;gxs,PETSC_NULL,PETSC_NULL,&amp;gxm,PETSC_NULL,PETSC_NULL); CHKERRQ(info);
+<a name="line369">369: </a>  info = VecSet(F, zero);CHKERRQ(info);
+<a name="line370">370: </a>  <font color="#B22222">/* </font>
+<a name="line371">371: </a><font color="#B22222">     The problem size is smaller than the discretization because of the</font>
+<a name="line372">372: </a><font color="#B22222">     two fixed elements (V(0,T) = E and V(Send,T) = 0.</font>
+<a name="line373">373: </a><font color="#B22222">  */</font>
+
+<a name="line375">375: </a>  <font color="#B22222">/* Get pointers to the vector data */</font>
+<a name="line376">376: </a>  info = VecGetArray(localX, &amp;x); CHKERRQ(info);
+<a name="line377">377: </a>  info = VecGetArray(localF, &amp;f); CHKERRQ(info);
+<a name="line378">378: </a>  
+<a name="line379">379: </a>  <font color="#B22222">/* Left Boundary */</font>
+<a name="line380">380: </a>  <font color="#4169E1">if</font> (gxs==0){ 
+<a name="line381">381: </a>    f[0] = x[0]-user-&gt;strike;
+<a name="line382">382: </a>  } <font color="#4169E1">else</font> {
+<a name="line383">383: </a>    f[0] = 0;
+<a name="line384">384: </a>  }
+
+<a name="line386">386: </a>  <font color="#B22222">/* All points in the interior */</font>
+<a name="line387">387: </a>  <font color="#B22222">/*  for (i=gxs+1;i&lt;gxm-1;i++){ */</font>
+<a name="line388">388: </a>  <font color="#4169E1">for</font> (i=1;i&lt;gxm-1;i++){
+<a name="line389">389: </a>    f[i] = (1.0/dt + rate)*x[i] - Vt1[i]/dt +
+<a name="line390">390: </a>      (c[i]/(4*ds))*(x[i+1] - x[i-1] + Vt1[i+1] - Vt1[i-1]) +
+<a name="line391">391: </a>      (d[i]/(2*ds*ds))*(x[i+1] -2*x[i] + x[i-1] + 
+<a name="line392">392: </a>                        Vt1[i+1] - 2*Vt1[i] + Vt1[i-1]);
+<a name="line393">393: </a>  }
+
+<a name="line395">395: </a>  <font color="#B22222">/* Right boundary */</font>
+<a name="line396">396: </a>  <font color="#4169E1">if</font> (gxs+gxm==ms){ 
+<a name="line397">397: </a>    f[xm-1]=x[gxm-1];
+<a name="line398">398: </a>  } <font color="#4169E1">else</font> {
+<a name="line399">399: </a>    f[xm-1]=0;
+<a name="line400">400: </a>  }
+
+<a name="line402">402: </a>  <font color="#B22222">/* Restore vectors */</font>
+<a name="line403">403: </a>  info = VecRestoreArray(localX, &amp;x); CHKERRQ(info);
+<a name="line404">404: </a>  info = VecRestoreArray(localF, &amp;f); CHKERRQ(info);
+<a name="line405">405: </a>  info = DALocalToGlobalBegin(user-&gt;da,localF,F); CHKERRQ(info);
+<a name="line406">406: </a>  info = DALocalToGlobalEnd(user-&gt;da,localF,F); CHKERRQ(info);
+<a name="line407">407: </a>  info = DARestoreLocalVector(user-&gt;da,&amp;localX); CHKERRQ(info);
+<a name="line408">408: </a>  info = DARestoreLocalVector(user-&gt;da,&amp;localF); CHKERRQ(info);
+<a name="line409">409: </a>  info = PetscLogFlops(24*(gxm-2)); CHKERRQ(info);
+<a name="line410">410: </a>  <font color="#B22222">/*</font>
+<a name="line411">411: </a><font color="#B22222">  info=VecView(F,PETSC_VIEWER_STDOUT_WORLD);</font>
+<a name="line412">412: </a><font color="#B22222">  */</font>
+<a name="line413">413: </a>  <font color="#4169E1">return</font> 0;
+<a name="line414">414: </a>}
+
+<a name="line416">416: </a><font color="#B22222">/* ------------------------------------------------------------------- */</font>
+<a name="line419">419: </a><font color="#B22222">/*</font>
+<a name="line420">420: </a><font color="#B22222">   FormJacobian - Evaluates Jacobian matrix.</font>
+
+<a name="line422">422: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line423">423: </a><font color="#B22222">.  tao  - the TAO_SOLVER context</font>
+<a name="line424">424: </a><font color="#B22222">.  X    - input vector</font>
+<a name="line425">425: </a><font color="#B22222">.  ptr  - optional user-defined context, as set by TaoSetJacobian()</font>
+
+<a name="line427">427: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line428">428: </a><font color="#B22222">.  J    - Jacobian matrix</font>
+<a name="line429">429: </a><font color="#B22222">*/</font>
+<a name="line430">430: </a><strong><font color="#4169E1"><a name="FormJacobian"></a>int FormJacobian(TAO_APPLICATION tao, Vec X, Mat *tJ, Mat *tJPre, MatStructure *flag, void *ptr)</font></strong>
+<a name="line431">431: </a>{ 
+<a name="line432">432: </a>  AppCtx *user = (AppCtx *) ptr;
+<a name="line433">433: </a>  Mat J = *tJ;
+<a name="line434">434: </a>  double *c = user-&gt;c, *d = user-&gt;d;
+<a name="line435">435: </a>  double rate = user-&gt;rate;
+<a name="line436">436: </a>  double dt = user-&gt;dt, ds = user-&gt;ds;
+<a name="line437">437: </a>  PetscInt ms = user-&gt;ms;
+<a name="line438">438: </a>  PetscScalar val[3];
+<a name="line439">439: </a>  int info;
+<a name="line440">440: </a>  PetscInt col[3];
+<a name="line441">441: </a>  PetscInt i;
+<a name="line442">442: </a>  PetscInt gxs,gxm;
+<a name="line443">443: </a>  PetscTruth assembled;
+
+<a name="line445">445: </a>  <font color="#B22222">/* Set various matrix options */</font>
+<a name="line446">446: </a>  *flag=SAME_NONZERO_PATTERN;
+<a name="line447">447: </a>  info = MatSetOption(J,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE); CHKERRQ(info);
+<a name="line448">448: </a>  info = MatAssembled(J,&amp;assembled); CHKERRQ(info);
+<a name="line449">449: </a>  <font color="#4169E1">if</font> (assembled){info = MatZeroEntries(J);  CHKERRQ(info);}
+
+
+<a name="line452">452: </a>  info = DAGetGhostCorners(user-&gt;da,&amp;gxs,PETSC_NULL,PETSC_NULL,&amp;gxm,PETSC_NULL,PETSC_NULL); CHKERRQ(info);
+
+<a name="line454">454: </a>  <font color="#4169E1">if</font> (gxs==0){
+<a name="line455">455: </a>    i = 0;
+<a name="line456">456: </a>    col[0] = 0;
+<a name="line457">457: </a>    val[0]=1.0;
+<a name="line458">458: </a>    info = MatSetValues(J,1,&amp;i,1,col,val,INSERT_VALUES); CHKERRQ(info);
+<a name="line459">459: </a>  }
+<a name="line460">460: </a>  <font color="#4169E1">for</font> (i=1; i &lt; gxm-1; i++) {
+<a name="line461">461: </a>    col[0] = gxs + i - 1;
+<a name="line462">462: </a>    col[1] = gxs + i;
+<a name="line463">463: </a>    col[2] = gxs + i + 1;
+<a name="line464">464: </a>    val[0] = -c[i]/(4*ds) + d[i]/(2*ds*ds);
+<a name="line465">465: </a>    val[1] = 1.0/dt + rate - d[i]/(ds*ds);
+<a name="line466">466: </a>    val[2] =  c[i]/(4*ds) + d[i]/(2*ds*ds);
+<a name="line467">467: </a>    info = MatSetValues(J,1,&amp;col[1],3,col,val,INSERT_VALUES); CHKERRQ(info);
+<a name="line468">468: </a>  }
+<a name="line469">469: </a>  <font color="#4169E1">if</font> (gxs+gxm==ms){
+<a name="line470">470: </a>    i = ms-1;
+<a name="line471">471: </a>    col[0] = i;
+<a name="line472">472: </a>    val[0]=1.0;
+<a name="line473">473: </a>    info = MatSetValues(J,1,&amp;i,1,col,val,INSERT_VALUES); CHKERRQ(info);
+<a name="line474">474: </a>  }
+
+<a name="line476">476: </a>  <font color="#B22222">/* Assemble the Jacobian matrix */</font>
+<a name="line477">477: </a>  info = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line478">478: </a>  info = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line479">479: </a>  info = PetscLogFlops(18*(gxm)+5); CHKERRQ(info);
+<a name="line480">480: </a>  <font color="#4169E1">return</font> 0;
+<a name="line481">481: </a>}
+
+</pre>
+</body>
+
+</html>

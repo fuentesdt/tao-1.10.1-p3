@@ -1,0 +1,136 @@
+# For architecture specific variable (such as if you want to compile with ADIC 
+# enabled when on a linux machine but not when using solaris) copy this file
+# to ${TAO_DIR}/bmake/${PETSC_ARCH} and set the desired variables
+
+# This file is here for reference only, any changes made directly to this file
+# will be ignored.
+
+#================ optional ADIC package information ===========================
+#
+# Location of ADIC
+#
+#ADIC = /home/derivs/adic
+#ADIC_BLIB = ${ADIC}/lib/linux 
+# Do not edit the following variables
+#ADIC_LIB = -L${ADIC_BLIB}  -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
+#ADIC_INCLUDE = -I${ADIC}/include -DTAO_USE_ADIC
+#  Do not change this statement (comment out if NOT using ADIC)
+#  This lets the TAO makefile system know if it will compile the ADIC interface library.
+#DA_ADIC_DIR = daadic
+
+
+#================ optional OOQP package information ==========================
+#
+# Location of OOQP.  If you want to use the OOQP package with tao, then 
+# uncomment the next block, using appropriate locations. (Note that
+# OOQP also requires MA27 or MA57 library, and that the petsc version of
+# OOQP must be compiled (make -f PetscMakefile all_libs from OOQP's top dir)
+#
+# 
+
+#OOQP_HOME = /home/aotools/software/${PETSC_ARCH}/OOQP
+#OOQP_LIB = -L${OOQP_HOME}/lib -looqpgondzio -looqpgensparse \
+#          -looqppetsc -looqpbase -looqpsparse -L${OOQP_HOME}/extras/MA27 -lMA27
+#OOQP_INCLUDE = -I${TAO_DIR}/src/externaltao/ooqptao ${TAO_INCLUDE} -I${OOQP_HOME}/include ${PETSC_INCLUDE} 
+
+#  Do not change this statement (comment out if NOT using ooqp)
+#  This lets the tao makefile system know if it 
+#     will compile the ooqp interface library.
+#OOQP_SUBDIR = ooqptao
+
+
+#================ optional Global Arrays package information =================
+#
+# Location of GA
+#
+#GA_ROOT = /home/sarich/software/ga-4-0-7
+#GA_LIB = -L${GA_ROOT}/lib/LINUX -llinalg -lglobal -larmci -lma  -ltaoga ${TAO_GA_LIB}
+#GA_INCLUDE = -I${GA_ROOT}/include/  -I${TAO_DIR}/src/externaltao/globalarraytao/ 
+
+
+#  Do not change this statement (comment out if NOT using global arrays)
+#  This lets the tao makefile system know if it 
+#     will compile the globalarray interface library.
+#GA_SUBDIR = globalarraytao
+
+#================   optional APPSPACK package information =====================
+
+#
+# Location of appspack.  If you want to use appspack with tao, then
+# uncomment the next block, using appropriate locations.
+#
+# To modify apps for compatibility with tao:
+#	In appspack/apps/include/gci.H:
+#	1)	change sendbuf, recvbuf, and APPS_COMM to public
+#	2)      recompile object file gci.o  (or rebuild apps) TODO: necessary?
+#  This will not affect the performance of APPS for other applications
+
+
+
+#APPSPACK_DIR = /home/sarich/appspack_stuff/appspack/apps
+#APPSPACK_INCLUDE = -I${APPSPACK_DIR}/include
+#APPSPACK_OBJ = ${APPSPACK_DIR}/agent.o ${APPSPACK_DIR}/apps.o \
+# ${APPSPACK_DIR}/apps_main.o ${APPSPACK_DIR}/args.o \
+# ${APPSPACK_DIR}/basepoint.o ${APPSPACK_DIR}/bounds.o \
+# ${APPSPACK_DIR}/cachemgr.o ${APPSPACK_DIR}/cachewkr.o \
+# ${APPSPACK_DIR}/fevalmgr.o ${APPSPACK_DIR}/fevalwkr.o \
+# ${APPSPACK_DIR}/gci.o ${APPSPACK_DIR}/guid.o \
+# ${APPSPACK_DIR}/jobmap.o ${APPSPACK_DIR}/matrix.o \
+# ${APPSPACK_DIR}/pattern.o ${APPSPACK_DIR}/point.o \
+# ${APPSPACK_DIR}/search.o ${APPSPACK_DIR}/searchelement.o \
+# ${APPSPACK_DIR}/modelmgr_ex1.o ${APPSPACK_DIR}/nnls.o
+
+#Do not change this value (comment out if NOT using appsack)
+#This statement lets the tao makefile system know if it will compile the 
+#   appspack interface library
+#APPSPACK_SUBDIR = appspacktao
+
+
+
+
+#==============  optional SIDL interface information =======================
+# 
+# Don't change next line (uncomment if building SIDL interface)
+#TAOSIDLDIR=sidl
+
+#BABEL_HOME=/home/sarich/software/ccatools063
+#BABEL=${BABEL_HOME}/bin/babel
+#SIDL_CLIENT_LANGUAGES = C C++ F77 Python
+#PYTHON_VERSION=2.4
+
+#Do not change next line
+#SIDL_SHLIBS=libsidl-client-C++ libsidl-client-F77 \
+#  libLAFactory-client-C libLAFactory-client-C++ libLAFactory-client-F77 \
+#  libOptimize-client-C libOptimize-client-C++ libOptimize-client-F77 \
+#  libSolver-client-C libSolver-client-C++ libSolver-client-F77 \
+#  libTaoapi-server-C++ libRosenbrock-server-C++ libtaosidl
+
+#CCA_SHLIBS=libOptimizationPorts-client-C++ libOptimizationPorts-client-C libOptimizationPorts-client-F77
+
+#=============== optional CCA package information ==========================
+# Location of CCA information
+# If you wish to use the cca interface to tao, then
+# use appropriate locations.
+
+#CCA_SPEC_CLASSIC=/home/sarich/software/ccatools063
+#CCA_H_DIR=$(CCA_SPEC_CLASSIC)/include/cca-spec-classic-0.5.7
+
+#CCA_SPEC_BABEL=/home/sarich/software/ccatools063
+#CCA_XML_DIR=${CCA_SPEC_BABEL}/share/cca-spec-babel-0_8_2-babel-1.0.4/xml
+#CCASO_DIR = ${CCA_SPEC_BABEL}/lib/cca-spec-babel-0_8_2-babel-1.0.4
+#CCA_SPEC_BABEL_INCLUDE=${CCA_SPEC_BABEL}/include/cca-spec-babel-0_8_2-babel-1.0.4
+
+
+# Don't change next line (uncomment if building ccaffeine components)
+#TAOCCAFFEINEDIR=components
+#TAO_BUILD_COMPONENTS=tao_build_components
+
+#CCAFFEINE_ROOT=/home/sarich/software/ccatools063
+#CCAFFEINE_INCLUDE_DIR=$(CCAFFEINE_ROOT)/include/ccafe-0.8.2
+#CCAFFEINE_CCASO_DIR=$(CCAFFEINE_ROOT)/lib/ccafe-0.8.2
+#CCAFFEINE_CORE_SO=-lccafeCore
+
+
+
+# Uncomment if building GlobalArray Factory (also uncomment GA section above)
+#GAFACTORY_SIDL = GAFactory.sidl

@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGAApplicationCreate</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGAApplicationCreate"><H1>TaoGAApplicationCreate</H1></A>
+Creates a TaoApplication that uses GA data structures.   The vectors used for gradient and other information can be a GA Vec.  The routines for function evaluation, and derivative information can also used GA arguments. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp_ga.h" 
+int TaoGAApplicationCreate(MPI_Comm comm, TAO_GA_APPLICATION* newapp)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>comm </B> -an MPI communiicator
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<DT><B>newapp </B> -the TaoApplication structure
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+<A HREF="../gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), <A HREF="../gaapp/TaoGAAppDestroy.html#TaoGAAppDestroy">TaoGAAppDestroy</A>()
+<BR>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ GAApplication
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/external/globalarraytao/taoapp_ga.c.html#TaoGAApplicationCreate">src/external/globalarraytao/taoapp_ga.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

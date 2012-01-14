@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>Solve</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="Solve"><H1>Solve</H1></A>
+Solves the linear system $this tx = tb$. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoMat::Solve(TaoVec* tb, TaoVec *tx, TaoTruth *tt)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<DT><B>tb </B> -right hand side
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tx </B></TD><TD>- solution vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tt </B></TD><TD>- TAO_TRUE if solved to prescribed accuracy and TAO_FALSE otherwise
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine is optional.  A linear solver object can also be used
+to implement this operation.
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+TaoApplication::<A HREF="../taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A>(),TaoMat::<A HREF="../matrix/Presolve.html#Presolve">Presolve</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/matrix/taomat.c.html#Solve">src/matrix/taomat.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

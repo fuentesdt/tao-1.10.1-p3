@@ -1,0 +1,96 @@
+<center><a href="armijo.h">Actual source code: armijo.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:10+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a>// Context <font color="#4169E1">for</font> an Armijo (nonmonotone) linesearch <font color="#4169E1">for</font> unconstrained 
+<a name="line2">  2: </a>// minimization.
+<a name="line3">  3: </a>//
+<a name="line4">  4: </a>// Given a function f, the current iterate x, and a descent direction d:
+<a name="line5">  5: </a>// Find the smallest i in 0, 1, 2, ..., such that:
+<a name="line6">  6: </a>//
+<a name="line7">  7: </a>//    f(x + (beta**i)d) &lt;= f(x) + (sigma*beta**i)&lt;grad f(x),d&gt;
+<a name="line8">  8: </a>//
+<a name="line9">  9: </a>// The nonmonotone modification of this linesearch replaces the f(x) term
+<a name="line10"> 10: </a>// with a reference value, R, and seeks to find the smallest i such that:
+<a name="line11"> 11: </a>//
+<a name="line12"> 12: </a>//    f(x + (beta**i)d) &lt;= R + (sigma*beta**i)&lt;grad f(x),d&gt;
+<a name="line13"> 13: </a>//
+<a name="line14"> 14: </a>// This modification does effect neither the convergence nor rate of 
+<a name="line15"> 15: </a>// convergence of an algorithm when R is chosen appropriately.  Essentially,
+<a name="line16"> 16: </a>// R must decrease on average in some sense.  The benefit of a nonmonotone
+<a name="line17"> 17: </a>// linesearch is that local minimizers can be avoided (by allowing increase
+<a name="line18"> 18: </a>// in function value), and typically, fewer iterations are performed in
+<a name="line19"> 19: </a>// the main code.
+<a name="line20"> 20: </a>//
+<a name="line21"> 21: </a>// The reference value is chosen based upon some historical information
+<a name="line22"> 22: </a>// consisting of function values <font color="#4169E1">for</font> previous iterates.  The amount of
+<a name="line23"> 23: </a>// historical information used is determined by the memory size where the
+<a name="line24"> 24: </a>// memory is used to store the previous function values.  The memory is
+<a name="line25"> 25: </a>// initialized to alpha*f(x^0) <font color="#4169E1">for</font> some alpha &gt;= 1, with alpha=1 signifying
+<a name="line26"> 26: </a>// that we always force decrease from the initial point.
+<a name="line27"> 27: </a>//
+<a name="line28"> 28: </a>// The reference value can be the maximum value in the memory or can be
+<a name="line29"> 29: </a>// chosen to provide some mean descent.  Elements are removed from the
+<a name="line30"> 30: </a>// memory with a replacement policy that either removes the oldest
+<a name="line31"> 31: </a>// value in the memory (FIFO), or the largest value in the memory (MRU).
+<a name="line32"> 32: </a>//
+<a name="line33"> 33: </a>// Additionally, we can add a watchdog strategy to the search, which
+<a name="line34"> 34: </a>// essentially accepts small directions and only checks the nonmonotonic
+<a name="line35"> 35: </a>// descent criteria every m-steps.  This strategy is NOT implemented in
+<a name="line36"> 36: </a>// the code.
+<a name="line37"> 37: </a>//
+<a name="line38"> 38: </a>// Finally, care must be taken when steepest descent directions are used.
+<a name="line39"> 39: </a>// For example, when the Newton direction is not not satisfy a sufficient
+<a name="line40"> 40: </a>// descent criteria.  The code will apply the same test regardless of
+<a name="line41"> 41: </a>// the direction.  This type of search may not be appropriate <font color="#4169E1">for</font> all
+<a name="line42"> 42: </a>// algorithms.  For example, when a gradient direction is used, we may 
+<a name="line43"> 43: </a>// want to revert to the best point found and reset the memory so that
+<a name="line44"> 44: </a>// we stay in an appropriate level set after using a gradient steps.
+<a name="line45"> 45: </a>// This type of search is currently NOT supported by the code.
+<a name="line46"> 46: </a>//
+<a name="line47"> 47: </a>// References:
+<a name="line48"> 48: </a>//  Armijo, <font color="#666666">"Minimization of Functions Having Lipschitz Continuous </font>
+<a name="line49"> 49: </a><font color="#666666">//    First-Partial Derivatives,"</font> Pacific Journal of Mathematics, volume 16,
+<a name="line50"> 50: </a>//    pages 1-3, 1966.
+<a name="line51"> 51: </a>//  Ferris and Lucidi, <font color="#666666">"Nonmonotone Stabilization Methods for Nonlinear</font>
+<a name="line52"> 52: </a><font color="#666666">//    Equations,"</font> Journal of Optimization Theory and Applications, volume 81,
+<a name="line53"> 53: </a>//    pages 53-71, 1994.
+<a name="line54"> 54: </a>//  Grippo, Lampariello, and Lucidi, <font color="#666666">"A Nonmonotone Line Search Technique</font>
+<a name="line55"> 55: </a><font color="#666666">//    for Newton's Method,"</font> SIAM Journal on Numerical Analysis, volume 23,
+<a name="line56"> 56: </a>//    pages 707-716, 1986.
+<a name="line57"> 57: </a>//  Grippo, Lampariello, and Lucidi, <font color="#666666">"A Class of Nonmonotone Stabilization</font>
+<a name="line58"> 58: </a><font color="#666666">//    Methods in Unconstrained Optimization,"</font> Numerische Mathematik, volume 59,
+<a name="line59"> 59: </a>//    pages 779-805, 1991.
+
+<a name="line61"> 61: </a><font color="#A020F0">#ifndef __TAO_ARMIJO_H</font>
+
+<a name="line64"> 64: </a><font color="#A020F0">#include </font><font color="#666666">"src/tao_impl.h"</font><font color="#A020F0"></font>
+<a name="line65"> 65: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+
+<a name="line67"> 67: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line68"> 68: </a>  double *memory;
+
+<a name="line70"> 70: </a>  double alpha;                        // Initial reference factor &gt;= 1
+<a name="line71"> 71: </a>  double beta;                        // Steplength determination &lt; 1
+<a name="line72"> 72: </a>  double beta_inf;                // Steplength determination &lt; 1
+<a name="line73"> 73: </a>  double sigma;                        // Acceptance criteria &lt; 1)
+<a name="line74"> 74: </a>  double minimumStep;                // Minimum step size
+<a name="line75"> 75: </a>  double lastReference;                // Reference value of last iteration
+
+<a name="line77"> 77: </a>  TaoInt memorySize;                // Number of functions kept in memory
+<a name="line78"> 78: </a>  TaoInt current;                        // Current element <font color="#4169E1">for</font> FIFO
+<a name="line79"> 79: </a>  TaoInt referencePolicy;                // Integer <font color="#4169E1">for</font> reference calculation rule
+<a name="line80"> 80: </a>  TaoInt replacementPolicy;        // Policy <font color="#4169E1">for</font> replacing values in memory
+<a name="line81"> 81: </a>} TAO_ARMIJO;
+
+<a name="line83"> 83: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

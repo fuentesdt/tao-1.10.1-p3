@@ -1,0 +1,33 @@
+<center><a href="taofort.F">Actual source code: taofort.F</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:15+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!  <font color="#666666">"$Id$"</font>;
+<a name="line3">  3: </a>!
+<a name="line4">  4: </a>!  Utility routine used to set some values into a Fortran common block
+
+<a name="line6">  6: </a>      subroutine TaoSetCommonBlock()
+<a name="line7">  7: </a>      implicit none
+
+<a name="line9">  9: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petsc.h"</font><font color="#A020F0"></font>
+<a name="line10"> 10: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/tao_solver.h"</font><font color="#A020F0"></font>
+
+<a name="line12"> 12: </a>      TAO_NULL_CHARACTER = PETSC_NULL_CHARACTER
+<a name="line13"> 13: </a>      TAO_NULL_INTEGER   = PETSC_NULL_INTEGER
+<a name="line14"> 14: </a>      TAO_NULL_SCALAR    = PETSC_NULL_SCALAR
+<a name="line15"> 15: </a>      TAO_NULL_DOUBLE    = PETSC_NULL_DOUBLE
+
+<a name="line17"> 17: </a>      <font color="#4169E1">return</font>
+<a name="line18"> 18: </a>      end
+
+</pre>
+</body>
+
+</html>

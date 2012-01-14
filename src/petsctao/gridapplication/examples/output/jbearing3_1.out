@@ -1,0 +1,26 @@
+
+---- Journal Bearing Problem -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value 0, Residual: 0.596075 
+iter = 1, Function value -0.178546, Residual: 0.000002 
+
+---- Journal Bearing Problem -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value 0, Residual: 0.596075 
+iter = 1, Function value -0.178546, Residual: 0.000002 
+Grid: 1,    mx: 21     my: 21   
+iter = 0, Function value -0.173448, Residual: 0.304411 
+iter = 1, Function value -0.179895, Residual: < 1.0e-6 
+Grid: 2,    mx: 41     my: 41   
+iter = 0, Function value -0.178782, Residual: 0.156503 
+iter = 1, Function value -0.180412, Residual: 0.000030 
+Grid: 3,    mx: 81     my: 81   
+iter = 0, Function value -0.180152, Residual: 0.079175 
+iter = 1, Function value -0.180557, Residual: 0.000846 
+iter = 2, Function value -0.180557, Residual: < 1.0e-6 
+Grid: 4,    mx: 161     my: 161   
+iter = 0, Function value -0.180493, Residual: 0.039539 
+iter = 1, Function value -0.180593, Residual: 0.000339 
+iter = 2, Function value -0.180593, Residual: < 1.0e-6 

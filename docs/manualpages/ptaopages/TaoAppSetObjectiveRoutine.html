@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetObjectiveRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetObjectiveRoutine"><H1>TaoAppSetObjectiveRoutine</H1></A>
+Sets a routine that evaluates the function at the specified point. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetObjectiveRoutine(TAO_APPLICATION taoapp, int (*func)(TAO_APPLICATION,Vec,double*,void*),void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>func </B></TD><TD>- function evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined context for private data for the 
+function and gradient evaluation routine (may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of func</FONT></H2>
+<pre>
+    func (TAO_APPLICATION taoapp, Vec x,double *f,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- objective function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined function context 
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+Most applications do not need this routine.  The routine
+TaoAppSetObjectiveFunctionGradient() is sufficient.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_APPLICATION, set, minimization, function
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A HREF="../ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), <A HREF="../ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_fg.c.html#TaoAppSetObjectiveRoutine">src/petsctao/application/petscapp/tao_app_fg.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

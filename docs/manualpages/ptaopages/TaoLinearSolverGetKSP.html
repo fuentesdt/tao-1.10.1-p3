@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoLinearSolverGetKSP</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoLinearSolverGetKSP"><H1>TaoLinearSolverGetKSP</H1></A>
+If the TaoLinearSolver is of the TaoLinearSolverPetsc type, it gets the underlying PETSc KSP  
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int TaoLinearSolverGetKSP( TaoLinearSolver *TS, KSP * S)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>TS </B></TD><TD>- the TaoLinearSolver
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>S </B></TD><TD>- the address of KSP
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<DT><B>S </B> -address of the underlying PETSc KSP object
+<br>
+<P>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine does not create a KSP.  It sets a pointer
+to the location of an existing KSP.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+<A HREF="../ptaopages/TaoVecGetPetscVec.html#TaoVecGetPetscVec">TaoVecGetPetscVec</A>(), TaoMatGetPetscMat(), <A HREF="../ptaopages/TaoAppGetKSP.html#TaoAppGetKSP">TaoAppGetKSP</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/linearsolver/taolinearsolver_petsc.c.html#TaoLinearSolverGetKSP">src/petsctao/linearsolver/taolinearsolver_petsc.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

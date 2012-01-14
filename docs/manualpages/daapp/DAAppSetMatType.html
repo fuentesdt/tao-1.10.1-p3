@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetMatType</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetMatType"><H1>DAAppSetMatType</H1></A>
+set the matrix type to be used for the Hessian matrix 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taodaapplication.h" 
+int DAAppSetMatType(TAO_APPLICATION daapplication, const MatType mattype)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the DA Application object
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mattype </B></TD><TD>- the matrix type
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Key</FONT></H2>
+<DT><B>-tao_da_mattype </B> -select matrix type
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+The default value is MATMPIAIJ.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+Call before <A HREF="../daapp/DAAppSetHessianRoutine.html#DAAppSetHessianRoutine">DAAppSetHessianRoutine</A>()
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ DAAppSetMatStructure(),  <A HREF="../daapp/DAAppSetHessianRoutine.html#DAAppSetHessianRoutine">DAAppSetHessianRoutine</A>(), DAGetMatrix();
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ DA, Hessian
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/interface/daapp.c.html#DAAppSetMatType">src/petsctao/gridapplication/interface/daapp.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetupMultigrid</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetupMultigrid"><H1>DAAppSetupMultigrid</H1></A>
+Sets up the multigrid preconditioner. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int DAAppSetupMultigrid(TAO_APPLICATION daapplication, PetscInt coarselevel)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>coarselevel </B></TD><TD>- the coarsest grid that should be used in the multigrid (&gt;=0)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+Usually the coarselevel is set to 0;
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../daapp/DAAppUseMultigrid.html#DAAppUseMultigrid">DAAppUseMultigrid</A>(), <A HREF="../ptaopages/TaoAppSetMonitor.html#TaoAppSetMonitor">TaoAppSetMonitor</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/multigrid/daapp_mgrid.c.html#DAAppSetupMultigrid">src/petsctao/gridapplication/multigrid/daapp_mgrid.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

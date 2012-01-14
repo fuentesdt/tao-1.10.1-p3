@@ -1,0 +1,15 @@
+commandCount 11
+setSize 892 672
+setMaximum true
+setDropLocation 18 81
+pulldown TaoDriver.Component driver
+setDropLocation 255 86
+pulldown TaoSolver.Component tao_solver
+connect driver OptimizationSolver tao_solver OptimizationSolver
+setDropLocation 593 122
+pulldown PetscLA.Factory petsc_factory
+setDropLocation 590 38
+pulldown Minsurf.Component minsurf_model
+connect tao_solver OptimizationModel minsurf_model OptimizationModel
+connect tao_solver LAFactory petsc_factory LAFactory
+eof

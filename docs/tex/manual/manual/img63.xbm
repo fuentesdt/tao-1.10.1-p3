@@ -1,0 +1,4 @@
+#define 30701_img63_width 5
+#define 30701_img63_height 5
+static char 30701_img63_bits[] = {
+ 0x11,0x09,0x09,0x05,0x03};

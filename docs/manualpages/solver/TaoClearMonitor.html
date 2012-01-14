@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoClearMonitor</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoClearMonitor"><H1>TaoClearMonitor</H1></A>
+Clears all the monitor functions for a TAO_SOLVER object. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoClearMonitor(TAO_SOLVER tao)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>tao </B> -the TAO_SOLVER solver context
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database</FONT></H2>
+<DT><B>-tao_cancelmonitors </B> -cancels all monitors that have been hardwired
+into a code by calls to <A HREF="../solver/TaoSetMonitor.html#TaoSetMonitor">TaoSetMonitor</A>(), but does not cancel those 
+set via the options database
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+There is no way to clear one specific monitor from a TAO_SOLVER object.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ options, monitor, <A HREF="../lsolver/View.html#View">View</A>
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoDefaultMonitor.html#TaoDefaultMonitor">TaoDefaultMonitor</A>(), <A HREF="../solver/TaoSetMonitor.html#TaoSetMonitor">TaoSetMonitor</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao.c.html#TaoClearMonitor">src/interface/tao.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,247 @@
+<center><a href="kt.c">Actual source code: kt.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"src/bound/impls/kt/kt.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"src/tao_impl.h"</font><font color="#A020F0"></font>
+
+<a name="line4">  4: </a><strong><font color="#4169E1">static int TaoSetDown_KT(TAO_SOLVER, void *)</font></strong>;
+<a name="line5">  5: </a><strong><font color="#4169E1">static int TaoMonitor_KT(TAO_SOLVER my_tao, void *solver)</font></strong>;
+
+<a name="line7">  7: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line10"> 10: </a><strong><font color="#4169E1"><a name="TaoSetUp_KT"></a>int TaoSetUp_KT(TAO_SOLVER tao,void *solver)</font></strong>
+<a name="line11"> 11: </a>{
+<a name="line12"> 12: </a>  TAO_KT *kt = (TAO_KT *)solver;
+<a name="line13"> 13: </a>  TaoVec *xx;
+<a name="line14"> 14: </a>  TaoTruth flg;
+<a name="line15"> 15: </a>  int info;
+
+<a name="line17"> 17: </a>  TaoFunctionBegin;
+<a name="line18"> 18: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;xx); CHKERRQ(info);
+
+<a name="line20"> 20: </a>  // Create new complementarity solver
+<a name="line21"> 21: </a>  info = TaoOptionString(<font color="#666666">"-tao_kt_method"</font>,0,0,kt-&gt;comp_method,
+<a name="line22"> 22: </a>                         kt-&gt;comp_method,256,&amp;flg);
+<a name="line23"> 23: </a>  CHKERRQ(info);
+<a name="line24"> 24: </a>  <font color="#4169E1">if</font> (kt-&gt;csolver==0){
+<a name="line25"> 25: </a>      info = TaoCreateFull(kt-&gt;comp_method,<font color="#666666">"t"</font>,((PetscObject)tao)-&gt;comm, &amp;kt-&gt;csolver); 
+<a name="line26"> 26: </a>    CHKERRQ(info);
+<a name="line27"> 27: </a>  }
+<a name="line28"> 28: </a>  kt-&gt;ktapp = new TaoKTApplication(tao,kt-&gt;csolver);
+<a name="line29"> 29: </a>  kt-&gt;ktapp-&gt;SetItUp1(); CHKERRQ(info);
+<a name="line30"> 30: </a>  kt-&gt;ktapp-&gt;SetItUp2(); CHKERRQ(info);
+<a name="line31"> 31: </a>  kt-&gt;setupcalled=1;
+<a name="line32"> 32: </a>  
+<a name="line33"> 33: </a>  TaoFunctionReturn(0);
+<a name="line34"> 34: </a>}
+
+<a name="line36"> 36: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line39"> 39: </a><strong><font color="#4169E1"><a name="TaoSetDown_KT"></a>static int TaoSetDown_KT(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line40"> 40: </a>{
+<a name="line41"> 41: </a>  TAO_KT *kt = (TAO_KT *)solver;
+<a name="line42"> 42: </a>  int info;
+
+<a name="line44"> 44: </a>  TaoFunctionBegin;
+<a name="line45"> 45: </a>  info = <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(kt-&gt;csolver); CHKERRQ(info); 
+<a name="line46"> 46: </a>  info = <A href="../../../../docs/manualpages/taoapp/TaoDestroyApplication.html#TaoDestroyApplication">TaoDestroyApplication</A>(kt-&gt;ktapp); CHKERRQ(info); 
+<a name="line47"> 47: </a>  kt-&gt;setupcalled=0;
+<a name="line48"> 48: </a>  kt-&gt;csolver=0;
+<a name="line49"> 49: </a>  kt-&gt;ktapp=0;
+<a name="line50"> 50: </a>  TaoFunctionReturn(0);
+<a name="line51"> 51: </a>}
+
+<a name="line55"> 55: </a><strong><font color="#4169E1"><a name="TaoMonitor_KT"></a>static int TaoMonitor_KT(TAO_SOLVER complementaritytao, void *solver)</font></strong>
+<a name="line56"> 56: </a>{
+<a name="line57"> 57: </a>  TaoKTApplication* ktapp= (TaoKTApplication*)solver;
+<a name="line58"> 58: </a>  TaoTerminateReason reason;
+<a name="line59"> 59: </a>  double f, fnorm, cnorm, xdiff;
+<a name="line60"> 60: </a>  TaoInt iterate;
+<a name="line61"> 61: </a>  int info;
+
+<a name="line63"> 63: </a>  TaoFunctionBegin;
+<a name="line64"> 64: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolutionStatus.html#TaoGetSolutionStatus">TaoGetSolutionStatus</A>(complementaritytao, &amp;iterate, &amp;f, &amp;fnorm, 
+<a name="line65"> 65: </a>                             &amp;cnorm, &amp;xdiff, &amp;reason); CHKERRQ(info);
+<a name="line66"> 66: </a>  f=ktapp-&gt;func;
+<a name="line67"> 67: </a>  info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(ktapp-&gt;orig,iterate,f,fnorm,cnorm,xdiff,&amp;reason); CHKERRQ(info);
+<a name="line68"> 68: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTerminationReason.html#TaoSetTerminationReason">TaoSetTerminationReason</A>(complementaritytao,reason); CHKERRQ(info);
+<a name="line69"> 69: </a>  TaoFunctionReturn(0);
+<a name="line70"> 70: </a>}
+
+<a name="line72"> 72: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line75"> 75: </a><strong><font color="#4169E1"><a name="TaoSolve_KT"></a>static int TaoSolve_KT(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line76"> 76: </a>{
+<a name="line77"> 77: </a>  TAO_KT *kt = (TAO_KT *)solver;
+<a name="line78"> 78: </a>  int info;
+
+<a name="line80"> 80: </a>  TaoFunctionBegin;
+<a name="line81"> 81: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>(kt-&gt;csolver);  CHKERRQ(info);
+<a name="line82"> 82: </a>  TaoFunctionReturn(0);
+<a name="line83"> 83: </a>}
+
+<a name="line85"> 85: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line88"> 88: </a><strong><font color="#4169E1"><a name="TaoSetOptions_KT"></a>static int TaoSetOptions_KT(TAO_SOLVER tao, void*solver)</font></strong>
+<a name="line89"> 89: </a>{
+<a name="line90"> 90: </a>  TAO_KT *kt = (TAO_KT *)solver;
+<a name="line91"> 91: </a>  TAO_SOLVER csolver=kt-&gt;csolver;
+<a name="line92"> 92: </a>  TaoTruth flg;
+<a name="line93"> 93: </a>  int info;
+
+<a name="line95"> 95: </a>  TaoFunctionBegin;
+<a name="line96"> 96: </a>  info = TaoOptionString(<font color="#666666">"-tao_kt_method"</font>,
+<a name="line97"> 97: </a>                         <font color="#666666">"Set method for solving kt conditions"</font>,
+<a name="line98"> 98: </a>                         <font color="#666666">"TaoKTSetMethod"</font>,kt-&gt;comp_method,
+<a name="line99"> 99: </a>                         kt-&gt;comp_method,256,&amp;flg);
+<a name="line100">100: </a>  CHKERRQ(info);
+
+<a name="line102">102: </a>  <font color="#4169E1">if</font> (csolver==0){
+<a name="line103">103: </a>      info = TaoCreateFull(kt-&gt;comp_method,<font color="#666666">"t"</font>,((PetscObject)tao)-&gt;comm, &amp;kt-&gt;csolver); 
+<a name="line104">104: </a>    CHKERRQ(info);
+<a name="line105">105: </a>  }
+<a name="line106">106: </a>  csolver=kt-&gt;csolver;
+<a name="line107">107: </a>  <font color="#4169E1">if</font> (csolver-&gt;setfromoptions) {
+<a name="line108">108: </a>    info = (*csolver-&gt;setfromoptions)(csolver,csolver-&gt;data); CHKERRQ(info);
+<a name="line109">109: </a>  }
+<a name="line110">110: </a>  TaoFunctionReturn(0);
+<a name="line111">111: </a>}
+
+<a name="line113">113: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line116">116: </a><strong><font color="#4169E1"><a name="TaoView_KT"></a>static int TaoView_KT(TAO_SOLVER tao,void* solver)</font></strong>
+<a name="line117">117: </a>{
+<a name="line118">118: </a>  TAO_KT   *kt = (TAO_KT *)solver;
+<a name="line119">119: </a>  int      info;
+
+<a name="line121">121: </a>  TaoFunctionBegin;
+<a name="line122">122: </a>  info = TaoPrintString(tao,<font color="#666666">"  kt method=%s\n"</font>, kt-&gt;comp_method); 
+<a name="line123">123: </a>         CHKERRQ(info);
+<a name="line124">124: </a>  TaoFunctionReturn(0);
+<a name="line125">125: </a>}
+
+<a name="line130">130: </a><strong><font color="#4169E1"><a name="TaoCreate_KT"></a>int TaoCreate_KT(TAO_SOLVER tao)</font></strong>
+<a name="line131">131: </a>{
+<a name="line132">132: </a>  TAO_KT *kt;
+<a name="line133">133: </a>  int    info;
+
+<a name="line135">135: </a>  TaoFunctionBegin;
+
+<a name="line137">137: </a>  info = TaoNew(TAO_KT,&amp;kt); CHKERRQ(info);
+
+<a name="line139">139: </a>  kt-&gt;csolver = 0;
+<a name="line140">140: </a>  kt-&gt;setupcalled=0;
+<a name="line141">141: </a>  info = TaoStrcpy(kt-&gt;comp_method, <font color="#666666">"tao_ssils"</font>); CHKERRQ(info);
+
+<a name="line143">143: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>(tao,TaoSolve_KT,(void*)kt); CHKERRQ(info);
+<a name="line144">144: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSetUpDownRoutines.html#TaoSetTaoSetUpDownRoutines">TaoSetTaoSetUpDownRoutines</A>(tao,TaoSetUp_KT,TaoSetDown_KT); CHKERRQ(info);
+<a name="line145">145: </a>  info=TaoSetTaoOptionsRoutine(tao,TaoSetOptions_KT); CHKERRQ(info);
+<a name="line146">146: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoViewRoutine.html#TaoSetTaoViewRoutine">TaoSetTaoViewRoutine</A>(tao,TaoView_KT); CHKERRQ(info);
+
+<a name="line148">148: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(tao,2000); CHKERRQ(info);
+<a name="line149">149: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumFunctionEvaluations.html#TaoSetMaximumFunctionEvaluations">TaoSetMaximumFunctionEvaluations</A>(tao,4000); CHKERRQ(info);
+
+<a name="line151">151: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao,0,0,0,0); CHKERRQ(info);
+<a name="line152">152: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetGradientTolerances.html#TaoSetGradientTolerances">TaoSetGradientTolerances</A>(tao,1.0e-12,0.0,0.0); CHKERRQ(info);
+
+<a name="line154">154: </a>  TaoFunctionReturn(0);
+<a name="line155">155: </a>}
+
+<a name="line160">160: </a><strong><font color="#FF0000">TaoKTApplication:</font></strong>:TaoKTApplication(TAO_SOLVER outertao, TAO_SOLVER innertao) 
+<a name="line161">161: </a>{
+<a name="line162">162: </a>  this-&gt;orig=outertao;
+<a name="line163">163: </a>  this-&gt;csolver=innertao;
+<a name="line164">164: </a>  <font color="#4169E1">return</font>;
+<a name="line165">165: </a>}
+
+<a name="line169">169: </a>int TaoKTApplication::SetItUp1() 
+<a name="line170">170: </a>{
+<a name="line171">171: </a>  int info;
+<a name="line172">172: </a>  TaoFunctionBegin;
+<a name="line173">173: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetConvergenceTest.html#TaoSetConvergenceTest">TaoSetConvergenceTest</A>(this-&gt;csolver, TAO_NULL, TAO_NULL); CHKERRQ(info);
+<a name="line174">174: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(this-&gt;csolver,0,0,0,0); CHKERRQ(info);
+<a name="line175">175: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetGradientTolerances.html#TaoSetGradientTolerances">TaoSetGradientTolerances</A>(this-&gt;csolver,0.0,0.0,0.0); CHKERRQ(info);
+<a name="line176">176: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(this-&gt;csolver,0); CHKERRQ(info);
+<a name="line177">177: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumFunctionEvaluations.html#TaoSetMaximumFunctionEvaluations">TaoSetMaximumFunctionEvaluations</A>(this-&gt;csolver,0); CHKERRQ(info);
+<a name="line178">178: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetFunctionLowerBound.html#TaoSetFunctionLowerBound">TaoSetFunctionLowerBound</A>(this-&gt;csolver,0); CHKERRQ(info);
+<a name="line179">179: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMonitor.html#TaoSetMonitor">TaoSetMonitor</A>(this-&gt;csolver, TaoMonitor_KT, (void*)this); CHKERRQ(info);
+<a name="line180">180: </a>  TaoFunctionReturn(0);
+<a name="line181">181: </a>}
+
+<a name="line185">185: </a>int TaoKTApplication::SetItUp2() 
+<a name="line186">186: </a>{
+<a name="line187">187: </a>  int info;
+<a name="line188">188: </a>  TaoVec *x1,*x2;
+<a name="line189">189: </a>  TaoFunctionBegin;
+<a name="line190">190: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>(this-&gt;csolver,this); CHKERRQ(info);
+<a name="line191">191: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(this-&gt;csolver,&amp;x1,&amp;x2); CHKERRQ(info);
+<a name="line192">192: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetVariableBounds.html#TaoSetVariableBounds">TaoSetVariableBounds</A>(this-&gt;orig,x1,x2); CHKERRQ(info);
+<a name="line193">193: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetStepDirectionVector.html#TaoGetStepDirectionVector">TaoGetStepDirectionVector</A>(this-&gt;csolver,&amp;x1); CHKERRQ(info);
+<a name="line194">194: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(this-&gt;orig,x1); CHKERRQ(info);
+<a name="line195">195: </a>  TaoFunctionReturn(0);
+<a name="line196">196: </a>}
+
+<a name="line200">200: </a>int TaoKTApplication::<A href="../../../../docs/manualpages/taoapp/EvaluateConstraints.html#EvaluateConstraints">EvaluateConstraints</A>(TaoVec *x, TaoVec *f) 
+<a name="line201">201: </a>{
+<a name="line202">202: </a>  int info;
+<a name="line203">203: </a>  TaoFunctionBegin;
+<a name="line204">204: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeFunctionGradient.html#TaoComputeFunctionGradient">TaoComputeFunctionGradient</A>(this-&gt;orig, x, &amp;this-&gt;func, f); 
+<a name="line205">205: </a>         CHKERRQ(info);
+<a name="line206">206: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(this-&gt;orig,f); CHKERRQ(info);
+<a name="line207">207: </a>  TaoFunctionReturn(0);
+<a name="line208">208: </a>}
+
+<a name="line212">212: </a>int TaoKTApplication::<A href="../../../../docs/manualpages/taoapp/EvaluateJacobian.html#EvaluateJacobian">EvaluateJacobian</A>(TaoVec *x, TaoMat *J) 
+<a name="line213">213: </a>{
+<a name="line214">214: </a>  int info;
+<a name="line215">215: </a>  TaoFunctionBegin;
+<a name="line216">216: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeHessian.html#TaoComputeHessian">TaoComputeHessian</A>(this-&gt;orig, x, J); CHKERRQ(info);
+<a name="line217">217: </a>  TaoFunctionReturn(0);
+<a name="line218">218: </a>}
+
+<a name="line222">222: </a>int TaoKTApplication::<A href="../../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *x) 
+<a name="line223">223: </a>{
+<a name="line224">224: </a>  int info;
+<a name="line225">225: </a>  TaoApplication* theapp;
+<a name="line226">226: </a>  TaoFunctionBegin;
+<a name="line227">227: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetApplication.html#TaoGetApplication">TaoGetApplication</A>(this-&gt;orig, &amp;theapp); CHKERRQ(info);
+<a name="line228">228: </a>  info = theapp-&gt;<A href="../../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(x); CHKERRQ(info);
+<a name="line229">229: </a>  TaoFunctionReturn(0);
+<a name="line230">230: </a>}
+
+<a name="line234">234: </a>int TaoKTApplication::<A href="../../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **x) 
+<a name="line235">235: </a>{
+<a name="line236">236: </a>  int info;
+<a name="line237">237: </a>  TaoFunctionBegin;
+<a name="line238">238: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(this-&gt;orig, x); CHKERRQ(info);
+<a name="line239">239: </a>  TaoFunctionReturn(0);
+<a name="line240">240: </a>}
+
+<a name="line244">244: </a>int TaoKTApplication::<A href="../../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *l, TaoVec *u) 
+<a name="line245">245: </a>{
+<a name="line246">246: </a>  int info;
+<a name="line247">247: </a>  TaoFunctionBegin;
+<a name="line248">248: </a>  info = <A href="../../../../docs/manualpages/solver/TaoEvaluateVariableBounds.html#TaoEvaluateVariableBounds">TaoEvaluateVariableBounds</A>(this-&gt;orig, l, u); CHKERRQ(info);
+<a name="line249">249: </a>  TaoFunctionReturn(0);
+<a name="line250">250: </a>}
+
+<a name="line254">254: </a>int TaoKTApplication::<A href="../../../../docs/manualpages/taoapp/GetJacobianMatrix.html#GetJacobianMatrix">GetJacobianMatrix</A>(TaoMat **J) 
+<a name="line255">255: </a>{
+<a name="line256">256: </a>  int info;
+<a name="line257">257: </a>  TaoFunctionBegin;
+<a name="line258">258: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetHessian.html#TaoGetHessian">TaoGetHessian</A>(this-&gt;orig, J); CHKERRQ(info);
+<a name="line259">259: </a>  TaoFunctionReturn(0);
+<a name="line260">260: </a>}
+
+<a name="line264">264: </a>int TaoKTApplication::<A href="../../../../docs/manualpages/taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A>(TaoMat *H, TaoInt stype, TaoLinearSolver **tksp) {
+<a name="line265">265: </a>  int info;
+<a name="line266">266: </a>  TaoFunctionBegin;
+<a name="line267">267: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateLinearSolver.html#TaoCreateLinearSolver">TaoCreateLinearSolver</A>(this-&gt;orig, H, stype,tksp); CHKERRQ(info);
+<a name="line268">268: </a>  TaoFunctionReturn(0);
+<a name="line269">269: </a>}
+</pre>
+</body>
+
+</html>

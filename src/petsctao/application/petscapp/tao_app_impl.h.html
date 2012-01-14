@@ -1,0 +1,106 @@
+<center><a href="tao_app_impl.h">Actual source code: tao_app_impl.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef PETSCAPP_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define PETSCAPP_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"petscksp.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a>// <font color="#4169E1">typedef</font> <font color="#4169E1">struct _p_TAO_SOLVER</font>* TAO_SOLVER;
+<a name="line7">  7: </a><font color="#4169E1">typedef struct _p_TAOAPPLICATION* TAO_APPLICATION;</font>
+
+<a name="line9">  9: </a><font color="#A020F0">#ifndef MAX_TAO_MONITORS</font>
+<a name="line10"> 10: </a><strong><font color="#228B22">#define MAX_TAO_MONITORS 5</font></strong>
+<a name="line11"> 11: </a><font color="#A020F0">#endif</font>
+
+<a name="line13"> 13: </a><font color="#A020F0">#ifndef MAX_TAO_USER_DESTROY</font>
+<a name="line14"> 14: </a><strong><font color="#228B22">#define MAX_TAO_USER_DESTROY 50</font></strong>
+<a name="line15"> 15: </a><font color="#A020F0">#endif</font>
+
+<a name="line17"> 17: </a><strong><font color="#228B22">#define MAX_TAO_KEY_LENGTH 100</font></strong>
+<a name="line18"> 18: </a><strong><font color="#228B22">#define MAX_TAOAPP_ADDON 10</font></strong>
+
+<a name="line20"> 20: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font>{
+<a name="line21"> 21: </a>  int id;
+<a name="line22"> 22: </a>  char key[MAX_TAO_KEY_LENGTH];
+<a name="line23"> 23: </a>  void *ctx;
+<a name="line24"> 24: </a>} TaoAppAddOn;
+
+<a name="line26"> 26: </a><font color="#4169E1"><a name="_p_TAOAPPLICATION"></a>struct _p_TAOAPPLICATION </font>{
+
+<a name="line28"> 28: </a>  PETSCHEADER(int);
+
+<a name="line30"> 30: </a>  int nAddOn;
+<a name="line31"> 31: </a>  TaoAppAddOn  TaoAppCtx[MAX_TAO_KEY_LENGTH];
+
+<a name="line33"> 33: </a>  <font color="#B22222">/* --------------------------  Monitoring  ------------------------------------*/</font>
+<a name="line34"> 34: </a>  double grtol;
+<a name="line35"> 35: </a>  int   numbermonitors;                            <font color="#B22222">/* number of monitors */</font>
+<a name="line36"> 36: </a>  int   (*monitor[MAX_TAO_MONITORS])(<font color="#4169E1">struct _p_TAOAPPLICATION</font>*,void*); <font color="#B22222">/* monitor routine */</font>
+<a name="line37"> 37: </a>  void  *monitorcontext[MAX_TAO_MONITORS];         <font color="#B22222">/* monitor context */</font>
+
+<a name="line39"> 39: </a>  int   numberoptioncheckers;                            <font color="#B22222">/* number of monitors */</font>
+<a name="line40"> 40: </a>  int   (*checkoptions[MAX_TAO_MONITORS])(<font color="#4169E1">struct _p_TAOAPPLICATION</font>*); <font color="#B22222">/* monitor routine */</font>
+
+<a name="line42"> 42: </a>  <font color="#B22222">/* Vector of Variables */</font>
+<a name="line43"> 43: </a>  Vec V;
+
+<a name="line45"> 45: </a>  <font color="#B22222">/* Objective Function */</font>
+<a name="line46"> 46: </a>  void *usrfctx;
+<a name="line47"> 47: </a>  int  (*computeumfunction)(TAO_APPLICATION,Vec,double*,void*);
+<a name="line48"> 48: </a>  int nfeval;
+
+<a name="line50"> 50: </a>  <font color="#B22222">/* Gradient Evaluation */</font>
+<a name="line51"> 51: </a>  void *usrgctx;
+<a name="line52"> 52: </a>  int  (*computegradient)(TAO_APPLICATION,Vec,Vec,void*);
+<a name="line53"> 53: </a>  Vec G;
+<a name="line54"> 54: </a>  int ngeval;
+
+<a name="line56"> 56: </a>  <font color="#B22222">/* Function and Gradient */</font>
+<a name="line57"> 57: </a>  void *usrfgctx;
+<a name="line58"> 58: </a>  int  (*computefunctiongradient)(TAO_APPLICATION,Vec,double*,Vec,void*); 
+
+<a name="line60"> 60: </a>  <font color="#B22222">/* Hessian Evaluation */</font>
+<a name="line61"> 61: </a>  void *usrhctx;
+<a name="line62"> 62: </a>  int  (*computehessian)(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*);
+<a name="line63"> 63: </a>  Mat H,HP;
+<a name="line64"> 64: </a>  int nheval;
+
+<a name="line66"> 66: </a>  <font color="#B22222">/* ApproximateHessian */</font>
+<a name="line67"> 67: </a>  void *usrhhhctx;
+<a name="line68"> 68: </a>  int  (*hessiansolve)(TAO_APPLICATION,Vec,Vec,PetscTruth*,void*); 
+<a name="line69"> 69: </a>  int nlsolve;
+
+<a name="line71"> 71: </a>  <font color="#B22222">/* Set Variable Bounds */</font>
+<a name="line72"> 72: </a>  int  (*computebounds)(TAO_APPLICATION,Vec,Vec,void*);
+<a name="line73"> 73: </a>  void *boundctx;
+
+<a name="line75"> 75: </a>  <font color="#B22222">/* Routines below this are very preliminary */</font>
+<a name="line76"> 76: </a>  void *usrjctx;
+<a name="line77"> 77: </a>  int  (*computejacobian)(TAO_APPLICATION,Vec,Mat*,Mat*, MatStructure*,void*);
+<a name="line78"> 78: </a>  Mat  J,JP;
+
+<a name="line80"> 80: </a>  void *usrfvctx;
+<a name="line81"> 81: </a>  int  (*computevfunc)(TAO_APPLICATION,Vec,Vec,void*);
+<a name="line82"> 82: </a>  Vec R;
+
+<a name="line84"> 84: </a>  <font color="#B22222">/* Routines called when destroying this structure */</font>
+<a name="line85"> 85: </a>  int   numberdestroyers;
+<a name="line86"> 86: </a>  int   (*userdestroy[MAX_TAO_USER_DESTROY])(void*);
+<a name="line87"> 87: </a>  void  *userctxdestroy[MAX_TAO_USER_DESTROY];
+
+<a name="line89"> 89: </a>  KSP ksp;
+<a name="line90"> 90: </a>};
+
+<a name="line92"> 92: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

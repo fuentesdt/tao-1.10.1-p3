@@ -1,0 +1,50 @@
+<HTML>
+<HEAD>
+<TITLE>TaoIndexSet Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> TaoIndexSet Methods Manual Pages
+</H2>
+
+TAO uses a class called TaoIndexSet to describe parts of 
+vectors and matrices.  These objects will be used to identify
+particular elements of a vector or rows of a matrix.  Some solvers,
+for instance, may want to know which elements of a vector are positive.
+An index set should be able to describe which elements of the
+vector satisfy this property.
+This class has methods
+which can be used within an optimization solver or application code.
+These methods are virtual functions whose implementation depends upon
+upon the internal representation of the data.
+<P>
+
+
+
+<P>
+<TABLE>
+</TR><TD WIDTH=250 COLSPAN="3"><B>Beginner - Basic usage</B></TD></TR>
+ <TD WIDTH=250><A HREF="./TaoIndexSetDestroy.html">TaoIndexSetDestroy</A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+</TR><TD WIDTH=250 COLSPAN="3"><B>Intermediate - Setting options for algorithms and data structures</B></TD></TR>
+ <TD WIDTH=250><A HREF="./ComplementOf.html">ComplementOf</A></TD>
+ <TD WIDTH=250><A HREF="./IsSame.html">IsSame</A></TD>
+ <TD WIDTH=250><A HREF="./WhichBetweenOrEqual.html">WhichBetweenOrEqual</A></TD>
+<TR>
+ <TD WIDTH=250><A HREF="./Duplicate.html">Duplicate</A></TD>
+ <TD WIDTH=250><A HREF="./UnionOf.html">UnionOf</A></TD>
+ <TD WIDTH=250><A HREF="./WhichEqual.html">WhichEqual</A></TD>
+<TR>
+ <TD WIDTH=250><A HREF="./GetSize.html">GetSize</A></TD>
+ <TD WIDTH=250><A HREF="./View.html">View</A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+<TR>
+ <TD WIDTH=250><A HREF="./IntersectionOf.html">IntersectionOf</A></TD>
+ <TD WIDTH=250><A HREF="./WhichBetween.html">WhichBetween</A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+<TR>
+</TR><TD WIDTH=250 COLSPAN="3"><B>No advanced routines</B></TD></TR>
+</TR><TD WIDTH=250 COLSPAN="3"><B>No developer routines</B></TD></TR>
+</TABLE>
+<BR><A HREF="../index.html"><IMG SRC="../up.gif">Table of Contents</A>

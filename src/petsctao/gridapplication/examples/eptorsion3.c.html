@@ -1,0 +1,661 @@
+<center><a href="eptorsion3.c">Actual source code: eptorsion3.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id: eptorsion.c, v 1.1 2002/08/08 10:30 lopezca@mauddib.mcs.anl.gov $*/</font>
+
+<a name="line3">  3: </a><font color="#B22222">/* Program usage: mpirun -np &lt;proc&gt; eptorsion [-help] [all TAO options] */</font>
+
+<a name="line5">  5: </a><font color="#B22222">/*</font>
+<a name="line6">  6: </a><font color="#B22222">  Include "tao.h" so we can use TAO solvers.</font>
+<a name="line7">  7: </a><font color="#B22222">  petscda.h for distributed array</font>
+<a name="line8">  8: </a><font color="#B22222">  ad_deriv.h for AD gradient</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a><font color="#A020F0">#include </font><font color="#666666">"petscda.h"</font><font color="#A020F0"></font>
+<a name="line12"> 12: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0"></font>
+<a name="line13"> 13: </a><font color="#A020F0">#include </font><font color="#666666">"taodaapplication.h"</font><font color="#A020F0"></font>
+
+<a name="line15"> 15: </a>static char help[] = <font color="#666666">"This example is based on the Elastic-Plastic Torsion (dept)\n\</font>
+<a name="line16"> 16: </a><font color="#666666">problem from the MINPACK-2 test suite.\n\</font>
+<a name="line17"> 17: </a><font color="#666666">The command line options are:\n\</font>
+<a name="line18"> 18: </a><font color="#666666">  -mx &lt;xg&gt;, where &lt;xg&gt; = number of grid points in the 1st coordinate direction\n\</font>
+<a name="line19"> 19: </a><font color="#666666">  -my &lt;yg&gt;, where &lt;yg&gt; = number of grid points in the 2nd coordinate direction\n\</font>
+<a name="line20"> 20: </a><font color="#666666">  -nlevels &lt;nlevels&gt;, where &lt;nlevels&gt; = number of levels in multigrid\n\</font>
+<a name="line21"> 21: </a><font color="#666666">  -byelement, if computation is made by functions on rectangular elements\n\</font>
+<a name="line22"> 22: </a><font color="#666666">  -adic, if AD is used (AD is not used by default)\n\</font>
+<a name="line23"> 23: </a><font color="#666666">  -u1 &lt;u1&gt;, where &lt;u1&gt; = upper limit in the 1st coordinate direction\n\</font>
+<a name="line24"> 24: </a><font color="#666666">  -u2 &lt;u2&gt;, where &lt;u2&gt; = upper limit in the 2nd coordinate direction\n\</font>
+<a name="line25"> 25: </a><font color="#666666">  -par &lt;param&gt;, where &lt;param&gt; = angle of twist per unit length\n\n"</font>;
+
+<a name="line27"> 27: </a><font color="#B22222">/*T</font>
+<a name="line28"> 28: </a><font color="#B22222">   Concepts: TAO - Solving a bounded minimization problem</font>
+<a name="line29"> 29: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(); <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>();</font>
+<a name="line30"> 30: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(); <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>();</font>
+<a name="line31"> 31: </a><font color="#B22222">   Routines: DAApplicationCreate(); DAApplicationDestroy();</font>
+<a name="line32"> 32: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppSetVariableBoundsRoutine.html#DAAppSetVariableBoundsRoutine">DAAppSetVariableBoundsRoutine</A>();</font>
+<a name="line33"> 33: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppSetElementObjectiveAndGradientRoutine.html#DAAppSetElementObjectiveAndGradientRoutine">DAAppSetElementObjectiveAndGradientRoutine</A>();</font>
+<a name="line34"> 34: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppSetElementHessianRoutine.html#DAAppSetElementHessianRoutine">DAAppSetElementHessianRoutine</A>();</font>
+<a name="line35"> 35: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>();</font>
+<a name="line36"> 36: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppSetADElementFunctionGradient.html#DAAppSetADElementFunctionGradient">DAAppSetADElementFunctionGradient</A>();</font>
+<a name="line37"> 37: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppSetHessianRoutine.html#DAAppSetHessianRoutine">DAAppSetHessianRoutine</A>();</font>
+<a name="line38"> 38: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>();</font>
+<a name="line39"> 39: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoGetSolutionStatus.html#TaoGetSolutionStatus">TaoGetSolutionStatus</A>(); <A href="../../../../docs/manualpages/daapp/TaoDAAppSolve.html#TaoDAAppSolve">TaoDAAppSolve</A>();</font>
+<a name="line40"> 40: </a><font color="#B22222">   Routines: DAAppSetMonitor(); <A href="../../../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>();</font>
+<a name="line41"> 41: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppGetSolution.html#DAAppGetSolution">DAAppGetSolution</A>();</font>
+<a name="line42"> 42: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/daapp/DAAppGetInterpolationMatrix.html#DAAppGetInterpolationMatrix">DAAppGetInterpolationMatrix</A>();</font>
+<a name="line43"> 43: </a><font color="#B22222">   Processors: n</font>
+<a name="line44"> 44: </a><font color="#B22222">T*/</font>
+
+<a name="line46"> 46: </a><font color="#B22222">/*</font>
+<a name="line47"> 47: </a><font color="#B22222">   User-defined application context - contains data needed by the</font>
+<a name="line48"> 48: </a><font color="#B22222">   application-provided call-back routines.</font>
+<a name="line49"> 49: </a><font color="#B22222">*/</font>
+<a name="line50"> 50: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line51"> 51: </a>  InactiveDouble      param;
+<a name="line52"> 52: </a>  InactiveDouble      hx, hy;        <font color="#B22222">/* increment size in both directions */</font>
+<a name="line53"> 53: </a>  InactiveDouble      area;          <font color="#B22222">/* area of the triangles */</font>
+<a name="line54"> 54: </a>} ADFGCtx;
+
+<a name="line56"> 56: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line57"> 57: </a>  PetscReal      param;          <font color="#B22222">/* 'c' parameter */</font>
+<a name="line58"> 58: </a>  PetscReal      u1, u2;         <font color="#B22222">/* domain upper limits (lower limits = 0) */</font>
+<a name="line59"> 59: </a>  double      hx, hy;        <font color="#B22222">/* increment size in both directions */</font>
+<a name="line60"> 60: </a>  double      area;          <font color="#B22222">/* area of the triangles */</font>
+<a name="line61"> 61: </a>  ADFGCtx     fgctx;         <font color="#B22222">/* Used only when an ADIC generated gradient is used */</font>
+<a name="line62"> 62: </a>} AppCtx;
+<a name="line63"> 63: </a>int ad_EPTorsLocalFunction(PetscInt[2], DERIV_TYPE[4], DERIV_TYPE*, void*);
+
+<a name="line65"> 65: </a><font color="#B22222">/* User-defined routines found in this file */</font>
+<a name="line66"> 66: </a><strong><font color="#4169E1">static int AppCtxInitialize(void *ptr)</font></strong>;
+<a name="line67"> 67: </a><strong><font color="#4169E1">static int FormInitialGuess(DA, Vec)</font></strong>;
+
+<a name="line69"> 69: </a>static int EPTorsLocalFunctionGradient(PetscInt[2], double x[4], double *f, double g[4], void *ptr);
+<a name="line70"> 70: </a>static int EPTorsLocalHessian(PetscInt[2], double x[4], double H[4][4], void *ptr);
+
+<a name="line72"> 72: </a><strong><font color="#4169E1">static int WholeEPTorsFunctionGradient(TAO_APPLICATION,DA,Vec,double *,Vec,void*)</font></strong>;
+<a name="line73"> 73: </a><strong><font color="#4169E1">static int WholeEPTorsHessian(TAO_APPLICATION,DA,Vec,Mat,void*)</font></strong>;
+
+<a name="line75"> 75: </a><strong><font color="#4169E1">static int DASetBounds(TAO_APPLICATION, DA, Vec, Vec, void*)</font></strong>;
+
+<a name="line77"> 77: </a><strong><font color="#4169E1">static int MyGridMonitorBefore(TAO_APPLICATION, DA, PetscInt, void *)</font></strong>;
+
+
+<a name="line82"> 82: </a><strong><font color="#4169E1"><a name="main"></a>int main( int argc, char **argv )</font></strong> {
+
+<a name="line84"> 84: </a>  int             info;                           <font color="#B22222">/* used to check for functions returning nonzeros */</font>
+<a name="line85"> 85: </a>  PetscInt             mx,my,Nx,Ny;
+<a name="line86"> 86: </a>  double          ff,gnorm;
+<a name="line87"> 87: </a>  PetscInt             iter, nlevels;                                                <font color="#B22222">/* multigrid levels */</font>
+<a name="line88"> 88: </a>  DA              DAarray[20];
+<a name="line89"> 89: </a>  Vec             X;
+<a name="line90"> 90: </a>  PetscTruth      flg, PreLoad = PETSC_TRUE;                                               <font color="#B22222">/* flags */</font>
+<a name="line91"> 91: </a>  TaoMethod       method = <font color="#666666">"tao_gpcg"</font>;                                       <font color="#B22222">/* minimization method */</font>
+<a name="line92"> 92: </a>  AppCtx          user;                                                <font color="#B22222">/* user-defined work context */</font>
+<a name="line93"> 93: </a>  TAO_SOLVER      tao;                                                 <font color="#B22222">/* TAO_SOLVER solver context */</font>
+<a name="line94"> 94: </a>  TAO_APPLICATION EPTorsApp;                                            <font color="#B22222">/* The PETSc application */</font>
+<a name="line95"> 95: </a>  TaoTerminateReason reason;
+<a name="line96"> 96: </a>  KSP ksp;
+<a name="line97"> 97: </a>  PC pc;
+
+<a name="line99"> 99: </a>  <font color="#B22222">/* Initialize TAO */</font>
+<a name="line100">100: </a>  PetscInitialize(&amp;argc, &amp;argv, (char *)0, help);
+<a name="line101">101: </a>  <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(&amp;argc, &amp;argv, (char *)0, help);
+
+<a name="line103">103: </a>  PreLoadBegin(PreLoad,<font color="#666666">"<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>"</font>);
+<a name="line104">104: </a>  
+<a name="line105">105: </a>  info = AppCtxInitialize((void*)&amp;user); CHKERRQ(info);
+
+<a name="line107">107: </a>  nlevels=5;
+<a name="line108">108: </a>  info = PetscOptionsGetInt(PETSC_NULL,<font color="#666666">"-nlevels"</font>,&amp;nlevels,&amp;flg); CHKERRQ(info);
+<a name="line109">109: </a>  mx = my = 11;                               <font color="#B22222">/* these correspond to 10 segments on each dimension */</font>
+<a name="line110">110: </a>  info = PetscOptionsGetInt(TAO_NULL, <font color="#666666">"-mx"</font>, &amp;mx, &amp;flg); CHKERRQ(info);
+<a name="line111">111: </a>  info = PetscOptionsGetInt(TAO_NULL, <font color="#666666">"-my"</font>, &amp;my, &amp;flg); CHKERRQ(info);
+<a name="line112">112: </a>  <font color="#4169E1">if</font> (PreLoadIt == 0) {
+<a name="line113">113: </a>    nlevels = 1; mx = 11; my = 11; }
+
+<a name="line115">115: </a>  PetscPrintf(MPI_COMM_WORLD,<font color="#666666">"\n---- Elastic-Plastic Torsion Problem -----\n\n"</font>);
+
+<a name="line117">117: </a>  <font color="#B22222">/* Let PETSc determine the vector distribution */</font>
+<a name="line118">118: </a>  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
+
+<a name="line120">120: </a>  <font color="#B22222">/* Create distributed array (DA) to manage parallel grid and vectors  */</font>
+<a name="line121">121: </a>  info = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,
+<a name="line122">122: </a>                    my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&amp;DAarray[0]); CHKERRQ(info);
+<a name="line123">123: </a>  <font color="#4169E1">for</font> (iter=1;iter&lt;nlevels;iter++){
+<a name="line124">124: </a>    info = DARefine(DAarray[iter-1],PETSC_COMM_WORLD,&amp;DAarray[iter]); CHKERRQ(info);
+<a name="line125">125: </a>  }
+
+<a name="line127">127: </a>  <font color="#B22222">/* Create TAO solver and set desired solution method */</font>
+<a name="line128">128: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(MPI_COMM_WORLD,method,&amp;tao); CHKERRQ(info);
+<a name="line129">129: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(PETSC_COMM_WORLD,&amp;EPTorsApp); CHKERRQ(info);
+<a name="line130">130: </a>  info = <A href="../../../../docs/manualpages/daapp/TaoAppSetDAApp.html#TaoAppSetDAApp">TaoAppSetDAApp</A>(EPTorsApp, DAarray, nlevels ); CHKERRQ(info);
+<a name="line131">131: </a>  <font color="#B22222">/* Sets routines for function, gradient and bounds evaluation */</font>
+<a name="line132">132: </a>  info = <A href="../../../../docs/manualpages/daapp/DAAppSetVariableBoundsRoutine.html#DAAppSetVariableBoundsRoutine">DAAppSetVariableBoundsRoutine</A>(EPTorsApp,DASetBounds,(void *)&amp;user); CHKERRQ(info);
+
+<a name="line134">134: </a>  info = PetscOptionsHasName(TAO_NULL, <font color="#666666">"-byelement"</font>, &amp;flg); CHKERRQ(info);
+<a name="line135">135: </a>  <font color="#4169E1">if</font> (flg) {
+
+<a name="line137">137: </a>    <font color="#B22222">/* Sets routines for function and gradient evaluation, element by element */</font>
+<a name="line138">138: </a>    info = PetscOptionsHasName(TAO_NULL, <font color="#666666">"-adic"</font>, &amp;flg); CHKERRQ(info);
+<a name="line139">139: </a>    <font color="#4169E1">if</font> (flg) {
+<a name="line140">140: </a>      info = <A href="../../../../docs/manualpages/daapp/DAAppSetADElementFunctionGradient.html#DAAppSetADElementFunctionGradient">DAAppSetADElementFunctionGradient</A>(EPTorsApp,ad_EPTorsLocalFunction,192,(void *)&amp;user.fgctx); CHKERRQ(info);
+<a name="line141">141: </a>    } <font color="#4169E1">else</font> {
+<a name="line142">142: </a>      info = <A href="../../../../docs/manualpages/daapp/DAAppSetElementObjectiveAndGradientRoutine.html#DAAppSetElementObjectiveAndGradientRoutine">DAAppSetElementObjectiveAndGradientRoutine</A>(EPTorsApp,EPTorsLocalFunctionGradient,42,(void *)&amp;user); CHKERRQ(info);
+<a name="line143">143: </a>    }
+<a name="line144">144: </a>    <font color="#B22222">/* Sets routines for Hessian evaluation, element by element */</font>
+<a name="line145">145: </a>    info = <A href="../../../../docs/manualpages/daapp/DAAppSetElementHessianRoutine.html#DAAppSetElementHessianRoutine">DAAppSetElementHessianRoutine</A>(EPTorsApp,EPTorsLocalHessian,6,(void*)&amp;user); CHKERRQ(info);
+
+<a name="line147">147: </a>  } <font color="#4169E1">else</font> {
+
+<a name="line149">149: </a>    <font color="#B22222">/* Sets routines for function and gradient evaluation, all in one routine */</font>
+<a name="line150">150: </a>    info = <A href="../../../../docs/manualpages/daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>(EPTorsApp,WholeEPTorsFunctionGradient,(void *)&amp;user); CHKERRQ(info);
+
+<a name="line152">152: </a>    <font color="#B22222">/* Sets routines for Hessian evaluation, all in one routine */</font>
+<a name="line153">153: </a>    info = <A href="../../../../docs/manualpages/daapp/DAAppSetHessianRoutine.html#DAAppSetHessianRoutine">DAAppSetHessianRoutine</A>(EPTorsApp,WholeEPTorsHessian,(void*)&amp;user); CHKERRQ(info);    
+<a name="line154">154: </a>    
+<a name="line155">155: </a>  }
+
+<a name="line157">157: </a>  info = <A href="../../../../docs/manualpages/daapp/DAAppSetBeforeMonitor.html#DAAppSetBeforeMonitor">DAAppSetBeforeMonitor</A>(EPTorsApp,MyGridMonitorBefore,(void*)&amp;user); CHKERRQ(info);
+<a name="line158">158: </a>  info = PetscOptionsHasName(TAO_NULL,<font color="#666666">"-tao_monitor"</font>, &amp;flg); CHKERRQ(info);
+<a name="line159">159: </a>  <font color="#4169E1">if</font> (flg){
+<a name="line160">160: </a>    info = DAAppPrintInterpolationError(EPTorsApp); CHKERRQ(info);
+<a name="line161">161: </a>    info = DAAppPrintStageTimes(EPTorsApp); CHKERRQ(info);
+<a name="line162">162: </a>  }
+<a name="line163">163: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetRelativeTolerance.html#TaoAppSetRelativeTolerance">TaoAppSetRelativeTolerance</A>(EPTorsApp,1.0e-6); CHKERRQ(info);
+<a name="line164">164: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao,0,0,0,0); CHKERRQ(info);
+<a name="line165">165: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetGradientTolerances.html#TaoSetGradientTolerances">TaoSetGradientTolerances</A>(tao,0,0,0); CHKERRQ(info);
+
+<a name="line167">167: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppGetKSP.html#TaoAppGetKSP">TaoAppGetKSP</A>(EPTorsApp,&amp;ksp);CHKERRQ(info);
+<a name="line168">168: </a>  info = KSPSetType(ksp,KSPCG); CHKERRQ(info);
+<a name="line169">169: </a>  info = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,100);CHKERRQ(info);
+<a name="line170">170: </a>  info = KSPGetPC(ksp,&amp;pc);CHKERRQ(info);
+<a name="line171">171: </a>  info = PCSetType(pc,PCBJACOBI);CHKERRQ(info);
+
+<a name="line173">173: </a>  <font color="#B22222">/* Check for any tao command line options */</font>
+<a name="line174">174: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>(EPTorsApp, tao); CHKERRQ(info);
+
+<a name="line176">176: </a>  info = <A href="../../../../docs/manualpages/daapp/DAAppGetSolution.html#DAAppGetSolution">DAAppGetSolution</A>(EPTorsApp,0,&amp;X); CHKERRQ(info);
+<a name="line177">177: </a>  info = FormInitialGuess(DAarray[0],X); CHKERRQ(info);
+<a name="line178">178: </a>  info = <A href="../../../../docs/manualpages/daapp/DAAppSetInitialSolution.html#DAAppSetInitialSolution">DAAppSetInitialSolution</A>(EPTorsApp,X); CHKERRQ(info);
+<a name="line179">179: </a>  
+<a name="line180">180: </a>  <font color="#B22222">/* SOLVE THE APPLICATION */</font>
+<a name="line181">181: </a>  info = <A href="../../../../docs/manualpages/daapp/TaoDAAppSolve.html#TaoDAAppSolve">TaoDAAppSolve</A>(EPTorsApp, tao);  CHKERRQ(info);
+
+<a name="line183">183: </a>  <font color="#B22222">/* Get information on termination */</font>
+<a name="line184">184: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolutionStatus.html#TaoGetSolutionStatus">TaoGetSolutionStatus</A>(tao,&amp;iter,&amp;ff,&amp;gnorm,0,0,&amp;reason); CHKERRQ(info);
+<a name="line185">185: </a>  <font color="#4169E1">if</font> (reason &lt;= 0 ){
+<a name="line186">186: </a>    PetscPrintf(MPI_COMM_WORLD,<font color="#666666">"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n"</font>);
+<a name="line187">187: </a>    PetscPrintf(MPI_COMM_WORLD,<font color="#666666">" Iterations: %d,  Function Value: %4.2e, Residual: %4.2e \n"</font>,iter,ff,gnorm);
+<a name="line188">188: </a>  }
+
+<a name="line190">190: </a>  info = PetscOptionsHasName(PETSC_NULL,<font color="#666666">"-view_sol"</font>,&amp;flg); CHKERRQ(info);
+<a name="line191">191: </a>  <font color="#4169E1">if</font> (flg){
+<a name="line192">192: </a>    info = <A href="../../../../docs/manualpages/daapp/DAAppGetSolution.html#DAAppGetSolution">DAAppGetSolution</A>(EPTorsApp,nlevels-1,&amp;X); CHKERRQ(info);
+<a name="line193">193: </a>    info=VecView(X,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
+<a name="line194">194: </a>  }
+
+<a name="line196">196: </a>  <font color="#B22222">/*  To <A href="../../../../docs/manualpages/lsolver/View.html#View">View</A> TAO solver information */</font>
+<a name="line197">197: </a>  // info = <A href="../../../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>(tao); CHKERRQ(info);
+
+<a name="line199">199: </a>  <font color="#B22222">/* Free TAO data structures */</font>
+<a name="line200">200: </a>  info = <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(tao); CHKERRQ(info);
+<a name="line201">201: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>(EPTorsApp); CHKERRQ(info);
+
+<a name="line203">203: </a>  <font color="#B22222">/* Free PETSc data structures */</font>
+<a name="line204">204: </a>  <font color="#4169E1">for</font> (iter=0;iter&lt;nlevels;iter++){
+<a name="line205">205: </a>    info = DADestroy(DAarray[iter]); CHKERRQ(info);
+<a name="line206">206: </a>  }
+
+<a name="line208">208: </a>  PreLoadEnd();
+
+<a name="line210">210: </a>  <font color="#B22222">/* Finalize TAO */</font>
+<a name="line211">211: </a>  <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>();
+<a name="line212">212: </a>  PetscFinalize();
+
+<a name="line214">214: </a>  <font color="#4169E1">return</font> 0;
+<a name="line215">215: </a>} <font color="#B22222">/* main */</font>
+
+
+
+<a name="line219">219: </a><font color="#B22222">/*----- The following two routines</font>
+<a name="line220">220: </a><font color="#B22222">  MyGridMonitorBefore    MyGridMonitorAfter</font>
+<a name="line221">221: </a><font color="#B22222">  help diplay info of iterations at every grid level</font>
+<a name="line222">222: </a><font color="#B22222">*/</font>
+<a name="line225">225: </a><strong><font color="#4169E1"><a name="MyGridMonitorBefore"></a>static int MyGridMonitorBefore(TAO_APPLICATION myapp, DA da, PetscInt level, void *ctx)</font></strong> {
+
+<a name="line227">227: </a>  AppCtx *user = (AppCtx*)ctx;
+<a name="line228">228: </a>  PetscInt mx,my;
+<a name="line229">229: </a>  int info;
+
+<a name="line231">231: </a>  info = DAGetInfo(da,PETSC_NULL,&amp;mx,&amp;my,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+<a name="line232">232: </a>                   PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(info);
+<a name="line233">233: </a>  user-&gt;hx = user-&gt;u1 / (mx - 1);
+<a name="line234">234: </a>  user-&gt;hy = user-&gt;u2 / (my - 1);
+<a name="line235">235: </a>  user-&gt;area = 0.5 * user-&gt;hx * user-&gt;hy;
+<a name="line236">236: </a>  user-&gt;fgctx.hx   = user-&gt;hx;
+<a name="line237">237: </a>  user-&gt;fgctx.hy   = user-&gt;hy;
+<a name="line238">238: </a>  user-&gt;fgctx.area = user-&gt;area;
+<a name="line239">239: </a>  user-&gt;fgctx.param = user-&gt;param;
+
+<a name="line241">241: </a>  PetscPrintf(MPI_COMM_WORLD,<font color="#666666">"Grid: %d,    mx: %d     my: %d   \n"</font>,level,mx,my);
+
+<a name="line243">243: </a>  <font color="#4169E1">return</font> 0;
+<a name="line244">244: </a>}
+
+
+<a name="line247">247: </a><font color="#B22222">/*------- USER-DEFINED: initialize the application context information -------*/</font>
+<a name="line250">250: </a><font color="#B22222">/*</font>
+<a name="line251">251: </a><font color="#B22222">  AppCtxInitialize - Sets initial values for the application context parameters</font>
+
+<a name="line253">253: </a><font color="#B22222">  Input:</font>
+<a name="line254">254: </a><font color="#B22222">    ptr - void user-defined application context</font>
+
+<a name="line256">256: </a><font color="#B22222">  Output:</font>
+<a name="line257">257: </a><font color="#B22222">    ptr - user-defined application context with the default or user-provided</font>
+<a name="line258">258: </a><font color="#B22222">             parameters</font>
+<a name="line259">259: </a><font color="#B22222">*/</font>
+<a name="line260">260: </a><strong><font color="#4169E1"><a name="AppCtxInitialize"></a>static int AppCtxInitialize(void *ptr)</font></strong> {
+
+<a name="line262">262: </a>  AppCtx *user = (AppCtx*)ptr;
+<a name="line263">263: </a>  PetscTruth    flg;            <font color="#B22222">/* flag for PETSc calls */</font>
+<a name="line264">264: </a>  int info;
+
+<a name="line266">266: </a>  <font color="#B22222">/* Specify default parameters */</font>
+<a name="line267">267: </a>  user-&gt;param = 25.0;
+<a name="line268">268: </a>  user-&gt;u1 = user-&gt;u2 = 1.0;
+
+<a name="line270">270: </a>  <font color="#B22222">/* Check for command line arguments that override defaults */</font>
+<a name="line271">271: </a>  info = PetscOptionsGetReal(TAO_NULL, <font color="#666666">"-par"</font>, &amp;user-&gt;param, &amp;flg); CHKERRQ(info);
+<a name="line272">272: </a>  info = PetscOptionsGetReal(TAO_NULL, <font color="#666666">"-u1"</font>, &amp;user-&gt;u1, &amp;flg); CHKERRQ(info);
+<a name="line273">273: </a>  info = PetscOptionsGetReal(TAO_NULL, <font color="#666666">"-u2"</font>, &amp;user-&gt;u2, &amp;flg); CHKERRQ(info);
+
+<a name="line275">275: </a>  <font color="#4169E1">return</font> 0;
+<a name="line276">276: </a>} <font color="#B22222">/* AppCtxInitialize */</font>
+
+<a name="line280">280: </a><strong><font color="#4169E1"><a name="FormInitialGuess"></a>static int FormInitialGuess(DA da, Vec X)</font></strong>
+<a name="line281">281: </a>{
+<a name="line282">282: </a>  int info;
+<a name="line283">283: </a>  PetscInt    i, j, mx, my;
+<a name="line284">284: </a>  PetscInt    xs, ys, xm, ym, xe, ye;
+<a name="line285">285: </a>  PetscReal hx, hy, temp, val;
+<a name="line286">286: </a>  double **x;
+
+<a name="line288">288: </a>  <font color="#B22222">/* Get local mesh boundaries */</font>
+<a name="line289">289: </a>  info = DAGetInfo(da,PETSC_NULL,&amp;mx,&amp;my,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+<a name="line290">290: </a>                   PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(info);
+<a name="line291">291: </a>  hx = 1.0/(mx-1);  hy = 1.0/(my-1);
+
+<a name="line293">293: </a>  info = DAGetCorners(da,&amp;xs,&amp;ys,PETSC_NULL,&amp;xm,&amp;ym,PETSC_NULL); CHKERRQ(info);
+<a name="line294">294: </a>  xe = xs+xm; ye = ys+ym;
+
+<a name="line296">296: </a>  info = DAVecGetArray(da, X, (void**)&amp;x); CHKERRQ(info);
+<a name="line297">297: </a>  <font color="#B22222">/* Compute initial guess over locally owned part of mesh */</font>
+<a name="line298">298: </a>  <font color="#4169E1">for</font> (j=ys; j&lt;ye; j++) {  <font color="#B22222">/*  for (j=0; j&lt;my; j++) */</font>
+<a name="line299">299: </a>    temp = PetscMin(j+1,my-j)*hy;
+<a name="line300">300: </a>    <font color="#4169E1">for</font> (i=xs; i&lt;xe; i++) {  <font color="#B22222">/*  for (i=0; i&lt;mx; i++) */</font>
+<a name="line301">301: </a>      val = PetscMin((PetscMin(i+1,mx-i))*hx,temp);
+<a name="line302">302: </a>      x[j][i] = val;
+<a name="line303">303: </a>    }
+<a name="line304">304: </a>  }
+<a name="line305">305: </a>  info = DAVecRestoreArray(da, X, (void**)&amp;x); CHKERRQ(info);
+
+<a name="line307">307: </a>  <font color="#4169E1">return</font> 0;
+<a name="line308">308: </a>}
+
+
+<a name="line311">311: </a><font color="#B22222">/*------- USER-DEFINED: set the upper and lower bounds for the variables  -------*/</font>
+
+<a name="line315">315: </a><font color="#B22222">/*</font>
+<a name="line316">316: </a><font color="#B22222">  FormBounds - Forms bounds on the variables</font>
+
+<a name="line318">318: </a><font color="#B22222">  Input:</font>
+<a name="line319">319: </a><font color="#B22222">    user - user-defined application context</font>
+
+<a name="line321">321: </a><font color="#B22222">  Output:</font>
+<a name="line322">322: </a><font color="#B22222">    XL - vector of lower bounds</font>
+<a name="line323">323: </a><font color="#B22222">    XU - vector of upper bounds</font>
+<a name="line324">324: </a><font color="#B22222">*/</font>
+<a name="line325">325: </a><strong><font color="#4169E1"><a name="DASetBounds"></a>static int DASetBounds(TAO_APPLICATION daapplication, DA da, Vec XL, Vec XU, void *ptr)</font></strong>
+<a name="line326">326: </a>{
+<a name="line327">327: </a>  AppCtx *user = (AppCtx*)ptr;
+<a name="line328">328: </a>  int info;
+<a name="line329">329: </a>  PetscInt i, j, xs, xm, ys, ym;
+<a name="line330">330: </a>  double hx, hy, u1, u2, dist, d1, d2, hd, vd;
+<a name="line331">331: </a>  double **xl, **xu;
+
+<a name="line333">333: </a>  hx = user-&gt;hx;
+<a name="line334">334: </a>  hy = user-&gt;hy;
+<a name="line335">335: </a>  u1 = user-&gt;u1;
+<a name="line336">336: </a>  u2 = user-&gt;u2;
+
+<a name="line338">338: </a>  info = DAVecGetArray(da, XL, (void**)&amp;xl); CHKERRQ(info);
+<a name="line339">339: </a>  info = DAVecGetArray(da, XU, (void**)&amp;xu); CHKERRQ(info);
+<a name="line340">340: </a>  info = DAGetCorners(da, &amp;xs, &amp;ys, TAO_NULL, &amp;xm, &amp;ym, TAO_NULL); CHKERRQ(info);
+
+<a name="line342">342: </a>  <font color="#4169E1">for</font> (j = ys; j &lt; ys+ym; j++){
+<a name="line343">343: </a>    <font color="#4169E1">for</font> (i = xs; i &lt; xs+xm; i++){
+<a name="line344">344: </a>      d1 = i * hx; d2 = u1 - d1; hd = PetscMin(d1,d2);
+<a name="line345">345: </a>      d1 = j * hy; d2 = u2 - d1; vd = PetscMin(d1,d2);
+<a name="line346">346: </a>      dist = PetscMin(hd,vd);
+<a name="line347">347: </a>      xl[j][i] = -dist;
+<a name="line348">348: </a>      xu[j][i] = dist;
+<a name="line349">349: </a>    }
+<a name="line350">350: </a>  }
+
+<a name="line352">352: </a>  info = DAVecRestoreArray(da, XL, (void**)&amp;xl); CHKERRQ(info);
+<a name="line353">353: </a>  info = DAVecRestoreArray(da, XU, (void**)&amp;xu); CHKERRQ(info);
+
+<a name="line355">355: </a>  info = PetscLogFlops(xm * ym * 4); CHKERRQ(info);
+<a name="line356">356: </a>  <font color="#4169E1">return</font> 0;
+
+<a name="line358">358: </a>} <font color="#B22222">/* DASetBounds */</font>
+
+
+<a name="line363">363: </a><font color="#B22222">/*</font>
+<a name="line364">364: </a><font color="#B22222">  EPTorsLocalFunctionGradient - Evaluates function and gradient over the </font>
+<a name="line365">365: </a><font color="#B22222">      local rectangular element</font>
+
+<a name="line367">367: </a><font color="#B22222">  Input:</font>
+<a name="line368">368: </a><font color="#B22222">    coor - vector with the indices of the position of current element</font>
+<a name="line369">369: </a><font color="#B22222">             in the first, second and third directions</font>
+<a name="line370">370: </a><font color="#B22222">    x - current point (values over the current rectangular element)</font>
+<a name="line371">371: </a><font color="#B22222">    df - degrees of freedom at each point</font>
+<a name="line372">372: </a><font color="#B22222">    ptr - user-defined application context</font>
+
+<a name="line374">374: </a><font color="#B22222">  Output:</font>
+<a name="line375">375: </a><font color="#B22222">    f - value of the objective funtion at the local rectangular element</font>
+<a name="line376">376: </a><font color="#B22222">    g - gradient of the local function</font>
+<a name="line377">377: </a><font color="#B22222">*/</font>
+<a name="line378">378: </a>static int EPTorsLocalFunctionGradient(PetscInt coor[2], double x[4], double *f, double g[4], void *ptr) {
+
+<a name="line380">380: </a>  AppCtx *user = (AppCtx*)ptr;
+
+<a name="line382">382: </a>  double fquad, flin;
+<a name="line383">383: </a>  double hx, hy, dvdx, dvdy, area;
+<a name="line384">384: </a>  double cdiv3, cnt;
+
+<a name="line386">386: </a>  cdiv3 = user-&gt;param / 3.0;
+<a name="line387">387: </a>  hx = user-&gt;hx;
+<a name="line388">388: </a>  hy = user-&gt;hy;
+<a name="line389">389: </a>  area = user-&gt;area;
+<a name="line390">390: </a>  cnt = area * cdiv3;
+
+<a name="line392">392: </a>  <font color="#B22222">/* lower triangle contribution */</font>
+<a name="line393">393: </a>  dvdx = (x[0] - x[1]) / hx;
+<a name="line394">394: </a>  dvdy = (x[0] - x[2]) / hy;
+<a name="line395">395: </a>  fquad = dvdx * dvdx + dvdy * dvdy;
+<a name="line396">396: </a>  flin = x[0] + x[1] + x[2];
+
+<a name="line398">398: </a>  dvdx = 0.5 * dvdx * hy;
+<a name="line399">399: </a>  dvdy = 0.5 * dvdy * hx;
+<a name="line400">400: </a>  g[0] = dvdx + dvdy - cnt;
+<a name="line401">401: </a>  g[1] = -dvdx - 2.0 * cnt;
+<a name="line402">402: </a>  g[2] = -dvdy - 2.0 * cnt;
+
+<a name="line404">404: </a>  <font color="#B22222">/* upper triangle contribution */</font>
+<a name="line405">405: </a>  dvdx = (x[3] - x[2]) / hx;
+<a name="line406">406: </a>  dvdy = (x[3] - x[1]) / hy;
+<a name="line407">407: </a>  fquad += dvdx * dvdx + dvdy * dvdy;
+<a name="line408">408: </a>  flin += x[1] + x[2] + x[3];
+
+<a name="line410">410: </a>  dvdx = 0.5 * dvdx * hy;
+<a name="line411">411: </a>  dvdy = 0.5 * dvdy * hx;
+<a name="line412">412: </a>  g[1] += -dvdy;
+<a name="line413">413: </a>  g[2] += -dvdx;
+<a name="line414">414: </a>  g[3] = dvdx + dvdy - cnt;
+
+<a name="line416">416: </a>  *f = area * (0.5 * fquad - flin * cdiv3);
+
+<a name="line418">418: </a>  <font color="#4169E1">return</font> 0;
+<a name="line419">419: </a>} <font color="#B22222">/* EPTorsLocalFunctionGradient */</font>
+
+
+
+<a name="line423">423: </a><font color="#B22222">/*------- USER-DEFINED: routine to evaluate the Hessian</font>
+<a name="line424">424: </a><font color="#B22222">           at a local (rectangular element) level       -------*/</font>
+<a name="line427">427: </a><font color="#B22222">/*</font>
+<a name="line428">428: </a><font color="#B22222">  EPTorsLocalHessian - Computes the Hessian of the local (partial) function</font>
+<a name="line429">429: </a><font color="#B22222">         defined over the current rectangle</font>
+
+<a name="line431">431: </a><font color="#B22222">  Input:</font>
+<a name="line432">432: </a><font color="#B22222">    coor - vector with the indices of the position of current element</font>
+<a name="line433">433: </a><font color="#B22222">             in the first, second and third directions</font>
+<a name="line434">434: </a><font color="#B22222">    x - current local solution (over the rectangle only)</font>
+<a name="line435">435: </a><font color="#B22222">    df - degrees of freedom at each point</font>
+<a name="line436">436: </a><font color="#B22222">    ptr - user-defined application context</font>
+
+<a name="line438">438: </a><font color="#B22222">  Output:</font>
+<a name="line439">439: </a><font color="#B22222">    H - Hessian matrix of the local function (wrt the four</font>
+<a name="line440">440: </a><font color="#B22222">           points of the rectangle only)</font>
+<a name="line441">441: </a><font color="#B22222">*/</font>
+<a name="line442">442: </a>static int EPTorsLocalHessian(PetscInt coor[2], double x[4], double H[4][4], void *ptr) {
+
+<a name="line444">444: </a>  AppCtx *user = (AppCtx*)ptr;
+<a name="line445">445: </a>  double hx, hy, dxdy, dydx;
+<a name="line446">446: </a>  double diagxy, bandxy, bandyx;
+
+<a name="line448">448: </a>  hx = user-&gt;hx;
+<a name="line449">449: </a>  hy = user-&gt;hy;
+<a name="line450">450: </a>  dxdy = hx/hy;
+<a name="line451">451: </a>  dydx = hy/hx;
+<a name="line452">452: </a>  diagxy = 0.5 * (dxdy + dydx);
+<a name="line453">453: </a>  bandxy = -0.5 * dxdy;
+<a name="line454">454: </a>  bandyx = -0.5 * dydx;
+
+<a name="line456">456: </a>          <font color="#B22222">/* Hessian contribution at 0,0 */</font>
+<a name="line457">457: </a>  H[0][0] = diagxy;
+<a name="line458">458: </a>  H[0][1] =  H[1][0] = bandyx;
+<a name="line459">459: </a>  H[0][2] =  H[2][0] = bandxy;
+<a name="line460">460: </a>  H[0][3] =  H[3][0] = 0.0;
+
+<a name="line462">462: </a>          <font color="#B22222">/* Hessian contribution at 1,0 */</font>
+<a name="line463">463: </a>  H[1][1] = diagxy;
+<a name="line464">464: </a>  H[1][2] =  H[2][1] = 0.0;
+<a name="line465">465: </a>  H[1][3] =  H[3][1] = bandxy;
+
+<a name="line467">467: </a>          <font color="#B22222">/* Hessian contribution at 0,1 */</font>
+<a name="line468">468: </a>  H[2][2] = diagxy;
+<a name="line469">469: </a>  H[2][3] =  H[3][2] = bandyx;
+
+<a name="line471">471: </a>          <font color="#B22222">/* Hessian contribution at 1,1 */</font>
+<a name="line472">472: </a>  H[3][3] = diagxy;
+
+<a name="line474">474: </a>  <font color="#4169E1">return</font> 0;
+
+<a name="line476">476: </a>} <font color="#B22222">/* EPTorsLocalHessian */</font>
+
+
+<a name="line479">479: </a><font color="#B22222">/*------- USER-DEFINED: routine to evaluate the function </font>
+<a name="line480">480: </a><font color="#B22222">          and gradient at the whole grid             -------*/</font>
+<a name="line483">483: </a><font color="#B22222">/*</font>
+<a name="line484">484: </a><font color="#B22222">  WholeEPTorsFunctionGradient - Evaluates function and gradient over the </font>
+<a name="line485">485: </a><font color="#B22222">      whole grid</font>
+
+<a name="line487">487: </a><font color="#B22222">  Input:</font>
+<a name="line488">488: </a><font color="#B22222">    daapplication - TAO application object</font>
+<a name="line489">489: </a><font color="#B22222">    da  - distributed array</font>
+<a name="line490">490: </a><font color="#B22222">    X   - the current point, at which the function and gradient are evaluated</font>
+<a name="line491">491: </a><font color="#B22222">    ptr - user-defined application context</font>
+
+<a name="line493">493: </a><font color="#B22222">  Output:</font>
+<a name="line494">494: </a><font color="#B22222">    f - value of the objective funtion at X</font>
+<a name="line495">495: </a><font color="#B22222">    G - gradient at X</font>
+<a name="line496">496: </a><font color="#B22222">*/</font>
+<a name="line497">497: </a><strong><font color="#4169E1"><a name="WholeEPTorsFunctionGradient"></a>static int WholeEPTorsFunctionGradient(TAO_APPLICATION daapplication, DA da, Vec X, double *f, Vec G, void *ptr)</font></strong> {
+
+<a name="line499">499: </a>  AppCtx *user = (AppCtx*)ptr;
+<a name="line500">500: </a>  Vec localX, localG;
+<a name="line501">501: </a>  int info;
+<a name="line502">502: </a>  PetscInt i, j;
+<a name="line503">503: </a>  PetscInt xs, xm, gxs, gxm, xe, ys, ym, gys, gym, ye;
+<a name="line504">504: </a>  double **x, **g;
+<a name="line505">505: </a>  double floc = 0.0;
+<a name="line506">506: </a>  PetscScalar zero = 0.0;
+
+<a name="line508">508: </a>  double fquad, flin;
+<a name="line509">509: </a>  double hx, hy, dvdx, dvdy, area;
+<a name="line510">510: </a>  double cdiv3, cnt;
+
+<a name="line512">512: </a>  cdiv3 = user-&gt;param / 3.0;
+<a name="line513">513: </a>  hx = user-&gt;hx;
+<a name="line514">514: </a>  hy = user-&gt;hy;
+<a name="line515">515: </a>  area = user-&gt;area;
+<a name="line516">516: </a>  cnt = area * cdiv3;
+
+<a name="line518">518: </a>  info = DAGetLocalVector(da, &amp;localX); CHKERRQ(info);
+<a name="line519">519: </a>  info = DAGetLocalVector(da, &amp;localG); CHKERRQ(info);
+<a name="line520">520: </a>  info = VecSet(G, zero); CHKERRQ(info);
+<a name="line521">521: </a>  info = VecSet(localG, zero); CHKERRQ(info);
+
+<a name="line523">523: </a>  info = DAGlobalToLocalBegin(da, X, INSERT_VALUES, localX); CHKERRQ(info);
+<a name="line524">524: </a>  info = DAGlobalToLocalEnd(da, X, INSERT_VALUES, localX); CHKERRQ(info);
+
+<a name="line526">526: </a>  info = DAVecGetArray(da, localX, (void**)&amp;x); CHKERRQ(info);
+<a name="line527">527: </a>  info = DAVecGetArray(da, localG, (void**)&amp;g); CHKERRQ(info);
+
+<a name="line529">529: </a>  info = DAGetCorners(da, &amp;xs, &amp;ys, TAO_NULL, &amp;xm, &amp;ym, TAO_NULL); CHKERRQ(info);
+<a name="line530">530: </a>  info = DAGetGhostCorners(da, &amp;gxs, &amp;gys, TAO_NULL, &amp;gxm, &amp;gym, TAO_NULL); CHKERRQ(info);
+
+<a name="line532">532: </a>  xe = gxs + gxm - 1;
+<a name="line533">533: </a>  ye = gys + gym - 1;
+<a name="line534">534: </a>  <font color="#4169E1">for</font> (j = ys; j &lt; ye; j++) {
+<a name="line535">535: </a>    <font color="#4169E1">for</font> (i = xs; i &lt; xe; i++) {
+
+<a name="line537">537: </a>      <font color="#B22222">/* lower triangle contribution */</font>
+<a name="line538">538: </a>      dvdx = (x[j][i] - x[j][i+1]) / hx;  
+<a name="line539">539: </a>      dvdy = (x[j][i] - x[j+1][i]) / hy;
+<a name="line540">540: </a>      fquad = dvdx * dvdx + dvdy * dvdy;
+<a name="line541">541: </a>      flin = x[j][i] + x[j][i+1] + x[j+1][i];
+
+<a name="line543">543: </a>      dvdx = 0.5 * dvdx * hy;
+<a name="line544">544: </a>      dvdy = 0.5 * dvdy * hx;
+<a name="line545">545: </a>      g[j][i] += dvdx + dvdy - cnt;
+<a name="line546">546: </a>      g[j][i+1] += -dvdx - 2.0 * cnt;
+<a name="line547">547: </a>      g[j+1][i] += -dvdy - 2.0 * cnt;
+
+<a name="line549">549: </a>      <font color="#B22222">/* upper triangle contribution */</font>
+<a name="line550">550: </a>      dvdx = (x[j+1][i+1] - x[j+1][i]) / hx;
+<a name="line551">551: </a>      dvdy = (x[j+1][i+1] - x[j][i+1]) / hy;
+<a name="line552">552: </a>      fquad += dvdx * dvdx + dvdy * dvdy;
+<a name="line553">553: </a>      flin += x[j][i+1] + x[j+1][i] + x[j+1][i+1];
+
+<a name="line555">555: </a>      dvdx = 0.5 * dvdx * hy;
+<a name="line556">556: </a>      dvdy = 0.5 * dvdy * hx;
+<a name="line557">557: </a>      g[j][i+1] += -dvdy;
+<a name="line558">558: </a>      g[j+1][i] += -dvdx;
+<a name="line559">559: </a>      g[j+1][i+1] += dvdx + dvdy - cnt;
+
+<a name="line561">561: </a>      floc += area * (0.5 * fquad - flin * cdiv3);
+
+<a name="line563">563: </a>    }
+<a name="line564">564: </a>  }
+
+<a name="line566">566: </a>  info = MPI_Allreduce(&amp;floc, f, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); CHKERRQ(info);
+
+<a name="line568">568: </a>  info = DAVecRestoreArray(da, localX, (void**)&amp;x); CHKERRQ(info);
+<a name="line569">569: </a>  info = DAVecRestoreArray(da, localG, (void**)&amp;g); CHKERRQ(info);
+
+<a name="line571">571: </a>  info = DALocalToGlobalBegin(da, localG, G); CHKERRQ(info);
+<a name="line572">572: </a>  info = DALocalToGlobalEnd(da, localG, G); CHKERRQ(info);
+
+<a name="line574">574: </a>  info = DARestoreLocalVector(da, &amp;localX); CHKERRQ(info);
+<a name="line575">575: </a>  info = DARestoreLocalVector(da, &amp;localG); CHKERRQ(info);
+
+<a name="line577">577: </a>  info = PetscLogFlops((xe-xs) * (ye-ys) * 47 + 2); CHKERRQ(info);
+<a name="line578">578: </a>  <font color="#4169E1">return</font> 0;
+<a name="line579">579: </a>} <font color="#B22222">/* WholeEPTorsFunctionGradient */</font>
+
+
+<a name="line582">582: </a><font color="#B22222">/*------- USER-DEFINED: routine to evaluate the Hessian </font>
+<a name="line583">583: </a><font color="#B22222">          at the whole grid             -------*/</font>
+<a name="line586">586: </a><font color="#B22222">/*</font>
+<a name="line587">587: </a><font color="#B22222">  WholeEPTorsHessian - Evaluates Hessian over the whole grid</font>
+
+<a name="line589">589: </a><font color="#B22222">  Input:</font>
+<a name="line590">590: </a><font color="#B22222">    daapplication - TAO application object</font>
+<a name="line591">591: </a><font color="#B22222">    da  - distributed array</font>
+<a name="line592">592: </a><font color="#B22222">    X   - the current point, at which the function and gradient are evaluated</font>
+<a name="line593">593: </a><font color="#B22222">    ptr - user-defined application context</font>
+
+<a name="line595">595: </a><font color="#B22222">  Output:</font>
+<a name="line596">596: </a><font color="#B22222">    H - Hessian at X</font>
+<a name="line597">597: </a><font color="#B22222">*/</font>
+<a name="line598">598: </a><strong><font color="#4169E1"><a name="WholeEPTorsHessian"></a>static int WholeEPTorsHessian(TAO_APPLICATION daapplication, DA da, Vec X, Mat H, void *ptr)</font></strong> {
+
+<a name="line600">600: </a>  AppCtx *user = (AppCtx*)ptr;
+<a name="line601">601: </a>  int info;
+<a name="line602">602: </a>  PetscInt i, j, ind[4];
+<a name="line603">603: </a>  PetscInt xs, xm, gxs, gxm, xe, ys, ym, gys, gym, ye;
+<a name="line604">604: </a>  double smallH[4][4];
+
+<a name="line606">606: </a>  double hx, hy, dxdy, dydx;
+<a name="line607">607: </a>  double diagxy, bandxy, bandyx;
+<a name="line608">608: </a>  PetscTruth assembled;
+
+<a name="line610">610: </a>  hx = user-&gt;hx;
+<a name="line611">611: </a>  hy = user-&gt;hy;
+<a name="line612">612: </a>  dxdy = hx/hy;
+<a name="line613">613: </a>  dydx = hy/hx;
+<a name="line614">614: </a>  diagxy = 0.5 * (dxdy + dydx);
+<a name="line615">615: </a>  bandxy = -0.5 * dxdy;
+<a name="line616">616: </a>  bandyx = -0.5 * dydx;
+
+<a name="line618">618: </a>  info = MatAssembled(H,&amp;assembled); CHKERRQ(info);
+<a name="line619">619: </a>  <font color="#4169E1">if</font> (assembled){info = MatZeroEntries(H);  CHKERRQ(info);}
+
+
+<a name="line622">622: </a>  info = DAGetCorners(da, &amp;xs, &amp;ys, TAO_NULL, &amp;xm, &amp;ym, TAO_NULL); CHKERRQ(info);
+<a name="line623">623: </a>  info = DAGetGhostCorners(da, &amp;gxs, &amp;gys, TAO_NULL, &amp;gxm, &amp;gym, TAO_NULL); CHKERRQ(info);
+
+<a name="line625">625: </a>  xe = gxs + gxm - 1;
+<a name="line626">626: </a>  ye = gys + gym - 1;
+<a name="line627">627: </a>  <font color="#4169E1">for</font> (j = ys; j &lt; ye; j++) {
+<a name="line628">628: </a>    <font color="#4169E1">for</font> (i = xs; i &lt; xe; i++) {
+
+<a name="line630">630: </a>          <font color="#B22222">/* Hessian contribution at 0,0 */</font>
+<a name="line631">631: </a>      smallH[0][0] = diagxy;
+<a name="line632">632: </a>      smallH[0][1] = smallH[1][0] = bandyx;
+<a name="line633">633: </a>      smallH[0][2] = smallH[2][0] = bandxy;
+<a name="line634">634: </a>      smallH[0][3] = smallH[3][0] = 0.0;
+
+<a name="line636">636: </a>          <font color="#B22222">/* Hessian contribution at 1,0 */</font>
+<a name="line637">637: </a>      smallH[1][1] = diagxy;
+<a name="line638">638: </a>      smallH[1][2] = smallH[2][1] = 0.0;
+<a name="line639">639: </a>      smallH[1][3] = smallH[3][1] = bandxy;
+
+<a name="line641">641: </a>          <font color="#B22222">/* Hessian contribution at 0,1 */</font>
+<a name="line642">642: </a>      smallH[2][2] = diagxy;
+<a name="line643">643: </a>      smallH[2][3] = smallH[3][2] = bandyx;
+
+<a name="line645">645: </a>          <font color="#B22222">/* Hessian contribution at 1,1 */</font>
+<a name="line646">646: </a>      smallH[3][3] = diagxy;
+
+<a name="line648">648: </a>      ind[0] = (j-gys) * gxm + (i-gxs);
+<a name="line649">649: </a>      ind[1] = ind[0] + 1;
+<a name="line650">650: </a>      ind[2] = ind[0] + gxm;
+<a name="line651">651: </a>      ind[3] = ind[2] + 1;
+<a name="line652">652: </a>      info = MatSetValuesLocal(H,4,ind,4,ind,(PetscScalar*)smallH,ADD_VALUES); CHKERRQ(info);
+
+<a name="line654">654: </a>    }
+<a name="line655">655: </a>  }
+
+<a name="line657">657: </a>  info = MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line658">658: </a>  info = MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line659">659: </a>  info = MatSetOption(H, MAT_SYMMETRIC, PETSC_TRUE); CHKERRQ(info);
+
+
+<a name="line662">662: </a>  info = PetscLogFlops(6); CHKERRQ(info);
+<a name="line663">663: </a>  <font color="#4169E1">return</font> 0;
+
+<a name="line665">665: </a>} <font color="#B22222">/* WholeEPTorsHessian */</font>
+</pre>
+</body>
+
+</html>

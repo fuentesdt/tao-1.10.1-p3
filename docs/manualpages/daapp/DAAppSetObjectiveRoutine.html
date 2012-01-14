@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetObjectiveRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetObjectiveRoutine"><H1>DAAppSetObjectiveRoutine</H1></A>
+Set a routine that will evaluate the objective  function on the given DA at the given point. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taodaapplication.h" 
+int DAAppSetObjectiveRoutine(TAO_APPLICATION daapplication, int (*func)(TAO_APPLICATION,DA,Vec,double*, void*),void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the DA Application object
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>func </B></TD><TD>- the function pointer for the objecive evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- the monitor context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of func</FONT></H2>
+<pre>
+    func(TAO_APPLICATION daapplication,DA da,Vec x,double *f,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>da </B></TD><TD>- the Distributed Array
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- application sets equal to the function value 
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user-defined function context set from <A HREF="../daapp/DAAppSetObjectiveRoutine.html#DAAppSetObjectiveRoutine">DAAppSetObjectiveRoutine</A>()
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+  DA, objective
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>();
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/interface/daapp.c.html#DAAppSetObjectiveRoutine">src/petsctao/gridapplication/interface/daapp.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,4 @@
+#define 30017_img32_width 7
+#define 30017_img32_height 5
+static char 30017_img32_bits[] = {
+ 0x4c,0x52,0x31,0x11,0x2e};

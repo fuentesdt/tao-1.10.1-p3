@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>MatCreateADA</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="MatCreateADA"><H1>MatCreateADA</H1></A>
+Creates a matrix M=A^T D1 A + D2. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "mat.h"  
+int MatCreateADA(Mat mat,Vec D1, Vec D2, Mat *J)
+</PRE>
+Collective on matrix
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mat </B></TD><TD>- matrix of arbitrary type
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>D1 </B></TD><TD>- A vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>D2 </B></TD><TD>- A vector
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<DT><B>J </B> -New matrix whose operations are defined in terms of mat, D1, and D2.
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+The user provides the input data and is responsible for destroying
+this data after matrix J has been destroyed.
+The operation MatMult(A,D2,D1) must be well defined.
+Before calling the operation MatGetDiagonal(), the function
+MatADAComputeDiagonal() must be called.  The matrices A and D1 must
+be the same during calls to MatADAComputeDiagonal() and
+MatGetDiagonal().
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ MatCreate()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/matrix/normalmat.c.html#MatCreateADA">src/petsctao/matrix/normalmat.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

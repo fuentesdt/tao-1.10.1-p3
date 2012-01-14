@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetVariableBoundsRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetVariableBoundsRoutine"><H1>DAAppSetVariableBoundsRoutine</H1></A>
+Set a routine that will evaluate the bounds on the variables. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taodaapplication.h" 
+int DAAppSetVariableBoundsRoutine(TAO_APPLICATION daapplication, int (*bound)(TAO_APPLICATION,DA,Vec,Vec, void*),void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the DA Application object
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>bound </B></TD><TD>- the function pointer for the bound evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- the monitor context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of bound</FONT></H2>
+<pre>
+    bound(TAO_APPLICATION daapplication, DA da,Vec xl, Vec xu, void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>da </B></TD><TD>- the Distributed Array
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xl </B></TD><TD>- vector of upper bounds
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xu </B></TD><TD>- vector of lower bounds
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user-defined monitor context set from <A HREF="../daapp/DAAppSetVariableBoundsRoutine.html#DAAppSetVariableBoundsRoutine">DAAppSetVariableBoundsRoutine</A>()
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+  DA, bounds
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../daapp/TaoDAAppSolve.html#TaoDAAppSolve">TaoDAAppSolve</A>();
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/interface/daapp.c.html#DAAppSetVariableBoundsRoutine">src/petsctao/gridapplication/interface/daapp.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c.html">src/petsctao/gridapplication/examples/eptorsion3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c.html">src/petsctao/gridapplication/examples/jbearing3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c.html">src/petsctao/gridapplication/examples/minsurf3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c.html">src/petsctao/gridapplication/examples/combustion3.c.html</A><BR>
+</BODY></HTML>

@@ -1,0 +1,8 @@
+
+---- Minimum Surface Area Problem -----
+mx: 6     my: 8   
+
+iter = 0, Function value 1.44462, Residual: 0.222562 
+iter = 1, Function value 1.41586, Residual: 0.022416 
+iter = 2, Function value 1.41562, Residual: 0.000463 
+iter = 3, Function value 1.41562, Residual: < 1.0e-6 

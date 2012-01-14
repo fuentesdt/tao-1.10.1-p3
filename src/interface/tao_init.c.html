@@ -1,0 +1,147 @@
+<center><a href="tao_init.c">Actual source code: tao_init.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:07+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0">   </font><font color="#B22222">/*I  "tao_solver.h" I*/</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><strong><font color="#4169E1">int TaoRegisterEvents()</font></strong>;
+
+<a name="line7">  7: </a><font color="#B22222">/* ------------------------Nasty global variables -------------------------------*/</font>
+<a name="line8">  8: </a>int TaoInitializeCalled = 0;
+<a name="line9">  9: </a>int TAO_COOKIE = 0;
+
+<a name="line11"> 11: </a>static int  TaoGlobalArgc   = 0;
+<a name="line12"> 12: </a>static char **TaoGlobalArgs = 0;
+
+<a name="line16"> 16: </a><font color="#B22222">/*@C </font>
+<a name="line17"> 17: </a><font color="#B22222">  <A href="../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A> - Initializes the TAO component and many of the packages associated with it.</font>
+
+<a name="line19"> 19: </a><font color="#B22222">   Collective on MPI_COMM_WORLD</font>
+
+<a name="line21"> 21: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line22"> 22: </a><font color="#B22222">+  argc - [optional] count of number of command line arguments</font>
+<a name="line23"> 23: </a><font color="#B22222">.  args - [optional] the command line arguments</font>
+<a name="line24"> 24: </a><font color="#B22222">.  file - [optional] PETSc database file, defaults to ~username/.petscrc</font>
+<a name="line25"> 25: </a><font color="#B22222">          (use TAO_NULL for default)</font>
+<a name="line26"> 26: </a><font color="#B22222">-  help - [optional] Help message to print, use TAO_NULL for no message</font>
+
+<a name="line28"> 28: </a><font color="#B22222">   Note:</font>
+<a name="line29"> 29: </a><font color="#B22222">   <A href="../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>() should always be called near the beginning of your </font>
+<a name="line30"> 30: </a><font color="#B22222">   program.  However, this command should come after PetscInitialize()</font>
+
+<a name="line32"> 32: </a><font color="#B22222">   Note:</font>
+<a name="line33"> 33: </a><font color="#B22222">   The input arguments are required if the options database is to be used.</font>
+
+<a name="line35"> 35: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line37"> 37: </a><font color="#B22222">.keywords: TAO_SOLVER, initialize</font>
+
+<a name="line39"> 39: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoInitializeFortran.html#TaoInitializeFortran">TaoInitializeFortran</A>(), <A href="../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>(), PetscInitialize()</font>
+<a name="line40"> 40: </a><font color="#B22222">@*/</font>
+<a name="line41"> 41: </a><strong><font color="#4169E1"><a name="TaoInitialize"></a>int <A href="../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(int *argc,char ***args,char file[],const char help[])</font></strong>
+<a name="line42"> 42: </a>{
+<a name="line43"> 43: </a>  int info=0;
+
+<a name="line45"> 45: </a>  TaoFunctionBegin;
+
+<a name="line47"> 47: </a>  <font color="#4169E1">if</font> (TaoInitializeCalled){ TaoFunctionReturn(0);}
+<a name="line48"> 48: </a>  TaoInitializeCalled++;
+
+<a name="line50"> 50: </a>  <font color="#4169E1">if</font> (argc &amp;&amp; args){
+<a name="line51"> 51: </a>    TaoGlobalArgc = *argc;
+<a name="line52"> 52: </a>    TaoGlobalArgs = *args;
+<a name="line53"> 53: </a>  }
+
+<a name="line55"> 55: </a>  TAO_COOKIE = 0;
+<a name="line56"> 56: </a>  info=TaoLogClassRegister(&amp;TAO_COOKIE,<font color="#666666">"TAO Solver"</font>); CHKERRQ(info);
+
+<a name="line58"> 58: </a>  info = TaoRegisterEvents(); CHKERRQ(info);
+<a name="line59"> 59: </a>  info = TaoStandardRegisterAll();CHKERRQ(info);
+<a name="line60"> 60: </a>  info = PetscInfo(0,<font color="#666666">"<A href="../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>:TAO successfully started\n"</font>); CHKERRQ(info);
+<a name="line61"> 61: </a>  TaoFunctionReturn(info);
+<a name="line62"> 62: </a>}
+
+<a name="line66"> 66: </a><font color="#B22222">/*@</font>
+<a name="line67"> 67: </a><font color="#B22222">   <A href="../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A> - Checks for options at the end of the TAO program</font>
+<a name="line68"> 68: </a><font color="#B22222">   and finalizes interfaces with other packages.</font>
+
+<a name="line70"> 70: </a><font color="#B22222">   Collective on MPI_COMM_WORLD</font>
+
+<a name="line72"> 72: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line74"> 74: </a><font color="#B22222">.keywords: finalize, exit, end</font>
+
+<a name="line76"> 76: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(), PetscFinalize()</font>
+<a name="line77"> 77: </a><font color="#B22222">@*/</font>
+<a name="line78"> 78: </a><strong><font color="#4169E1"><a name="TaoFinalize"></a>int <A href="../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>(void)</font></strong>
+<a name="line79"> 79: </a>{
+<a name="line80"> 80: </a>  int info;
+<a name="line81"> 81: </a>  
+<a name="line82"> 82: </a>  TaoFunctionBegin;
+<a name="line83"> 83: </a>  TaoInitializeCalled--;
+<a name="line84"> 84: </a>  <font color="#4169E1">if</font> (TaoInitializeCalled==0){
+<a name="line85"> 85: </a>    info = PetscInfo(0,<font color="#666666">"<A href="../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>:Tao successfully ended!\n"</font>); 
+<a name="line86"> 86: </a>           CHKERRQ(info);
+<a name="line87"> 87: </a>    info = <A href="../../docs/manualpages/solver/TaoRegisterDestroy.html#TaoRegisterDestroy">TaoRegisterDestroy</A>(); CHKERRQ(info);
+<a name="line88"> 88: </a>  }
+<a name="line89"> 89: </a>  TaoFunctionReturn(0);
+<a name="line90"> 90: </a>}
+
+
+<a name="line95"> 95: </a>// int Tao_Solve, Tao_LineSearch;
+<a name="line96"> 96: </a><font color="#B22222">/*</font>
+<a name="line97"> 97: </a><font color="#B22222">   TaoRegisterEvents - Registers TAO events for use in performance logging.</font>
+<a name="line98"> 98: </a><font color="#B22222">*/</font>
+<a name="line99"> 99: </a><strong><font color="#4169E1"><a name="TaoRegisterEvents"></a>int TaoRegisterEvents()</font></strong>
+<a name="line100">100: </a>{
+<a name="line101">101: </a>  TaoFunctionBegin;
+<a name="line102">102: </a>  TaoFunctionReturn(0);
+<a name="line103">103: </a>}
+
+<a name="line107">107: </a><font color="#B22222">/*@C</font>
+<a name="line108">108: </a><font color="#B22222">   <A href="../../docs/manualpages/solver/TaoGetArgs.html#TaoGetArgs">TaoGetArgs</A> - Allows you to access the raw command line arguments anywhere</font>
+<a name="line109">109: </a><font color="#B22222">     after <A href="../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>() is called but before <A href="../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>().</font>
+
+<a name="line111">111: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line113">113: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line114">114: </a><font color="#B22222">+  argc - count of number of command line arguments</font>
+<a name="line115">115: </a><font color="#B22222">-  args - the command line arguments</font>
+
+<a name="line117">117: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line119">119: </a><font color="#B22222">   Notes:</font>
+<a name="line120">120: </a><font color="#B22222">      This is usually used to pass the command line arguments into other </font>
+<a name="line121">121: </a><font color="#B22222">      libraries that are called internally deep in TAO or the application.</font>
+
+<a name="line123">123: </a><font color="#B22222">.keywords: command line arguments</font>
+<a name="line124">124: </a><font color="#B22222">   </font>
+<a name="line125">125: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>(), <A href="../../docs/manualpages/solver/TaoInitializeFortran.html#TaoInitializeFortran">TaoInitializeFortran</A>()</font>
+
+<a name="line127">127: </a><font color="#B22222">@*/</font>
+<a name="line128">128: </a><strong><font color="#4169E1"><a name="TaoGetArgs"></a>int <A href="../../docs/manualpages/solver/TaoGetArgs.html#TaoGetArgs">TaoGetArgs</A>(int *argc,char ***args)</font></strong>
+<a name="line129">129: </a>{
+<a name="line130">130: </a>  TaoFunctionBegin;
+<a name="line131">131: </a>  <font color="#4169E1">if</font> (!TaoGlobalArgs) {
+<a name="line132">132: </a>    SETERRQ(1,<font color="#666666">"You must call after <A href="../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>()"</font>);
+<a name="line133">133: </a>  }
+<a name="line134">134: </a>  <font color="#4169E1">if</font> (argc &amp;&amp; args){
+<a name="line135">135: </a>    *argc = TaoGlobalArgc;
+<a name="line136">136: </a>    *args = TaoGlobalArgs;
+<a name="line137">137: </a>  }
+<a name="line138">138: </a>  TaoFunctionReturn(0);
+<a name="line139">139: </a>}
+
+
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,175 @@
+<center><a href="tao_impl.h">Actual source code: tao_impl.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:07+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef __TAO_IMPL_H</font>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><font color="#B22222">/*</font>
+<a name="line7">  7: </a><font color="#B22222">   TAO solver context</font>
+<a name="line8">  8: </a><font color="#B22222"> */</font>
+<a name="line9">  9: </a><strong><font color="#228B22">#define MAX_TAO_MONITORS 5</font></strong>
+
+<a name="line11"> 11: </a><font color="#A020F0">#ifndef MAX_TAO_USER_DESTROY</font>
+<a name="line12"> 12: </a><strong><font color="#228B22">#define MAX_TAO_DESTROY 50</font></strong>
+<a name="line13"> 13: </a><font color="#A020F0">#endif</font>
+
+<a name="line15"> 15: </a><font color="#4169E1"><a name="_p_TAO_SOLVER"></a>struct _p_TAO_SOLVER </font>{
+
+<a name="line17"> 17: </a>  TAOHEADER(int);
+
+<a name="line19"> 19: </a>  <font color="#B22222">/*  ------------------------ User-provided Info -------------------------------*/</font>
+
+<a name="line21"> 21: </a>  <font color="#B22222">/*  --- Routines and data that are unique to each particular solver ----------- */</font>
+<a name="line22"> 22: </a>  void         *data;                              <font color="#B22222">/* algorithm implementation-specific data */</font>
+
+<a name="line24"> 24: </a>  int          (*setup)(TAO_SOLVER,void*);               <font color="#B22222">/* routine to set up the nonlinear solver */</font>
+<a name="line25"> 25: </a>  int          (*solve)(TAO_SOLVER,void*);          <font color="#B22222">/* a nonlinear optimization solver */</font>
+<a name="line26"> 26: </a>  int          (*setdown)(TAO_SOLVER,void*);             <font color="#B22222">/* destroys solver */</font>
+
+<a name="line28"> 28: </a>  int          (*setfromoptions)(TAO_SOLVER,void*);      <font color="#B22222">/* sets options from database */</font>
+<a name="line29"> 29: </a>  int          (*view)(TAO_SOLVER,void*);         <font color="#B22222">/* views solver info */</font>
+
+<a name="line31"> 31: </a>  TaoTruth        setupcalled;        <font color="#B22222">/* true if setup has been called */</font>
+<a name="line32"> 32: </a>  TaoTruth        set_method_called;  <font color="#B22222">/* flag indicating set_method has been called */</font>
+
+<a name="line34"> 34: </a>  <font color="#B22222">/* ------------------------- Function Evaluation ------------------------*/</font>
+<a name="line35"> 35: </a>  TaoApplication* taoappl;
+
+<a name="line37"> 37: </a>  TaoVec*          vec_sol;            <font color="#B22222">/* pointer to solution */</font>
+<a name="line38"> 38: </a>  TaoVec*          vec_sol_update;              <font color="#B22222">/* pointer to solution update */</font>
+<a name="line39"> 39: </a>  double       fc;                                 <font color="#B22222">/* function value */</font>
+<a name="line40"> 40: </a>  TaoInt       nfuncs;             <font color="#B22222">/* number of function evaluations */</font>
+<a name="line41"> 41: </a>  TaoInt       max_funcs;          <font color="#B22222">/* max number of function evals */</font>
+
+<a name="line43"> 43: </a>  <font color="#B22222">/* ------------------------- Gradient Evaluation ------------------------*/</font>
+<a name="line44"> 44: </a>  TaoVec*      vec_grad;          <font color="#B22222">/* pointer to gradient */</font>
+<a name="line45"> 45: </a>  TaoInt       ngrads;             <font color="#B22222">/* number of gradient evaluations */</font>
+<a name="line46"> 46: </a>  TaoInt       nfgrads;             <font color="#B22222">/* number of function/gradient evaluations */</font>
+<a name="line47"> 47: </a>  TaoTruth     viewgradient;
+
+<a name="line49"> 49: </a>  <font color="#B22222">/* ------------------------- Hessian Evaluation --------------------------*/</font>
+<a name="line50"> 50: </a>  TaoMat    * hessian;                            <font color="#B22222">/* Hessian matrix */</font>
+<a name="line51"> 51: </a>  TaoInt       nhesss;          <font color="#B22222">/* number of Hessian evaluations */</font>
+<a name="line52"> 52: </a>  TaoTruth     viewhessian;
+<a name="line53"> 53: </a>  TaoLinearSolver*  ksp;      <font color="#B22222">/* linear solver context */</font>
+<a name="line54"> 54: </a>        
+<a name="line55"> 55: </a>  <font color="#B22222">/* Bound Information */</font>
+<a name="line56"> 56: </a>  TaoVec*          XL;                                 <font color="#B22222">/* lower bound */</font>
+<a name="line57"> 57: </a>  TaoVec*          XU;                                 <font color="#B22222">/* upper bound */</font>
+<a name="line58"> 58: </a>  double       cnorm;
+<a name="line59"> 59: </a>  double       cnorm0;
+<a name="line60"> 60: </a>  int    (*CopyDuals)(TAO_SOLVER,TaoVec*,TaoVec*,void*);
+
+
+<a name="line63"> 63: </a>  <font color="#B22222">/* Constraint information */</font>
+<a name="line64"> 64: </a>  TaoMat *jacobian;
+<a name="line65"> 65: </a>  TaoInt  njac;
+<a name="line66"> 66: </a>  TaoTruth     viewjacobian;
+
+<a name="line68"> 68: </a>  TaoVec* vfunc;
+<a name="line69"> 69: </a>  TaoVec *RXL, *RXU;
+<a name="line70"> 70: </a>  TaoMat *CA;
+<a name="line71"> 71: </a>  TaoInt nvfunc;
+<a name="line72"> 72: </a>  TaoTruth     viewvfunc;
+
+
+<a name="line75"> 75: </a>  <font color="#B22222">/* ------------------------ Line Search Context -------------------------*/</font>
+<a name="line76"> 76: </a>  <font color="#B22222">/* Line Search termination code and function pointers */</font>
+<a name="line77"> 77: </a>  void         *linectx;
+
+<a name="line79"> 79: </a>  TaoInt lsflag;  <font color="#B22222">/* Line search termination code (set line=1 on success) */</font>
+
+<a name="line81"> 81: </a>  int    (*LineSearchSetUp)(TAO_SOLVER,void*);
+<a name="line82"> 82: </a>  int    (*LineSearchSetFromOptions)(TAO_SOLVER,void*);
+<a name="line83"> 83: </a>  int    (*LineSearchApply)(TAO_SOLVER,TaoVec*,TaoVec*,TaoVec*,TaoVec*,double*,double*,double*,TaoInt*,void*);
+<a name="line84"> 84: </a>  int    (*LineSearchView)(TAO_SOLVER,void*);
+<a name="line85"> 85: </a>  int    (*LineSearchDestroy)(TAO_SOLVER,void*);
+
+<a name="line87"> 87: </a>  <font color="#B22222">/* Support for a merit function */</font>
+<a name="line88"> 88: </a>  int    (*MeritFunctionApply)(TAO_SOLVER,TaoVec *, double *, void*);
+<a name="line89"> 89: </a>  int    (*MeritFunctionGradientApply)(TAO_SOLVER,TaoVec *, double *, TaoVec *, void*);
+<a name="line90"> 90: </a>  int    (*MeritGradientApply)(TAO_SOLVER,TaoVec *, TaoVec *, void*);
+<a name="line91"> 91: </a>  int    (*MeritFunctionGTSApply)(TAO_SOLVER,TaoVec *, TaoVec *, double *, double *,void*);
+<a name="line92"> 92: </a>  int    (*MeritFunctionDestroy)(TAO_SOLVER,void*);
+<a name="line93"> 93: </a>  void *meritctx;
+<a name="line94"> 94: </a>  
+<a name="line95"> 95: </a>  <font color="#B22222">/* Trust Region information */</font>
+<a name="line96"> 96: </a>  double     trtol;    <font color="#B22222">/* Miminum Trust region radius */</font>
+<a name="line97"> 97: </a>  double     trust0;   <font color="#B22222">/* Initial Trust Region Radius */</font>
+<a name="line98"> 98: </a>  double     current_step; <font color="#B22222">/* Current step length for line search */</font>
+<a name="line99"> 99: </a>  TaoTruth   new_search;  <font color="#B22222">/* True on first evaluation of new line search */</font>
+<a name="line100">100: </a>  double     step;    <font color="#B22222">/* last step length or trust region radius */</font>
+
+<a name="line102">102: </a>  <font color="#B22222">/* --------------------------  Monitoring  ------------------------------------*/</font>
+
+<a name="line104">104: </a>  TaoInt   numbermonitors;                            <font color="#B22222">/* number of monitors */</font>
+<a name="line105">105: </a>  int  (*defaultmonitor)(TAO_SOLVER,void*);       <font color="#B22222">/* default monitor routine */</font>
+<a name="line106">106: </a>  int   (*monitor[MAX_TAO_MONITORS])(TAO_SOLVER,void*); <font color="#B22222">/* monitor routine */</font>
+<a name="line107">107: </a>  void  *monitorcontext[MAX_TAO_MONITORS];         <font color="#B22222">/* monitor context */</font>
+<a name="line108">108: </a>  int   (*converged)(TAO_SOLVER,void*);  <font color="#B22222">/* convergence routine */</font>
+
+<a name="line110">110: </a>  <font color="#B22222">/* --------------------------  Parameters -------------------------------------- */</font>
+
+<a name="line112">112: </a>  double     fatol;              <font color="#B22222">/* Absolute tolerance for objective value */</font>
+<a name="line113">113: </a>  double     frtol;              <font color="#B22222">/* Relative tolerance for objective value */</font>
+<a name="line114">114: </a>  double     catol;              <font color="#B22222">/* Absolute tolerance for constraints */</font>
+<a name="line115">115: </a>  double     crtol;              <font color="#B22222">/* Relative tolerance for constraints */</font>
+<a name="line116">116: </a>  double     gatol;              <font color="#B22222">/* Absolute tolerance for gradient */</font>
+<a name="line117">117: </a>  double     grtol;              <font color="#B22222">/* Relative tolerance for gradient */</font>
+<a name="line118">118: </a>  double     gttol;              <font color="#B22222">/* Relative tolerance for gradient */</font>
+<a name="line119">119: </a>  double     xtol;               <font color="#B22222">/* relative tolerance in solution */</font>
+<a name="line120">120: </a>  double     fmin;               <font color="#B22222">/* minimum tolerance for function value */</font>
+
+<a name="line122">122: </a>  <font color="#B22222">/* -------------------------- Statistics -------------------------------------- */</font>
+<a name="line123">123: </a>  TaoInt        max_its;            <font color="#B22222">/* max number of iterations */</font>
+<a name="line124">124: </a>  TaoInt        iter;               <font color="#B22222">/* global iteration number */</font>
+<a name="line125">125: </a>  TaoTerminateReason reason;
+
+<a name="line127">127: </a>  double     norm;               <font color="#B22222">/* KKT residual norm of current iterate */</font>
+<a name="line128">128: </a>  double     norm0;              <font color="#B22222">/* KKT residual norm of residual iterate */</font>
+<a name="line129">129: </a>  int        linear_its;         <font color="#B22222">/* total number of linear solver iterations */</font>
+
+<a name="line131">131: </a>  <font color="#B22222">/* ------------------------- Convergence History ------------------------ */</font>
+
+<a name="line133">133: </a>  void       *cnvP;                 <font color="#B22222">/* convergence context */</font>
+<a name="line134">134: </a>  double     *conv_hist;         <font color="#B22222">/* If !0, stores function norm (or</font>
+<a name="line135">135: </a><font color="#B22222">                                    gradient norm) at each iteration */</font>
+<a name="line136">136: </a>  TaoInt       *conv_hist_its;     <font color="#B22222">/* linear iterations for each Newton step */</font>
+<a name="line137">137: </a>  TaoInt       conv_hist_len;      <font color="#B22222">/* size of convergence history array */</font>
+<a name="line138">138: </a>  TaoInt       conv_hist_max;      <font color="#B22222">/* actual amount of data in conv_history */</font>
+<a name="line139">139: </a>  TaoTruth conv_hist_reset;    <font color="#B22222">/* reset counter for each new TAO_SOLVER solve */</font>
+
+<a name="line141">141: </a>  TaoTruth     viewtao;
+<a name="line142">142: </a>  TaoTruth     viewksptao;
+
+<a name="line144">144: </a>  <font color="#B22222">/* Routines called when destroying this structure */</font>
+<a name="line145">145: </a>  TaoInt   numberdestroyers;
+<a name="line146">146: </a>  int   (*userdestroy[MAX_TAO_DESTROY])(void*);
+<a name="line147">147: </a>  void  *userctxdestroy[MAX_TAO_DESTROY];
+
+
+<a name="line150">150: </a>  <font color="#B22222">/* ------------------------ Default Work-area Management ---------------------- */</font>
+
+<a name="line152">152: </a>  TaoVec*        WorkX1;
+<a name="line153">153: </a>};
+
+<a name="line155">155: </a><strong><font color="#228B22">#define TaoLogConvHistory(tao_um,res,its) \</font></strong>
+<a name="line156">156: </a><strong><font color="#228B22">  { if (tao_um-&gt;conv_hist &amp;&amp; tao_um-&gt;conv_hist_max &gt; tao_um-&gt;conv_hist_len) \</font></strong>
+<a name="line157">157: </a><strong><font color="#228B22">    { tao_um-&gt;conv_hist[tao_um-&gt;conv_hist_len]       = res; \</font></strong>
+<a name="line158">158: </a><strong><font color="#228B22">      tao_um-&gt;conv_hist_its[tao_um-&gt;conv_hist_len++] = its; \</font></strong>
+<a name="line159">159: </a><strong><font color="#228B22">    }}</font></strong>
+
+
+<a name="line162">162: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

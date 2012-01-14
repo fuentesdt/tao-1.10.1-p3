@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGAAppSetGradientRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGAAppSetGradientRoutine"><H1>TaoGAAppSetGradientRoutine</H1></A>
+Sets the gradient evaluation routine and gradient vector for use by the TAO_GA_APPLICATION routines. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp_ga.h" 
+int TaoGAAppSetGradientRoutine(TAO_GA_APPLICATION gaapp, int (*grad)(TAO_GA_APPLICATION,GAVec,GAVec,void*),void *ctx)</PRE>
+Collective on TAO_GA_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gaapp </B></TD><TD>- the TAO_GA_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>grad </B></TD><TD>- gradient evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined function context 
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of func</FONT></H2>
+<pre>
+    grad (TAO_GA_APPLICATION gaapp,GAVec x,GAVec g,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gaapp </B></TD><TD>- the TAO_GA_APPLICATION application context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>g </B></TD><TD>- gradient vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user-defined function gradient context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine should be called before <A HREF="../solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>()
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<DT><B>-tao_view_gradient </B> -view the gradient after each evaluation
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ GAApplication, set, function
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), <A HREF="../gaapp/TaoGAAppSetHessianRoutine.html#TaoGAAppSetHessianRoutine">TaoGAAppSetHessianRoutine</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/external/globalarraytao/taoapp_ga.c.html#TaoGAAppSetGradientRoutine">src/external/globalarraytao/taoapp_ga.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

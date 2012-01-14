@@ -1,0 +1,79 @@
+% part0.tex near line 28
+\documentclass[dvipdfm,11pt,openright]{book}\usepackage{}\usepackage{amssymb}\usepackage{moreverb}\usepackage{epsf}\usepackage{float}\usepackage{}\usepackage{afterpage}
+\pagestyle{empty}
+\thispagestyle{empty}
+\vsize=20in\setlength{\textheight}{20in}
+\begin{document}
+{\catcode`\_=\active\gdef_{{\tt\char`\_}}}
+{\catcode`\_=\active\gdef\makeustext{\def_{{\tt\char`\_}}}}
+{\catcode`\&=\active\gdef\makeamptext{\catcode`\&=\active\def&{{\tt\char`\&}}}}
+\def\eatcode{\catcode`\_=\active\makeustext\makeamptext\eatnext}
+\def\eatfile{\catcode`\_=\active\makeustext\makeamptext\eatnextfile}
+\def\eatnext#1{{\tt #1}\endgroup}
+\def\eatnextfile#1{`{\tt #1}'\endgroup}
+\def\file{\begingroup\eatfile}
+\def\code{\begingroup\eatcode}
+\setcounter{section}{1}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{equation}{-1}
+% User definitions begin here
+\def\F{\mbox{\boldmath \(F\)}}
+\def\R{\mathbb R}
+\def\x{\mbox{\boldmath \(x\)}}
+\def\findex#1{\index{#1}}
+\def\sindex#1{\index{#1}}
+\def\Re{\R}
+\def\Comment#1{}
+\def\rr{\mbox{\boldmath \(r\)}}
+\def\half{{\textstyle{\frac{1}{2}}}}
+% User definitions end here
+% Disable other commands
+\def\index#1{\relax}
+% Beginning of Environment to be handled
+\begin{comment}
+The Toolkit for Advanced Optimization (TAO) focuses on the design of large 
+scale optimization software, including nonlinear least 
+squares, unconstrained minimization, bound constrained 
+optimization, and decomposition techniques. 
+The solution of such problems 
+pervades many areas of computational science and demands robust and 
+flexible solution strategies. 
+As surveyed by Mor\'e and Wright \cite{optguide93}, 
+various software packages are available for solving these 
+problems; however, their portability, versatility, and scalability are 
+restricted, especially within parallel environments. 
+ 
+The current generation of numerical software generally has a rigid form 
+that imposes many limitations, even when restricted to 
+uniprocessor architectures. 
+In traditional software design, the expressions of 
+algorithms make assumptions about the way mathematical objects, such as 
+vectors and matrices, are represented by the computer. 
+Thus, users are 
+forced to convert from the natural representation of data for a particular 
+application to one imposed by the software developer, often at the 
+expense of considerable overhead.  In addition, library routines are 
+often characterized by long and complicated calling sequences, with 
+no consistent interface among algorithms that solve a particular class 
+of problems. 
+ 
+These issues are magnified by the very nature of multiprocessor 
+architectures, since robust and 
+efficient implementation of mathematical abstractions involves 
+the added considerations 
+of parallel data structures and communication. 
+An effective software package should 
+exploit different parallel programming 
+techniques for various phases of the solution process. 
+ 
+Since many application problems require the computational 
+power of high-performance computers, a need clearly exists for a 
+uniform and flexible framework for developing optimization software and 
+solving application programs. 
+Our goal is to use object-oriented and component-based 
+software engineering techniques to create such an environment. 
+ 
+\end{comment}
+% End of Environment to be handled
+\end{document}

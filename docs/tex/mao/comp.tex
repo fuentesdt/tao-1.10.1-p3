@@ -1,0 +1,174 @@
+\section{Computational Experiments}
+\label{sec:comp}
+
+The computational
+results in this section were obtained on a 350-node
+Linux cluster connected with a Myrinet 2000 network.  Each node has a 2.4 GHz
+Pentium Xeon, 175 nodes have 2 GB of RAM, and 175 nodes have
+1 GB of RAM.  
+
+We present the results of computational experiments with the
+Newton algorithm in \tao\ to solve the obstacle problem
+described in Section \ref{sec:tao}.  The domain $ \cD $ was
+set to the unit square $ (0,1) \times (0,1) $, and $ \cD $
+was partitioned into rectangular elements of size $ h_x
+\times h_y $.
+If $ n_x $ and $ n_y $ are, respectively,
+the number of mesh points in each coordinate,
+then this partition gives rise to a bound-constrained
+optimization problem \Ref{eq:opt} with $ n = n_x n_y $
+variables.
+
+We present results for the obstacle problem with 
+$ n = 4481^2 = 20,079,361 $
+variables. 
+The starting point for Newton's method is the function
+\begin{equation}
+  \label{eq:xs}
+v(\xi_1, \xi_2 ) =   1 - (2 \xi_1 - 1)^2 
+\end{equation}
+evaluated at the
+mesh points. 
+Figure \ref{fig:minsurf} shows that this is a good approximation
+to the solution of the obstacle problem outside the
+active set.
+We require that the final iterate satisfy
+the convergence condition
+\begin{equation}
+  \label{eq:conv-condition}
+%n^{-1/2} \, \| r(x) \|_2 \le \tau = 10^{-10} ,
+ \| r(x) \|_2 \le \tau = 10^{-7} ,
+\end{equation}
+where $ r(x) $ is the projected gradient defined by
+\[
+r (x) =
+\left \{ 
+  \begin{array}{lcl}
+  0 & \mathrm{if} & 
+  x_k = l_k , \ x_k = u_k \\
+  \min ( 0, \partial_k f (x) ) & \mathrm{if} & x_k = l_k  \\
+  \max ( 0, \partial_k f (x) ) & \mathrm{if} & x_k = u_k  \\
+  \partial_k f(x) & \mathrm{if} &   x_k \in (l_k , u_k ).   \\
+  \end{array}
+\right \}
+\]
+This is a standard convergence condition for bound-constrained
+problems. The choice of $ \tau = 10^{-10} $ guarantees good
+accuracy on this problem.
+
+Table \ref{tab:no-mesh} presents the results obtained with
+Newton's method when DA is used to distribute the mesh and
+ADIC is used to compute the gradient and the Hessian matrix
+as described in Section \ref{sec:tao}, but no
+mesh sequencing is used.  For these results we used a 
+Jacobi preconditioner.
+%block
+%\marginpar{\textbf{Jacobi?}}
+%Jacobi preconditioner with one block per processor, where
+%each subproblem is solved with a standard, sparse ILU(2)
+%factorization.  
+
+\begin{table}
+\begin{center}
+\caption{Performance results without mesh sequencing on 140 nodes.
+The symbol $ \dagger $ is used if there is no convergence after 100 iterations.
+\label{tab:no-mesh}}
+\begin{tabular}{cccc}
+  Mesh &  $ \niters $ & Time (s) \\
+\hline
+ 71  $\times$  71   &  6           &   0.58   \\
+ 141 $\times$  141  &  8           &   1.45   \\
+ 281 $\times$  281  &  10          &   2.85   \\
+ 561 $\times$  561  &  21          &   9.34   \\
+1121 $\times$  1121 &  $ \dagger $ &    $ \dagger $   \\
+2241 $\times$  2241 &  $ \dagger $ &    $ \dagger $   \\
+4481 $\times$  4481 &  $ \dagger $ &    $ \dagger $    \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+The results in Table \ref{tab:no-mesh} show that the number
+of iterations grows as the mesh is refined but that for the
+finest meshes we terminate Newton's method after 
+$ \niters = 100 $ iterations. 
+Although Newton's method is mesh invariant,
+the starting point is assumed to be
+in the region of quadratic convergence.
+A more careful analysis of these
+results, however, shows that the starting point 
+defined by function \Ref{eq:xs} is not in the
+region of quadratic convergence for any of the grids.
+
+We now consider the use of mesh sequencing.  We start with a
+mesh with $ 71 \times 71 $ grid points and, at each
+stage, use linear interpolation on the coarse mesh
+solution to obtain the starting point for the fine mesh.  
+Thus, an $ n_x \times n_y $ coarse mesh becomes
+a fine $ (2n_x-1) \times (2n_y-1) $ mesh. We
+use the same termination condition \Ref{eq:conv-condition}
+at each level of refinement.
+
+The results in Table \ref{tab:mesh} show 
+the performance of \tron\ on each mesh.
+After the solution is obtained on the coarsest
+mesh, the number of iterations per mesh is either two or three.
+This is the desired behavior for mesh sequencing.
+Because the number of Krylov iterations increases on finer meshes,
+solution times per level grow at a faster than linear rate.
+Better preconditioners may further improve performace.
+
+\begin{table}
+\begin{center}
+\caption{Performance results with mesh sequencing on 140 nodes.
+\label{tab:mesh}}
+\begin{tabular}{ccc}
+  Mesh &  $ \niters $ & Time (s)  \\
+\hline
+ 71  $\times$  71  &  6     &   0.58    \\
+ 141 $\times$  141  &  3    &   0.44     \\
+ 281 $\times$  281  &  2    &   0.52     \\
+ 561 $\times$  561  &  2    &   1.31     \\
+1121 $\times$  1121 &  2    &   5.51     \\
+2241 $\times$  2241 &  2    &   19.5     \\
+4481 $\times$  4481 &  2    &   189      \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The results in this section are interesting because
+they contradict the folklore that convex problems are easy.
+For the obstacle problem we have shown that we cannot obtain
+good performance if we neglect the mesh structure. 
+With the use of mesh sequencing, performance improves dramatically,
+and we obtain scalable results.
+
+\begin{comment}
+
+\textbf{Do we need these results?}
+
+\begin{table}
+  \centering
+\begin{tabular}{c cc cc cc cc cc}
+      & \multicolumn{8}{c}{Number of processors} \\ \cline{2-9}
+      &  \multicolumn{2}{c}{20} & \multicolumn{2}{c}{40}
+      &  \multicolumn{2}{c}{80} & \multicolumn{2}{c}{160} 
+\\  \cline{2-9}
+ Mesh & \niters & time & \niters & time & \niters & time & \niters & time \\
+\hline
+ 769 $\times$  769  &  17  &   283  &   10   &   142   &    7  &   86  &    7  &   86 \\
+1537 $\times$  1537 &  73  &  3751  &   40   &  1861   &   22  &  938  &   22  &  938 \\
+\hline
+\end{tabular}
+\caption{Performance results with mesh sequencing}
+\label{tab:mesh}
+\end{table}
+
+\end{comment}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "mao"
+%%% End: 

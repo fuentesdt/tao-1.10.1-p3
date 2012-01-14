@@ -1,0 +1,7 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:8, my:12, bmx:4, bmy:10, height:0.10
+iter = 0, Function value 1.58854, Residual: 0.311154 
+iter = 1, Function value 1.50183, Residual: 0.100065 
+iter = 2, Function value 1.49406, Residual: 0.001807 
+iter = 3, Function value 1.49406, Residual: < 1.0e-6 

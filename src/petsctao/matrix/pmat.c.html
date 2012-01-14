@@ -1,0 +1,317 @@
+<center><a href="pmat.c">Actual source code: pmat.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+
+<a name="line3">  3: </a><font color="#A020F0">#ifdef TAO_USE_PETSC</font>
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"petscmat.h"</font><font color="#A020F0"></font>
+
+
+<a name="line7">  7: </a><strong><font color="#4169E1">int MatD_Fischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec)</font></strong>;
+<a name="line8">  8: </a><strong><font color="#4169E1">int MatD_SFischer(Mat, Vec, Vec, Vec, Vec, double, Vec, Vec, Vec, Vec, Vec)</font></strong>;
+
+<a name="line12"> 12: </a><strong><font color="#4169E1"><a name="Fischer"></a>inline static PetscScalar <A href="../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(PetscScalar a, PetscScalar b)</font></strong>
+<a name="line13"> 13: </a>{
+
+<a name="line15"> 15: </a><font color="#A020F0">#ifdef TODD</font>
+
+<a name="line17"> 17: </a>  <font color="#4169E1">if</font> (PetscAbsScalar(a) &gt; PetscAbsScalar(b)) {
+<a name="line18"> 18: </a>    <font color="#4169E1">return</font> sqrt(a*a + b*b) - a - b;
+<a name="line19"> 19: </a>  }
+<a name="line20"> 20: </a>  <font color="#4169E1">return</font> sqrt(a*a + b*b) - b - a;
+
+<a name="line22"> 22: </a><font color="#A020F0">#else</font>
+
+<a name="line24"> 24: </a>   // Method suggested by Bob Vanderbei
+
+<a name="line26"> 26: </a>   <font color="#4169E1">if</font> (a + b &lt;= 0) {
+<a name="line27"> 27: </a>     <font color="#4169E1">return</font> sqrt(a*a + b*b) - (a + b);
+<a name="line28"> 28: </a>   }
+<a name="line29"> 29: </a>   <font color="#4169E1">return</font> -2.0*a*b / (sqrt(a*a + b*b) + (a + b));
+
+<a name="line31"> 31: </a><font color="#A020F0">#endif</font>
+
+<a name="line33"> 33: </a>}
+
+<a name="line37"> 37: </a><strong><font color="#4169E1"><a name="Norm"></a>inline static PetscScalar Norm(PetscScalar a, PetscScalar b)</font></strong>
+<a name="line38"> 38: </a>{
+<a name="line39"> 39: </a>  <font color="#4169E1">return</font> sqrt(a*a + b*b);
+<a name="line40"> 40: </a>}
+
+<a name="line44"> 44: </a><strong><font color="#4169E1"><a name="MatD_Fischer"></a>int MatD_Fischer(Mat m, Vec X, Vec F, Vec L, Vec U,</font></strong>
+<a name="line45"> 45: </a><strong><font color="#4169E1">                 Vec T1, Vec T2, Vec DA, Vec DB)</font></strong>
+<a name="line46"> 46: </a>{
+<a name="line47"> 47: </a>  PetscScalar *x, *f, *l, *u, *da, *db, *t1, *t2;
+<a name="line48"> 48: </a>  PetscScalar ai, bi, ci, di, ei;
+<a name="line49"> 49: </a>  int info, i;
+<a name="line50"> 50: </a>  PetscInt n, low[8], high[8];
+
+
+<a name="line62"> 62: </a>  info = VecGetOwnershipRange(X, low, high); CHKERRQ(info);
+<a name="line63"> 63: </a>  info = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(info);
+<a name="line64"> 64: </a>  info = VecGetOwnershipRange(L, low + 2, high + 2); CHKERRQ(info);
+<a name="line65"> 65: </a>  info = VecGetOwnershipRange(U, low + 3, high + 3); CHKERRQ(info);
+<a name="line66"> 66: </a>  info = VecGetOwnershipRange(DA, low + 4, high + 4); CHKERRQ(info);
+<a name="line67"> 67: </a>  info = VecGetOwnershipRange(DB, low + 5, high + 5); CHKERRQ(info);
+<a name="line68"> 68: </a>  info = VecGetOwnershipRange(T1, low + 6, high + 6); CHKERRQ(info);
+<a name="line69"> 69: </a>  info = VecGetOwnershipRange(T2, low + 7, high + 7); CHKERRQ(info);
+
+<a name="line71"> 71: </a>  <font color="#4169E1">for</font> (i = 1; i &lt; 8; i++) {
+<a name="line72"> 72: </a>    <font color="#4169E1">if</font> (low[0] != low[i] || high[0] != high[i])
+<a name="line73"> 73: </a>      SETERRQ(1,<font color="#666666">"Vectors must be identically loaded over processors"</font>);
+<a name="line74"> 74: </a>  }
+
+<a name="line76"> 76: </a>  info = VecGetArray(X, &amp;x); CHKERRQ(info);
+<a name="line77"> 77: </a>  info = VecGetArray(F, &amp;f); CHKERRQ(info);
+<a name="line78"> 78: </a>  info = VecGetArray(L, &amp;l); CHKERRQ(info);
+<a name="line79"> 79: </a>  info = VecGetArray(U, &amp;u); CHKERRQ(info);
+<a name="line80"> 80: </a>  info = VecGetArray(DA, &amp;da); CHKERRQ(info);
+<a name="line81"> 81: </a>  info = VecGetArray(DB, &amp;db); CHKERRQ(info);
+<a name="line82"> 82: </a>  info = VecGetArray(T1, &amp;t1); CHKERRQ(info);
+
+<a name="line84"> 84: </a>  info = VecGetLocalSize(X, &amp;n); CHKERRQ(info);
+
+<a name="line86"> 86: </a>  <font color="#4169E1">for</font> (i = 0; i &lt; n; i++) {
+<a name="line87"> 87: </a>    da[i] = 0;
+<a name="line88"> 88: </a>    db[i] = 0;
+<a name="line89"> 89: </a>    t1[i] = 0;
+
+<a name="line91"> 91: </a>    <font color="#4169E1">if</font> (PetscAbsScalar(f[i]) &lt;= TAO_EPSILON) {
+<a name="line92"> 92: </a>      <font color="#4169E1">if</font> (l[i] &gt; -TAO_INFINITY &amp;&amp; PetscAbsScalar(x[i] - l[i]) &lt;= TAO_EPSILON) {
+<a name="line93"> 93: </a>        t1[i] = 1;
+<a name="line94"> 94: </a>        da[i] = 1;
+<a name="line95"> 95: </a>      }
+
+<a name="line97"> 97: </a>      <font color="#4169E1">if</font> (u[i] &lt;  TAO_INFINITY &amp;&amp; PetscAbsScalar(u[i] - x[i]) &lt;= TAO_EPSILON) {
+<a name="line98"> 98: </a>        t1[i] = 1;
+<a name="line99"> 99: </a>        db[i] = 1;
+<a name="line100">100: </a>      }
+<a name="line101">101: </a>    }
+<a name="line102">102: </a>  }
+
+<a name="line104">104: </a>  info = VecRestoreArray(T1, &amp;t1); CHKERRQ(info);
+<a name="line105">105: </a>  info = MatMult(m, T1, T2); CHKERRQ(info);
+<a name="line106">106: </a>  info = VecGetArray(T2, &amp;t2); CHKERRQ(info);
+<a name="line107">107: </a>  
+<a name="line108">108: </a>  <font color="#4169E1">for</font> (i = 0; i &lt; n; i++) {
+<a name="line109">109: </a>    <font color="#4169E1">if</font> ((l[i] &lt;= -TAO_INFINITY) &amp;&amp; (u[i] &gt;= TAO_INFINITY)) {
+<a name="line110">110: </a>      da[i] = 0;
+<a name="line111">111: </a>      db[i] = -1;
+<a name="line112">112: </a>    } 
+<a name="line113">113: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] &lt;= -TAO_INFINITY) {
+<a name="line114">114: </a>      <font color="#4169E1">if</font> (db[i] &gt;= 1) {
+<a name="line115">115: </a>        ai = Norm(1, t2[i]);
+
+<a name="line117">117: </a>        da[i] = -1/ai - 1;
+<a name="line118">118: </a>        db[i] = -t2[i]/ai - 1;
+<a name="line119">119: </a>      } 
+<a name="line120">120: </a>      <font color="#4169E1">else</font> {
+<a name="line121">121: </a>        bi = u[i] - x[i];
+<a name="line122">122: </a>        ai = Norm(bi, f[i]);
+<a name="line123">123: </a>        ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line125">125: </a>        da[i] = bi / ai - 1;
+<a name="line126">126: </a>        db[i] = -f[i] / ai - 1;
+<a name="line127">127: </a>      }
+<a name="line128">128: </a>    } 
+<a name="line129">129: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (u[i] &gt;=  TAO_INFINITY) {
+<a name="line130">130: </a>      <font color="#4169E1">if</font> (da[i] &gt;= 1) {
+<a name="line131">131: </a>        ai = Norm(1, t2[i]);
+
+<a name="line133">133: </a>        da[i] = 1 / ai - 1;
+<a name="line134">134: </a>        db[i] = t2[i] / ai - 1;
+<a name="line135">135: </a>      } 
+<a name="line136">136: </a>      <font color="#4169E1">else</font> {
+<a name="line137">137: </a>        bi = x[i] - l[i];
+<a name="line138">138: </a>        ai = Norm(bi, f[i]);
+<a name="line139">139: </a>        ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line141">141: </a>        da[i] = bi / ai - 1;
+<a name="line142">142: </a>        db[i] = f[i] / ai - 1;
+<a name="line143">143: </a>      }
+<a name="line144">144: </a>    } 
+<a name="line145">145: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] == u[i]) {
+<a name="line146">146: </a>      da[i] = -1;
+<a name="line147">147: </a>      db[i] = 0;
+<a name="line148">148: </a>    } 
+<a name="line149">149: </a>    <font color="#4169E1">else</font> {
+<a name="line150">150: </a>      <font color="#4169E1">if</font> (db[i] &gt;= 1) {
+<a name="line151">151: </a>        ai = Norm(1, t2[i]);
+
+<a name="line153">153: </a>        ci = 1 / ai + 1;
+<a name="line154">154: </a>        di = t2[i] / ai + 1;
+<a name="line155">155: </a>      } 
+<a name="line156">156: </a>      <font color="#4169E1">else</font> {
+<a name="line157">157: </a>        bi = x[i] - u[i];
+<a name="line158">158: </a>        ai = Norm(bi, f[i]);
+<a name="line159">159: </a>        ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line161">161: </a>        ci = bi / ai + 1;
+<a name="line162">162: </a>        di = f[i] / ai + 1;
+<a name="line163">163: </a>      }
+
+<a name="line165">165: </a>      <font color="#4169E1">if</font> (da[i] &gt;= 1) {
+<a name="line166">166: </a>        bi = ci + di*t2[i];
+<a name="line167">167: </a>        ai = Norm(1, bi);
+<a name="line168">168: </a>        
+<a name="line169">169: </a>        bi = bi / ai - 1;
+<a name="line170">170: </a>        ai = 1 / ai - 1;
+<a name="line171">171: </a>      } 
+<a name="line172">172: </a>      <font color="#4169E1">else</font> {
+<a name="line173">173: </a>        ei = <A href="../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(u[i] - x[i], -f[i]);
+<a name="line174">174: </a>        ai = Norm(x[i] - l[i], ei);
+<a name="line175">175: </a>        ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line177">177: </a>        bi = ei / ai - 1;
+<a name="line178">178: </a>        ai = (x[i] - l[i]) / ai - 1;
+<a name="line179">179: </a>      }
+
+<a name="line181">181: </a>      da[i] = ai + bi*ci;
+<a name="line182">182: </a>      db[i] = bi*di;
+<a name="line183">183: </a>    }
+<a name="line184">184: </a>  }
+
+<a name="line186">186: </a>  info = VecRestoreArray(DA, &amp;da); CHKERRQ(info);
+<a name="line187">187: </a>  info = VecRestoreArray(DB, &amp;db); CHKERRQ(info);
+
+<a name="line189">189: </a>  info = VecRestoreArray(X, &amp;x); CHKERRQ(info);
+<a name="line190">190: </a>  info = VecRestoreArray(F, &amp;f); CHKERRQ(info);
+<a name="line191">191: </a>  info = VecRestoreArray(L, &amp;l); CHKERRQ(info);
+<a name="line192">192: </a>  info = VecRestoreArray(U, &amp;u); CHKERRQ(info);
+<a name="line193">193: </a>  info = VecRestoreArray(T2, &amp;t2); CHKERRQ(info);
+<a name="line194">194: </a>  <font color="#4169E1">return</font>(0);
+<a name="line195">195: </a>}
+
+<a name="line199">199: </a><strong><font color="#4169E1"><a name="SFischer"></a>inline static PetscScalar <A href="../../../docs/manualpages/vector/SFischer.html#SFischer">SFischer</A>(PetscScalar a, PetscScalar b, PetscScalar c)</font></strong>
+<a name="line200">200: </a>{
+
+<a name="line202">202: </a><font color="#A020F0">#ifdef TODD</font>
+
+<a name="line204">204: </a>  <font color="#4169E1">if</font> (PetscAbsScalar(a) &gt; PetscAbsScalar(b)) {
+<a name="line205">205: </a>    <font color="#4169E1">return</font> sqrt(a*a + b*b + 2.0*c*c) - a - b;
+<a name="line206">206: </a>  }
+<a name="line207">207: </a>  <font color="#4169E1">return</font> sqrt(a*a + b*b + 2.0*c*c) - b - a;
+
+<a name="line209">209: </a><font color="#A020F0">#else</font>
+
+<a name="line211">211: </a>   // Method suggested by Bob Vanderbei
+
+<a name="line213">213: </a>   <font color="#4169E1">if</font> (a + b &lt;= 0) {
+<a name="line214">214: </a>     <font color="#4169E1">return</font> sqrt(a*a + b*b + 2.0*c*c) - (a + b);
+<a name="line215">215: </a>   }
+<a name="line216">216: </a>   <font color="#4169E1">return</font> 2.0*(c*c - a*b) / (sqrt(a*a + b*b + 2.0*c*c) + (a + b));
+
+<a name="line218">218: </a><font color="#A020F0">#endif</font>
+
+<a name="line220">220: </a>}
+
+<a name="line224">224: </a><strong><font color="#4169E1"><a name="SNorm"></a>inline static PetscScalar SNorm(PetscScalar a, PetscScalar b, PetscScalar c)</font></strong>
+<a name="line225">225: </a>{
+<a name="line226">226: </a>  <font color="#4169E1">return</font> sqrt(a*a + b*b + 2.0*c*c);
+<a name="line227">227: </a>}
+
+<a name="line231">231: </a><strong><font color="#4169E1"><a name="MatD_SFischer"></a>int MatD_SFischer(Mat m, Vec X, Vec F, Vec L, Vec U, double mu,</font></strong>
+<a name="line232">232: </a><strong><font color="#4169E1">                  Vec T1, Vec T2, Vec DA, Vec DB, Vec DM)</font></strong>
+<a name="line233">233: </a>{
+<a name="line234">234: </a>  PetscScalar *x, *f, *l, *u, *da, *db, *dm;
+<a name="line235">235: </a>  PetscScalar ai, bi, ci, di, ei, fi;
+<a name="line236">236: </a>  int info, i;
+<a name="line237">237: </a>  PetscInt n, low[7], high[7];
+
+
+<a name="line248">248: </a>  info = VecGetOwnershipRange(X, low, high); CHKERRQ(info);
+<a name="line249">249: </a>  info = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(info);
+<a name="line250">250: </a>  info = VecGetOwnershipRange(L, low + 2, high + 2); CHKERRQ(info);
+<a name="line251">251: </a>  info = VecGetOwnershipRange(U, low + 3, high + 3); CHKERRQ(info);
+<a name="line252">252: </a>  info = VecGetOwnershipRange(DA, low + 4, high + 4); CHKERRQ(info);
+<a name="line253">253: </a>  info = VecGetOwnershipRange(DB, low + 5, high + 5); CHKERRQ(info);
+<a name="line254">254: </a>  info = VecGetOwnershipRange(DM, low + 6, high + 6); CHKERRQ(info);
+
+<a name="line256">256: </a>  <font color="#4169E1">for</font> (i = 1; i &lt; 7; i++) {
+<a name="line257">257: </a>    <font color="#4169E1">if</font> (low[0] != low[i] || high[0] != high[i])
+<a name="line258">258: </a>      SETERRQ(1,<font color="#666666">"Vectors must be identically loaded over processors"</font>);
+<a name="line259">259: </a>  }
+
+<a name="line261">261: </a>  info = VecGetArray(X, &amp;x); CHKERRQ(info);
+<a name="line262">262: </a>  info = VecGetArray(F, &amp;f); CHKERRQ(info);
+<a name="line263">263: </a>  info = VecGetArray(L, &amp;l); CHKERRQ(info);
+<a name="line264">264: </a>  info = VecGetArray(U, &amp;u); CHKERRQ(info);
+<a name="line265">265: </a>  info = VecGetArray(DA, &amp;da); CHKERRQ(info);
+<a name="line266">266: </a>  info = VecGetArray(DB, &amp;db); CHKERRQ(info);
+<a name="line267">267: </a>  info = VecGetArray(DM, &amp;dm); CHKERRQ(info);
+
+<a name="line269">269: </a>  info = VecGetLocalSize(X, &amp;n); CHKERRQ(info);
+
+<a name="line271">271: </a>  <font color="#4169E1">for</font> (i = 0; i &lt; n; i++) {
+<a name="line272">272: </a>    <font color="#4169E1">if</font> ((l[i] &lt;= -TAO_INFINITY) &amp;&amp; (u[i] &gt;= TAO_INFINITY)) {
+<a name="line273">273: </a>      da[i] = -mu;
+<a name="line274">274: </a>      db[i] = -1;
+<a name="line275">275: </a>      dm[i] = -x[i];
+<a name="line276">276: </a>    } 
+<a name="line277">277: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] &lt;= -TAO_INFINITY) {
+<a name="line278">278: </a>      bi = u[i] - x[i];
+<a name="line279">279: </a>      ai = SNorm(bi, f[i], mu);
+<a name="line280">280: </a>      ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line282">282: </a>      da[i] = bi / ai - 1;
+<a name="line283">283: </a>      db[i] = -f[i] / ai - 1;
+<a name="line284">284: </a>      dm[i] = 2.0 * mu / ai;
+<a name="line285">285: </a>    } 
+<a name="line286">286: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (u[i] &gt;=  TAO_INFINITY) {
+<a name="line287">287: </a>      bi = x[i] - l[i];
+<a name="line288">288: </a>      ai = SNorm(bi, f[i], mu);
+<a name="line289">289: </a>      ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line291">291: </a>      da[i] = bi / ai - 1;
+<a name="line292">292: </a>      db[i] = f[i] / ai - 1;
+<a name="line293">293: </a>      dm[i] = 2.0 * mu / ai;
+<a name="line294">294: </a>    } 
+<a name="line295">295: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] == u[i]) {
+<a name="line296">296: </a>      da[i] = -1;
+<a name="line297">297: </a>      db[i] = 0;
+<a name="line298">298: </a>      dm[i] = 0;
+<a name="line299">299: </a>    } 
+<a name="line300">300: </a>    <font color="#4169E1">else</font> {
+<a name="line301">301: </a>      bi = x[i] - u[i];
+<a name="line302">302: </a>      ai = SNorm(bi, f[i], mu);
+<a name="line303">303: </a>      ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line305">305: </a>      ci = bi / ai + 1;
+<a name="line306">306: </a>      di = f[i] / ai + 1;
+<a name="line307">307: </a>      fi = 2.0 * mu / ai;
+
+<a name="line309">309: </a>      ei = <A href="../../../docs/manualpages/vector/SFischer.html#SFischer">SFischer</A>(u[i] - x[i], -f[i], mu);
+<a name="line310">310: </a>      ai = SNorm(x[i] - l[i], ei, mu);
+<a name="line311">311: </a>      ai = PetscMax(TAO_EPSILON, ai);
+
+<a name="line313">313: </a>      bi = ei / ai - 1;
+<a name="line314">314: </a>      ai = (x[i] - l[i]) / ai - 1;
+
+<a name="line316">316: </a>      da[i] = ai + bi*ci;
+<a name="line317">317: </a>      db[i] = bi*di;
+<a name="line318">318: </a>      dm[i] = ei + bi*fi;
+<a name="line319">319: </a>    }
+<a name="line320">320: </a>  }
+
+<a name="line322">322: </a>  info = VecRestoreArray(X, &amp;x); CHKERRQ(info);
+<a name="line323">323: </a>  info = VecRestoreArray(F, &amp;f); CHKERRQ(info);
+<a name="line324">324: </a>  info = VecRestoreArray(L, &amp;l); CHKERRQ(info);
+<a name="line325">325: </a>  info = VecRestoreArray(U, &amp;u); CHKERRQ(info);
+<a name="line326">326: </a>  info = VecRestoreArray(DA, &amp;da); CHKERRQ(info);
+<a name="line327">327: </a>  info = VecRestoreArray(DB, &amp;db); CHKERRQ(info);
+<a name="line328">328: </a>  info = VecRestoreArray(DM, &amp;dm); CHKERRQ(info);
+<a name="line329">329: </a>  <font color="#4169E1">return</font>(0);
+<a name="line330">330: </a>}
+
+<a name="line332">332: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

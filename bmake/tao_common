@@ -1,0 +1,16 @@
+#
+# TAO uses the portable makefile system provided by the PETSc library.  
+# The following include files set customized site, optimization, and version
+# options.  Do NOT remove any of these include files!  You should generally
+# need to edit only ${PETSC_DIR}/bmake/common/base.site to specify your
+# particular machine configuration.  See the PETSc users manual for details.
+#
+include ${PETSC_DIR}/conf/variables
+# (This line MUST be present for certain machines (e.g., Cray T3D))
+include ${PETSC_DIR}/conf/rules
+# (This line MUST be present for certain machines (e.g., Cray T3D))
+include ${TAO_DIR}/bmake/tao_common_variables
+# (This line MUST be present for certain machines (e.g., Cray T3D))
+include ${TAO_DIR}/bmake/tao_common_rules
+# (This line MUST be present for certain machines (e.g., Cray T3D))
+include ${PETSC_DIR}/conf/test

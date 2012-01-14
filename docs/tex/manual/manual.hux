@@ -1,0 +1,145 @@
+TEXAUX
+1#node1.html 1 Preface
+2#node2.html 1 Acknowledgments
+3#node3.html 0 Introduction to TAO
+-1#node3.html 3 chapter:introduction Introduction to TAO
+4#node4.html 1 TAO Design Philosophy
+-1#node4.html#Figure1 -1 tao:design 1
+5#node5.html 1 Performance Results
+-1#node5.html#Figure2 -1 dpjb 2
+-1#node5.html#Table1 -1 flops 1
+6#node6.html 0 Getting Started
+-1#node6.html 6 chapter:intro_tao Getting Started
+7#node7.html 1 Writing Application Codes with TAO
+-1#node7.html#Equation1 -1 sec:simple 1
+-1#node7.html#Equation1 -1 fig:example1 3
+8#node8.html 1 Include Files
+9#node9.html 1 TAO Initialization
+-1#node9.html 9 sec:initialization TAO Initialization
+10#node10.html 1 TAO Finalization
+11#node11.html 1 TAO Solvers
+-1#node7.html#Figure3 -1 fig:tao_commands 4
+12#node12.html 1 Function Evaluations
+13#node13.html 1 TAO Programming with PETSc
+-1#node13.html 13 sec:tao_programming TAO Programming with PETSc
+14#node14.html 2 Include Files
+15#node15.html 2 The Options Database
+-1#node15.html 15 sec:options The Options Database
+16#node16.html 2 Vectors
+17#node17.html 2 Matrices
+18#node18.html 2 Parallel Programming
+19#node19.html 1 Compiling and Running TAO
+-1#node19.html 19 sec:running Compiling and Running TAO
+-1#node19.html 19 fig:exrun Compiling and Running TAO
+20#node20.html 1 Error Checking
+-1#node20.html#Figure5 -1 fig:traceback 5
+21#node21.html 1 Makefiles
+-1#node21.html 21 sec:makefiles Makefiles
+22#node22.html 2 Compiling TAO Programs
+23#node23.html 2 Sample Makefiles
+-1#node23.html#Figure6 -1 fig:make1 6
+24#node24.html 1 Directory Structure
+25#node25.html 0 Basic Usage of TAO Solvers
+-1#node25.html 25 chapter:tao_solver Basic Usage of TAO Solvers
+26#node26.html 1 Initialize and Finalize
+27#node27.html 1 Creation and Destruction
+28#node28.html 1 Convergence
+-1#node28.html 28 sec:customize Convergence
+29#node29.html 1 Viewing Solutions
+30#node30.html 0 TAO Solvers
+31#node31.html 1 Unconstrained Minimization
+-1#node31.html 31 chapter:unconstrained Unconstrained Minimization
+32#node32.html 2 Nelder-Mead
+33#node33.html 2 Limited-Memory, Variable-Metric Method
+34#node34.html 2 Nonlinear Conjugate Gradient Method
+35#node35.html 2 Newton Line-Search Method
+36#node36.html 2 Newton Trust-Region Method
+37#node37.html 1 Bound Constrained Optimization
+-1#node37.html 37 chapter:bound Bound Constrained Optimization
+38#node38.html 2 Newton Trust Region
+-1#node38.html 38 sec:tron Newton Trust Region
+39#node39.html 2 Gradient Projection--Conjugate Gradient Method
+40#node40.html 2 Interior Point Newton Algorithm
+41#node41.html 2 Limited Memory Variable Metric Method
+42#node42.html 2 KT Method
+43#node43.html 1 Complementarity
+-1#node43.html 43 sec:complementarity Complementarity
+44#node44.html 2 Semismooth Methods
+45#node45.html 0 TAO Applications using PETSc
+-1#node45.html 45 chapter:taoapplication TAO Applications using PETSc
+-1#node45.html 45 chapter:petscapp TAO Applications using PETSc
+46#node46.html 1 Header File
+47#node47.html 1 Create and Destroy
+48#node48.html 1 Defining Variables
+49#node49.html 1 Application Context
+50#node50.html 1 Objective Function and Gradient Routines
+-1#node50.html 50 sec:fghj Objective Function and Gradient Routines
+51#node51.html 1 Hessian Evaluation
+-1#node51.html 51 sec:matrixfree Hessian Evaluation
+-1#node51.html 51 sec:finitedifference Hessian Evaluation
+52#node52.html 2 Finite Differences
+53#node53.html 2 Matrix-Free methods
+54#node54.html 1 Bounds on Variables
+-1#node54.html 54 sec:bounds Bounds on Variables
+55#node55.html 1 Complementarity
+-1#node55.html 55 sec:constraints Complementarity
+56#node56.html 1 Monitors
+57#node57.html 1 Linear Solvers
+-1#node57.html 57 sec:TaoLinearSolvers Linear Solvers
+58#node58.html 1 Application Solutions
+59#node59.html 1 Linear Algebra Abstractions
+60#node60.html 1 Compiling and Linking
+-1#node60.html#Figure7 -1 fig:make3 7
+61#node61.html 1 TAO Applications using PETSc and FORTRAN
+-1#node61.html 61 chapter:petscfapp TAO Applications using PETSc and FORTRAN
+62#node62.html 2 Include Files
+-1#node62.html 62 sec:fortran_includes Include Files
+63#node63.html 2 Error Checking
+-1#node63.html 63 sec:fortran_errors Error Checking
+64#node64.html 2 Compiling and Linking Fortran Programs
+-1#node64.html 64 sec:fortcompile Compiling and Linking Fortran Programs
+-1#node64.html#Figure8 -1 fig:make4 8
+65#node65.html 2 Additional Issues
+66#node66.html 0 Advanced Options
+67#node67.html 1 Convergence Tests
+-1#node67.html 67 sec:Taoconvergence Convergence Tests
+68#node68.html 1 Line Searches
+-1#node68.html 68 sec:TaoLineSearch Line Searches
+69#node69.html 0 Adding a solver
+-1#node69.html 69 chapter:addsolver Adding a solver
+70#node70.html 1 Adding a Solver to TAO
+71#node71.html 1 TAO Interface with Solvers
+72#node72.html 2 Solver Routine
+73#node73.html 2 Creation Routine
+74#node74.html 2 Destroy Routine
+75#node75.html 2 SetUp Routine
+76#node76.html 0 Index
+-1#node76.html 76 sec:index Index
+77#node77.html 0 Bibliography
+-2# 1 node77.html#-Bib1 armijo:minimization
+-2# 2 node77.html#-Bib2 petsc-web-page
+-2# 3 node77.html#-Bib3 petsc
+-2# 4 node77.html#-Bib4 petsc-user-ref
+-2# 5 node77.html#-Bib5 CGT
+-2# 6 node77.html#-Bib6 cottle:nonlinear
+-2# 7 node77.html#-Bib7 deluca.facchinei.ea:semismooth
+-2# 8 node77.html#-Bib8 facchinei.fischer.ea:semismooth
+-2# 9 node77.html#-Bib9 ferris.pang:engineering
+-2# 10 node77.html#-Bib10 fischer:special
+-2# 11 node77.html#-Bib11 grippo.lampariello.ea:nonmonotone
+-2# 12 node77.html#-Bib12 mpich-web-page
+-2# 13 node77.html#-Bib13 using-mpi
+-2# 14 node77.html#-Bib14 huang.pang:option
+-2# 15 node77.html#-Bib15 bs-user-ref
+-2# 16 node77.html#-Bib16 karush:minima
+-2# 17 node77.html#-Bib17 kuhn.tucker:nonlinear
+-2# 18 node77.html#-Bib18 lin_c3
+-2# 19 node77.html#-Bib19 mifflin:semismooth
+-2# 20 node77.html#-Bib20 more-toraldo
+-2# 21 node77.html#-Bib21 MPI-final
+-2# 22 node77.html#-Bib22 munson.facchinei.ea:semismooth
+-2# 23 node77.html#-Bib23 nash:equilibrium
+-2# 24 node77.html#-Bib24 nelder.mead:simplex
+-2# 25 node77.html#-Bib25 NW99
+-2# 26 node77.html#-Bib26 qi:convergence
+-2# 27 node77.html#-Bib27 qi.sun:nonsmooth

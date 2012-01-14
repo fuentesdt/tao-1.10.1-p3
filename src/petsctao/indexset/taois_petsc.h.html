@@ -1,0 +1,92 @@
+<center><a href="taois_petsc.h">Actual source code: taois_petsc.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOPETSCIS_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOPETSCIS_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"taois.h"</font><font color="#A020F0">        </font><font color="#B22222">/*I  "tao.h"  I*/</font><font color="#A020F0"></font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"petscmat.h"</font><font color="#A020F0"></font>
+
+<a name="line7">  7: </a><font color="#A020F0">#include </font><font color="#666666">"../include/taopetsc.h"</font><font color="#A020F0"></font>
+
+<a name="line9">  9: </a>class TaoIndexSetPetsc: public TaoIndexSet{
+
+<a name="line11"> 11: </a><strong><font color="#FF0000">protected:</font></strong>
+
+<a name="line13"> 13: </a>  IS isp;             <font color="#B22222">/* The underlying IS repesentation of the IndexSet                */</font>
+<a name="line14"> 14: </a>  Vec VSpace;         <font color="#B22222">/* Instance of a vector from the full space that the IS describes */</font>
+<a name="line15"> 15: </a>  PetscInt nlocal;         <font color="#B22222">/* Local size of VSpace        */</font>
+<a name="line16"> 16: </a>  PetscInt *iptr;          <font color="#B22222">/* Work array of length nlocal */</font>
+
+<a name="line18"> 18: </a>  IS ispComplement;   <font color="#B22222">/* Complement of isp              */</font>
+
+<a name="line20"> 20: </a>  IS isp2;                     <font color="#B22222">/* Parallel redistribution of isp                                 */</font>
+<a name="line21"> 21: </a>  TaoPetscISType reducedtype;  <font color="#B22222">/* Mask full space or use reduced data structures                 */</font>
+<a name="line22"> 22: </a>  IS ISGathered;               <font color="#B22222">/* All of isp collected onto each matrix                          */</font>
+<a name="line23"> 23: </a>  VecScatter scatter;          <font color="#B22222">/* Scatter from full space to reduced space                       */</font>
+
+<a name="line25"> 25: </a>  PetscViewer ispviewer;       <font color="#B22222">/* <A href="../../../docs/manualpages/lsolver/View.html#View">View</A> the IS  */</font>
+
+<a name="line27"> 27: </a>  int SetUp(Vec, IS);
+<a name="line28"> 28: </a>  int clearit();
+
+<a name="line30"> 30: </a><strong><font color="#FF0000">public:</font></strong>
+
+<a name="line32"> 32: </a>  TaoIndexSetPetsc(Vec, IS SS);
+<a name="line33"> 33: </a>  TaoIndexSetPetsc(Vec);
+
+<a name="line35"> 35: </a>  ~TaoIndexSetPetsc();
+
+<a name="line37"> 37: </a>  <font color="#B22222">/* Special to TaoIndexSetPetsc */</font>
+<a name="line38"> 38: </a>  int SetIS(IS);
+<a name="line39"> 39: </a>  inline IS GetIS(){<font color="#4169E1">return</font> isp;}
+
+<a name="line41"> 41: </a>  int GetReducedType(TaoPetscISType *);
+<a name="line42"> 42: </a>  int GetWholeIS(IS*);
+<a name="line43"> 43: </a>  int RedistributeIS(IS*);
+<a name="line44"> 44: </a>  int GetReducedVecScatter(Vec,Vec,VecScatter*);
+
+<a name="line46"> 46: </a>  int GetMask(Vec *);
+<a name="line47"> 47: </a>  int GetComplementIS(IS*);
+
+<a name="line49"> 49: </a>  <font color="#B22222">/* These virtual methods of the TaoIndexSet are defined */</font>
+<a name="line50"> 50: </a>  int <A href="../../../docs/manualpages/indexset/UnionOf.html#UnionOf">UnionOf</A>(TaoIndexSet *, TaoIndexSet*);
+<a name="line51"> 51: </a>  int <A href="../../../docs/manualpages/indexset/IntersectionOf.html#IntersectionOf">IntersectionOf</A>(TaoIndexSet*, TaoIndexSet*);
+<a name="line52"> 52: </a>  int <A href="../../../docs/manualpages/indexset/ComplementOf.html#ComplementOf">ComplementOf</A>(TaoIndexSet*);
+
+<a name="line54"> 54: </a>  int <A href="../../../docs/manualpages/indexset/Duplicate.html#Duplicate">Duplicate</A>(TaoIndexSet**);
+
+<a name="line56"> 56: </a>  int <A href="../../../docs/manualpages/indexset/IsSame.html#IsSame">IsSame</A>(TaoIndexSet*, TaoTruth*);
+
+<a name="line58"> 58: </a>  int <A href="../../../docs/manualpages/indexset/WhichEqual.html#WhichEqual">WhichEqual</A>(TaoVec*,TaoVec*);
+
+<a name="line60"> 60: </a>  int WhichLessThan(TaoVec*,TaoVec*);
+
+<a name="line62"> 62: </a>  int WhichGreaterThan(TaoVec*,TaoVec*);
+
+<a name="line64"> 64: </a>  int <A href="../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(TaoVec*,TaoVec*,TaoVec*);
+
+<a name="line66"> 66: </a>  int <A href="../../../docs/manualpages/indexset/WhichBetweenOrEqual.html#WhichBetweenOrEqual">WhichBetweenOrEqual</A>(TaoVec *, TaoVec *, TaoVec *);
+
+<a name="line68"> 68: </a>  int <A href="../../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(TaoInt *);
+
+<a name="line70"> 70: </a>  int <A href="../../../docs/manualpages/lsolver/View.html#View">View</A>();
+
+<a name="line72"> 72: </a>};
+
+<a name="line74"> 74: </a><strong><font color="#4169E1">int <A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(IS, Vec, IS *)</font></strong>;
+<a name="line75"> 75: </a><strong><font color="#4169E1">int <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A>(Mat,IS,IS,Mat *)</font></strong>;
+<a name="line76"> 76: </a><strong><font color="#4169E1">int <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(IS, PetscScalar, Vec)</font></strong>;
+
+<a name="line78"> 78: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

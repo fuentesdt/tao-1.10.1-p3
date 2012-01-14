@@ -1,0 +1,102 @@
+<center><a href="lmvmmat.h">Actual source code: lmvmmat.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef LMVMMAT_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define LMVMMAT_H</font></strong>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"taomat.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a>class TaoLMVMMat: public TaoMat {
+
+<a name="line8">  8: </a><strong><font color="#FF0000"> protected:</font></strong>
+<a name="line9">  9: </a>  TaoInt lm;
+<a name="line10"> 10: </a>  double eps;
+
+<a name="line12"> 12: </a>  TaoInt limitType;        // Limit type on change in scaling matrix
+<a name="line13"> 13: </a>  TaoInt scaleType;        // Scaling type (scalar or broyden)
+<a name="line14"> 14: </a>  TaoInt rScaleType;        // Additional rescaling to use <font color="#4169E1">for</font> diagonal
+
+<a name="line16"> 16: </a>  double s_alpha;        // Factor <font color="#4169E1">for</font> scalar scaling
+<a name="line17"> 17: </a>  double r_alpha;        // Factor on scalar <font color="#4169E1">for</font> rescaling diagonal matrix
+<a name="line18"> 18: </a>  double r_beta;        // Factor on diagonal <font color="#4169E1">for</font> rescaling diagonal matrix
+<a name="line19"> 19: </a>  double mu;                // Factor <font color="#4169E1">for</font> using historical information
+<a name="line20"> 20: </a>  double nu;                // Factor <font color="#4169E1">for</font> using historical information
+<a name="line21"> 21: </a>  double phi;                // Factor <font color="#4169E1">for</font> Broyden scaling
+
+<a name="line23"> 23: </a>  TaoInt scalar_history;        // Amount of history to keep <font color="#4169E1">for</font> scalar scaling
+<a name="line24"> 24: </a>  double *yy_history;        // Past information <font color="#4169E1">for</font> scalar scaling
+<a name="line25"> 25: </a>  double *ys_history;        // Past information <font color="#4169E1">for</font> scalar scaling
+<a name="line26"> 26: </a>  double *ss_history;        // Past information <font color="#4169E1">for</font> scalar scaling
+
+<a name="line28"> 28: </a>  TaoInt rescale_history;  // Amount of history to keep <font color="#4169E1">for</font> rescaling diagonal
+<a name="line29"> 29: </a>  double *yy_rhistory;        // Past information <font color="#4169E1">for</font> scalar rescaling
+<a name="line30"> 30: </a>  double *ys_rhistory;        // Past information <font color="#4169E1">for</font> scalar rescaling
+<a name="line31"> 31: </a>  double *ss_rhistory;        // Past information <font color="#4169E1">for</font> scalar rescaling
+
+<a name="line33"> 33: </a>  double delta_max;        // Maximum value <font color="#4169E1">for</font> delta
+<a name="line34"> 34: </a>  double delta_min;        // Minimum value <font color="#4169E1">for</font> delta
+
+<a name="line36"> 36: </a>  TaoInt lmnow;
+<a name="line37"> 37: </a>  TaoInt iter;
+<a name="line38"> 38: </a>  TaoInt updates;
+<a name="line39"> 39: </a>  TaoInt rejects;
+
+<a name="line41"> 41: </a>  TaoVec **S;
+<a name="line42"> 42: </a>  TaoVec **Y;
+<a name="line43"> 43: </a>  TaoVec *Gprev;
+<a name="line44"> 44: </a>  TaoVec *Xprev;
+
+<a name="line46"> 46: </a>  TaoVec *D;
+<a name="line47"> 47: </a>  TaoVec *U;
+<a name="line48"> 48: </a>  TaoVec *V;
+<a name="line49"> 49: </a>  TaoVec *W;
+<a name="line50"> 50: </a>  TaoVec *P;
+<a name="line51"> 51: </a>  TaoVec *Q;
+
+<a name="line53"> 53: </a>  double delta;
+<a name="line54"> 54: </a>  double sigma;
+<a name="line55"> 55: </a>  double *rho;
+<a name="line56"> 56: </a>  double *beta;
+
+<a name="line58"> 58: </a>  TaoTruth H0default;
+<a name="line59"> 59: </a>  TaoMat *H0;
+
+<a name="line61"> 61: </a>  TaoVec *scale;
+
+<a name="line63"> 63: </a><strong><font color="#FF0000"> public:</font></strong>
+<a name="line64"> 64: </a>  
+<a name="line65"> 65: </a>  TaoLMVMMat(TaoVec *);
+<a name="line66"> 66: </a>  ~TaoLMVMMat();
+
+<a name="line68"> 68: </a>  int Reset();
+<a name="line69"> 69: </a>  int <A href="../../docs/manualpages/matrix/Presolve.html#Presolve">Presolve</A>();
+<a name="line70"> 70: </a>  int <A href="../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(TaoVec *, TaoVec *, TaoTruth *);
+<a name="line71"> 71: </a>  int Update(TaoVec *, TaoVec *);
+
+<a name="line73"> 73: </a>  int <A href="../../docs/manualpages/lsolver/View.html#View">View</A>();
+
+<a name="line75"> 75: </a>  int SetDelta(double);
+<a name="line76"> 76: </a>  int SetScale(TaoVec *s);
+
+<a name="line78"> 78: </a>  inline int GetRejects() { <font color="#4169E1">return</font>(rejects); }
+
+<a name="line80"> 80: </a>  int SetH0(TaoMat *HH0);
+<a name="line81"> 81: </a>  int GetX0(TaoVec *x);
+<a name="line82"> 82: </a>  int InitialApproximation(TaoVec *x);
+
+<a name="line84"> 84: </a>  int Refine(TaoLMVMMat *coarse, TaoMat *op, TaoVec *fineX, TaoVec *fineG);
+<a name="line85"> 85: </a>};
+
+<a name="line87"> 87: </a><font color="#A020F0">#endif</font>
+
+</pre>
+</body>
+
+</html>

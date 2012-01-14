@@ -1,0 +1,339 @@
+<center><a href="lmvm.c">Actual source code: lmvm.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:11+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"lmvm.h"</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><strong><font color="#228B22">#define LMM_BFGS                0</font></strong>
+<a name="line6">  6: </a><strong><font color="#228B22">#define LMM_SCALED_GRADIENT     1</font></strong>
+<a name="line7">  7: </a><strong><font color="#228B22">#define LMM_GRADIENT            2</font></strong>
+
+<a name="line11"> 11: </a><strong><font color="#4169E1"><a name="TaoSolve_LMVM"></a>static int TaoSolve_LMVM(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line12"> 12: </a>{
+<a name="line13"> 13: </a>  TAO_LMVM *lm = (TAO_LMVM *)solver;
+<a name="line14"> 14: </a>  TaoVec *X, *G = lm-&gt;G, *D = lm-&gt;D, *W = lm-&gt;W;
+<a name="line15"> 15: </a>  TaoVec *Xold = lm-&gt;Xold, *Gold = lm-&gt;Gold;
+<a name="line16"> 16: </a>  TaoLMVMMat *M = lm-&gt;M;
+
+<a name="line18"> 18: </a>  TaoTerminateReason reason;
+<a name="line19"> 19: </a>  TaoTruth success;
+
+<a name="line21"> 21: </a>  double f, f_full, fold, gdx, gnorm;
+<a name="line22"> 22: </a>  double step = 1.0;
+
+<a name="line24"> 24: </a>  double delta;
+
+<a name="line26"> 26: </a>  int info;
+<a name="line27"> 27: </a>  TaoInt stepType;
+<a name="line28"> 28: </a>  TaoInt iter = 0, status = 0;
+<a name="line29"> 29: </a>  TaoInt bfgsUpdates = 0;
+
+<a name="line31"> 31: </a>  TaoFunctionBegin;
+
+<a name="line33"> 33: </a>  // Get vectors we will need
+<a name="line34"> 34: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao, &amp;X); CHKERRQ(info);
+
+<a name="line36"> 36: </a>  // Check convergence criteria
+<a name="line37"> 37: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeFunctionGradient.html#TaoComputeFunctionGradient">TaoComputeFunctionGradient</A>(tao, X, &amp;f, G); CHKERRQ(info);
+<a name="line38"> 38: </a>  info = G-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;gnorm); CHKERRQ(info);
+<a name="line39"> 39: </a>  <font color="#4169E1">if</font> (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+<a name="line40"> 40: </a>    SETERRQ(1, <font color="#666666">"User provided compute function generated Inf or NaN"</font>);
+<a name="line41"> 41: </a>  }
+
+<a name="line43"> 43: </a>  info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao, iter, f, gnorm, 0.0, step, &amp;reason); CHKERRQ(info);
+<a name="line44"> 44: </a>  <font color="#4169E1">if</font> (reason != TAO_CONTINUE_ITERATING) {
+<a name="line45"> 45: </a>    TaoFunctionReturn(0);
+<a name="line46"> 46: </a>  }
+
+<a name="line48"> 48: </a>  // Set initial scaling <font color="#4169E1">for</font> the function
+<a name="line49"> 49: </a>  <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line50"> 50: </a>    delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line51"> 51: </a>  }
+<a name="line52"> 52: </a>  <font color="#4169E1">else</font> {
+<a name="line53"> 53: </a>    delta = 2.0 / (gnorm*gnorm);
+<a name="line54"> 54: </a>  }
+<a name="line55"> 55: </a>  info = M-&gt;SetDelta(delta); CHKERRQ(info);
+
+<a name="line57"> 57: </a>  // Set counter <font color="#4169E1">for</font> gradient/reset steps
+<a name="line58"> 58: </a>  lm-&gt;bfgs = 0;
+<a name="line59"> 59: </a>  lm-&gt;sgrad = 0;
+<a name="line60"> 60: </a>  lm-&gt;grad = 0;
+
+<a name="line62"> 62: </a>  // Have not converged; <font color="#4169E1">continue</font> with Newton method
+<a name="line63"> 63: </a>  <font color="#4169E1">while</font> (reason == TAO_CONTINUE_ITERATING) {
+<a name="line64"> 64: </a>    // Compute direction
+<a name="line65"> 65: </a>    info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line66"> 66: </a>    info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+<a name="line67"> 67: </a>    ++bfgsUpdates;
+
+<a name="line69"> 69: </a>    // Check <font color="#4169E1">for</font> success (descent direction)
+<a name="line70"> 70: </a>    info = D-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(G, &amp;gdx); CHKERRQ(info);
+<a name="line71"> 71: </a>    <font color="#4169E1">if</font> ((gdx &lt;= 0.0) || TaoInfOrNaN(gdx)) {
+<a name="line72"> 72: </a>      // Step is not descent or direction produced not a number
+<a name="line73"> 73: </a>      // We can assert bfgsUpdates &gt; 1 in this <font color="#4169E1">case</font> because
+<a name="line74"> 74: </a>      // the first solve produces the scaled gradient direction,
+<a name="line75"> 75: </a>      // which is guaranteed to be descent
+<a name="line76"> 76: </a>      //
+<a name="line77"> 77: </a>      // Use steepest descent direction (scaled)
+<a name="line78"> 78: </a>      ++lm-&gt;grad;
+
+<a name="line80"> 80: </a>      <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line81"> 81: </a>        delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line82"> 82: </a>      }
+<a name="line83"> 83: </a>      <font color="#4169E1">else</font> {
+<a name="line84"> 84: </a>        delta = 2.0 / (gnorm*gnorm);
+<a name="line85"> 85: </a>      }
+<a name="line86"> 86: </a>      info = M-&gt;SetDelta(delta); CHKERRQ(info);
+<a name="line87"> 87: </a>      info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line88"> 88: </a>      info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line89"> 89: </a>      info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+
+<a name="line91"> 91: </a>      // On a reset, the direction cannot be not a number; it is a 
+<a name="line92"> 92: </a>      // scaled gradient step.  No need to check <font color="#4169E1">for</font> this condition.
+<a name="line93"> 93: </a>      // info = D-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;dnorm); CHKERRQ(info);
+<a name="line94"> 94: </a>      // <font color="#4169E1">if</font> (TaoInfOrNaN(dnorm)) {
+<a name="line95"> 95: </a>      //   SETERRQ(1, <font color="#666666">"Direction generated Not-a-Number"</font>);
+<a name="line96"> 96: </a>      // }
+
+<a name="line98"> 98: </a>      bfgsUpdates = 1;
+<a name="line99"> 99: </a>      ++lm-&gt;sgrad;
+<a name="line100">100: </a>      stepType = LMM_SCALED_GRADIENT;
+<a name="line101">101: </a>    }
+<a name="line102">102: </a>    <font color="#4169E1">else</font> {
+<a name="line103">103: </a>      <font color="#4169E1">if</font> (1 == bfgsUpdates) {
+<a name="line104">104: </a>        // The first BFGS direction is always the scaled gradient
+<a name="line105">105: </a>        ++lm-&gt;sgrad;
+<a name="line106">106: </a>        stepType = LMM_SCALED_GRADIENT;
+<a name="line107">107: </a>      }
+<a name="line108">108: </a>      <font color="#4169E1">else</font> {
+<a name="line109">109: </a>        ++lm-&gt;bfgs;
+<a name="line110">110: </a>        stepType = LMM_BFGS;
+<a name="line111">111: </a>      }
+<a name="line112">112: </a>    }
+<a name="line113">113: </a>    info = D-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line114">114: </a>    
+<a name="line115">115: </a>    // Perform the linesearch
+<a name="line116">116: </a>    fold = f;
+<a name="line117">117: </a>    info = Xold-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X); CHKERRQ(info);
+<a name="line118">118: </a>    info = Gold-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G); CHKERRQ(info);
+
+<a name="line120">120: </a>    step = 1.0;
+<a name="line121">121: </a>    info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao, X, G, D, W, &amp;f, &amp;f_full, &amp;step, &amp;status); CHKERRQ(info);
+
+<a name="line123">123: </a>    <font color="#4169E1">while</font> (status &amp;&amp; stepType != LMM_GRADIENT) {
+<a name="line124">124: </a>      // Linesearch failed
+<a name="line125">125: </a>      // Reset factors and use scaled gradient step
+<a name="line126">126: </a>      f = fold;
+<a name="line127">127: </a>      info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Xold); CHKERRQ(info);
+<a name="line128">128: </a>      info = G-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Gold); CHKERRQ(info);
+<a name="line129">129: </a>        
+<a name="line130">130: </a>      <font color="#4169E1">switch</font>(stepType) {
+<a name="line131">131: </a>      <font color="#4169E1">case</font> LMM_BFGS:
+<a name="line132">132: </a>        // Failed to obtain acceptable iterate with BFGS step
+<a name="line133">133: </a>        // Attempt to use the scaled gradient direction
+
+<a name="line135">135: </a>        <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line136">136: </a>          delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line137">137: </a>        }
+<a name="line138">138: </a>        <font color="#4169E1">else</font> {
+<a name="line139">139: </a>          delta = 2.0 / (gnorm*gnorm);
+<a name="line140">140: </a>        }
+<a name="line141">141: </a>        info = M-&gt;SetDelta(delta); CHKERRQ(info);
+<a name="line142">142: </a>        info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line143">143: </a>        info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line144">144: </a>        info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+
+<a name="line146">146: </a>        // On a reset, the direction cannot be not a number; it is a 
+<a name="line147">147: </a>        // scaled gradient step.  No need to check <font color="#4169E1">for</font> this condition.
+<a name="line148">148: </a>        // info = D-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;dnorm); CHKERRQ(info);
+<a name="line149">149: </a>        // <font color="#4169E1">if</font> (TaoInfOrNaN(dnorm)) {
+<a name="line150">150: </a>        //   SETERRQ(1, <font color="#666666">"Direction generated Not-a-Number"</font>);
+<a name="line151">151: </a>        // }
+<a name="line152">152: </a>  
+<a name="line153">153: </a>        bfgsUpdates = 1;
+<a name="line154">154: </a>        ++lm-&gt;sgrad;
+<a name="line155">155: </a>        stepType = LMM_SCALED_GRADIENT;
+<a name="line156">156: </a>        <font color="#4169E1">break</font>;
+
+<a name="line158">158: </a>      <font color="#4169E1">case</font> LMM_SCALED_GRADIENT:
+<a name="line159">159: </a>        // The scaled gradient step did not produce a new iterate;
+<a name="line160">160: </a>        // attemp to use the gradient direction.
+<a name="line161">161: </a>        // Need to make sure we are not using a different diagonal scaling
+<a name="line162">162: </a>        info = M-&gt;SetDelta(1.0); CHKERRQ(info);
+<a name="line163">163: </a>        info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line164">164: </a>        info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line165">165: </a>        info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+
+<a name="line167">167: </a>        bfgsUpdates = 1;
+<a name="line168">168: </a>        ++lm-&gt;grad;
+<a name="line169">169: </a>        stepType = LMM_GRADIENT;
+<a name="line170">170: </a>        <font color="#4169E1">break</font>;
+<a name="line171">171: </a>      }
+<a name="line172">172: </a>      info = D-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line173">173: </a>        
+<a name="line174">174: </a>      // Perform the linesearch
+<a name="line175">175: </a>      step = 1.0;
+<a name="line176">176: </a>      info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao, X, G, D, W, &amp;f, &amp;f_full, &amp;step, &amp;status); CHKERRQ(info);
+<a name="line177">177: </a>    }
+
+<a name="line179">179: </a>    <font color="#4169E1">if</font> (status) {
+<a name="line180">180: </a>      // Failed to find an improving point
+<a name="line181">181: </a>      f = fold;
+<a name="line182">182: </a>      info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Xold); CHKERRQ(info);
+<a name="line183">183: </a>      info = G-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Gold); CHKERRQ(info);
+<a name="line184">184: </a>      step = 0.0;
+<a name="line185">185: </a>    }
+
+<a name="line187">187: </a>    // Check <font color="#4169E1">for</font> termination
+<a name="line188">188: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;gnorm); CHKERRQ(info);
+<a name="line189">189: </a>    <font color="#4169E1">if</font> (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+<a name="line190">190: </a>      SETERRQ(1, <font color="#666666">"User provided compute function generated Inf or NaN"</font>);
+<a name="line191">191: </a>    }
+<a name="line192">192: </a>    info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao, ++iter, f, gnorm, 0.0, step, &amp;reason); CHKERRQ(info);
+<a name="line193">193: </a>  }
+<a name="line194">194: </a>  TaoFunctionReturn(0);
+<a name="line195">195: </a>}
+
+<a name="line199">199: </a><strong><font color="#4169E1"><a name="TaoSetUp_LMVM"></a>static int TaoSetUp_LMVM(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line200">200: </a>{
+<a name="line201">201: </a>  TAO_LMVM *lm = (TAO_LMVM *)solver;
+<a name="line202">202: </a>  TaoVec *X;
+<a name="line203">203: </a>  int info;
+
+<a name="line205">205: </a>  TaoFunctionBegin;
+
+<a name="line207">207: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao, &amp;X); CHKERRQ(info);
+<a name="line208">208: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;lm-&gt;G); CHKERRQ(info);
+<a name="line209">209: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;lm-&gt;D); CHKERRQ(info);
+<a name="line210">210: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;lm-&gt;W); CHKERRQ(info);
+
+<a name="line212">212: </a>  // Create vectors we will need <font color="#4169E1">for</font> linesearch
+<a name="line213">213: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;lm-&gt;Xold); CHKERRQ(info);
+<a name="line214">214: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;lm-&gt;Gold); CHKERRQ(info);
+
+<a name="line216">216: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao, lm-&gt;G); CHKERRQ(info);
+<a name="line217">217: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao, lm-&gt;D); CHKERRQ(info);
+
+<a name="line219">219: </a>  // Create matrix <font color="#4169E1">for</font> the limited memory approximation
+<a name="line220">220: </a>  lm-&gt;M = new TaoLMVMMat(X);
+
+<a name="line222">222: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCheckFG.html#TaoCheckFG">TaoCheckFG</A>(tao); CHKERRQ(info);
+<a name="line223">223: </a>  TaoFunctionReturn(0);
+<a name="line224">224: </a>}
+
+<a name="line226">226: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line229">229: </a><strong><font color="#4169E1"><a name="TaoSetDown_LMVM"></a>static int TaoSetDown_LMVM(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line230">230: </a>{
+<a name="line231">231: </a>  TAO_LMVM *lm = (TAO_LMVM *)solver;
+<a name="line232">232: </a>  int info;
+
+<a name="line234">234: </a>  TaoFunctionBegin;
+<a name="line235">235: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(lm-&gt;G); CHKERRQ(info);
+<a name="line236">236: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(lm-&gt;D); CHKERRQ(info);
+<a name="line237">237: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(lm-&gt;W); CHKERRQ(info);
+
+<a name="line239">239: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(lm-&gt;Xold); CHKERRQ(info);
+<a name="line240">240: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(lm-&gt;Gold); CHKERRQ(info);
+
+<a name="line242">242: </a>  info = <A href="../../../../docs/manualpages/matrix/TaoMatDestroy.html#TaoMatDestroy">TaoMatDestroy</A>(lm-&gt;M); CHKERRQ(info);
+
+<a name="line244">244: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao, 0); CHKERRQ(info);
+<a name="line245">245: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao, 0); CHKERRQ(info);
+<a name="line246">246: </a>  TaoFunctionReturn(0);
+<a name="line247">247: </a>}
+
+<a name="line249">249: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line252">252: </a><strong><font color="#4169E1"><a name="TaoSetOptions_LMVM"></a>static int TaoSetOptions_LMVM(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line253">253: </a>{
+<a name="line254">254: </a>  int info;
+
+<a name="line256">256: </a>  TaoFunctionBegin;
+<a name="line257">257: </a>  info = TaoOptionsHead(<font color="#666666">"Limited-memory variable-metric method for unconstrained optimization"</font>); CHKERRQ(info);
+<a name="line258">258: </a>  info = <A href="../../../../docs/manualpages/solver/TaoLineSearchSetFromOptions.html#TaoLineSearchSetFromOptions">TaoLineSearchSetFromOptions</A>(tao); CHKERRQ(info);
+<a name="line259">259: </a>  info = TaoOptionsTail(); CHKERRQ(info);
+<a name="line260">260: </a>  TaoFunctionReturn(0);
+<a name="line261">261: </a>}
+
+<a name="line263">263: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line266">266: </a><strong><font color="#4169E1"><a name="TaoView_LMVM"></a>static int TaoView_LMVM(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line267">267: </a>{
+<a name="line268">268: </a>  TAO_LMVM *lm = (TAO_LMVM *)solver;
+<a name="line269">269: </a>  int info;
+
+<a name="line271">271: </a>  TaoFunctionBegin;
+<a name="line272">272: </a>  info = TaoPrintInt(tao, <font color="#666666">"  Rejected matrix updates: %d\n"</font>, lm-&gt;M-&gt;GetRejects()); CHKERRQ(info);
+<a name="line273">273: </a>  info = TaoPrintInt(tao, <font color="#666666">"  BFGS steps: %d\n"</font>, lm-&gt;bfgs); CHKERRQ(info);
+<a name="line274">274: </a>  info = TaoPrintInt(tao, <font color="#666666">"  Scaled gradient steps: %d\n"</font>, lm-&gt;sgrad); CHKERRQ(info);
+<a name="line275">275: </a>  info = TaoPrintInt(tao, <font color="#666666">"  Gradient steps: %d\n"</font>, lm-&gt;grad); CHKERRQ(info);
+<a name="line276">276: </a>  info = <A href="../../../../docs/manualpages/solver/TaoLineSearchView.html#TaoLineSearchView">TaoLineSearchView</A>(tao); CHKERRQ(info);
+<a name="line277">277: </a>  TaoFunctionReturn(0);
+<a name="line278">278: </a>}
+
+<a name="line280">280: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+
+<a name="line285">285: </a><strong><font color="#4169E1"><a name="TaoCreate_LMVM"></a>int TaoCreate_LMVM(TAO_SOLVER tao)</font></strong>
+<a name="line286">286: </a>{
+<a name="line287">287: </a>  TAO_LMVM *lm;
+<a name="line288">288: </a>  int info;
+
+<a name="line290">290: </a>  TaoFunctionBegin;
+
+<a name="line292">292: </a>  info = TaoNew(TAO_LMVM, &amp;lm); CHKERRQ(info);
+<a name="line293">293: </a>  info = PetscLogObjectMemory(tao, <font color="#4169E1">sizeof</font>(TAO_LMVM)); CHKERRQ(info);
+
+<a name="line295">295: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>(tao, TaoSolve_LMVM, (void *)lm); CHKERRQ(info);
+<a name="line296">296: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTaoSetUpDownRoutines.html#TaoSetTaoSetUpDownRoutines">TaoSetTaoSetUpDownRoutines</A>(tao, TaoSetUp_LMVM, TaoSetDown_LMVM); CHKERRQ(info);
+<a name="line297">297: </a>  info = TaoSetTaoOptionsRoutine(tao, TaoSetOptions_LMVM); CHKERRQ(info);
+<a name="line298">298: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTaoViewRoutine.html#TaoSetTaoViewRoutine">TaoSetTaoViewRoutine</A>(tao, TaoView_LMVM); CHKERRQ(info);
+
+<a name="line300">300: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(tao, 2000); CHKERRQ(info);
+<a name="line301">301: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumFunctionEvaluations.html#TaoSetMaximumFunctionEvaluations">TaoSetMaximumFunctionEvaluations</A>(tao, 4000); CHKERRQ(info);
+<a name="line302">302: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao, 1e-4, 1e-4, 0, 0); CHKERRQ(info);
+<a name="line303">303: </a>  
+<a name="line304">304: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteLineSearch.html#TaoCreateMoreThuenteLineSearch">TaoCreateMoreThuenteLineSearch</A>(tao, 0, 0); CHKERRQ(info);
+<a name="line305">305: </a>  TaoFunctionReturn(0);
+<a name="line306">306: </a>}
+
+<a name="line309">309: </a>// Todd: <font color="#4169E1">do</font> not delete; they are needed <font color="#4169E1">for</font> the component version
+<a name="line310">310: </a>// of the code.
+
+<a name="line312">312: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line315">315: </a><strong><font color="#4169E1"><a name="TaoLMVMGetX0"></a>int TaoLMVMGetX0(TAO_SOLVER tao, TaoVec *x0)</font></strong>
+<a name="line316">316: </a>{
+<a name="line317">317: </a>  TAO_LMVM *lm;
+<a name="line318">318: </a>  int info;
+
+<a name="line320">320: </a>  TaoFunctionBegin;
+<a name="line321">321: </a>  info=<A href="../../../../docs/manualpages/solver/TaoGetSolverContext.html#TaoGetSolverContext">TaoGetSolverContext</A>(tao, <font color="#666666">"tao_lmvm"</font>, (void **)&amp;lm); CHKERRQ(info);
+<a name="line322">322: </a>  <font color="#4169E1">if</font> (lm &amp;&amp; lm-&gt;M) {
+<a name="line323">323: </a>    info=lm-&gt;M-&gt;GetX0(x0); CHKERRQ(info);
+<a name="line324">324: </a>  }
+<a name="line325">325: </a>  TaoFunctionReturn(0);
+<a name="line326">326: </a>}
+
+<a name="line328">328: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line331">331: </a><strong><font color="#4169E1"><a name="TaoInitializeLMVMmatrix"></a>int TaoInitializeLMVMmatrix(TAO_SOLVER tao, TaoVec *HV)</font></strong>
+<a name="line332">332: </a>{
+<a name="line333">333: </a>  TAO_LMVM *lm;
+<a name="line334">334: </a>  int info;
+<a name="line335">335: </a>  
+<a name="line336">336: </a>  TaoFunctionBegin;
+<a name="line337">337: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolverContext.html#TaoGetSolverContext">TaoGetSolverContext</A>(tao, <font color="#666666">"tao_lmvm"</font>, (void **)&amp;lm); CHKERRQ(info);
+<a name="line338">338: </a>  <font color="#4169E1">if</font> (lm &amp;&amp; lm-&gt;M) {
+<a name="line339">339: </a>    info = lm-&gt;M-&gt;InitialApproximation(HV); CHKERRQ(info);
+<a name="line340">340: </a>  }
+<a name="line341">341: </a>  TaoFunctionReturn(0);
+<a name="line342">342: </a>}
+
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,638 @@
+<center><a href="taovec_petsc.c">Actual source code: taovec_petsc.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+
+<a name="line3">  3: </a><font color="#A020F0">#ifdef TAO_USE_PETSC</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"taovec_petsc.h"</font><font color="#A020F0"></font>
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"../indexset/taois_petsc.h"</font><font color="#A020F0"></font>
+
+<a name="line8">  8: </a><strong><font color="#4169E1">int VecMedian(Vec, Vec, Vec, Vec)</font></strong>;
+<a name="line9">  9: </a><strong><font color="#4169E1">int VecPointwiseMax(Vec, Vec, Vec)</font></strong>;
+<a name="line10"> 10: </a><strong><font color="#4169E1">int VecPointwiseMin(Vec, Vec, Vec)</font></strong>;
+<a name="line11"> 11: </a><strong><font color="#4169E1">int VecFischer(Vec, Vec, Vec, Vec, Vec)</font></strong>;
+<a name="line12"> 12: </a><strong><font color="#4169E1">int VecSFischer(Vec, Vec, Vec, Vec, double, Vec)</font></strong>;
+<a name="line13"> 13: </a><strong><font color="#4169E1">int VecBoundProjection(Vec, Vec, Vec, Vec, Vec)</font></strong>;
+<a name="line14"> 14: </a><strong><font color="#4169E1">int VecCreateSubVec(Vec, IS, Vec *)</font></strong>;
+<a name="line15"> 15: </a><strong><font color="#4169E1">int VecISAXPY(Vec, double, Vec, IS)</font></strong>;
+<a name="line16"> 16: </a><strong><font color="#4169E1">int VecStepMax(Vec, Vec, double*)</font></strong>;
+<a name="line17"> 17: </a><strong><font color="#4169E1">int VecStepMax2(Vec, Vec,Vec, Vec, double*)</font></strong>;
+<a name="line18"> 18: </a><strong><font color="#4169E1">int VecCompare(Vec, Vec, PetscTruth *)</font></strong>;
+<a name="line19"> 19: </a><strong><font color="#4169E1">int VecBoundStepInfo(Vec, Vec, Vec, Vec, PetscReal *, PetscReal *, PetscReal *)</font></strong>;
+<a name="line20"> 20: </a><strong><font color="#4169E1">int VecPow(Vec, double)</font></strong>;
+
+<a name="line22"> 22: </a>static int petscminmaxevent=0;
+
+<a name="line26"> 26: </a><font color="#B22222">/*@C</font>
+<a name="line27"> 27: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A> - Creates a new TaoVec object using an existing</font>
+<a name="line28"> 28: </a><font color="#B22222">   PETSc Vec.</font>
+
+<a name="line30"> 30: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line31"> 31: </a><font color="#B22222">+  V -  a PETSc vector</font>
+<a name="line32"> 32: </a><font color="#B22222">-  TV -  the address of a pointer to a TaoVecPetsc</font>
+
+<a name="line34"> 34: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line35"> 35: </a><font color="#B22222">.  TV - pointer to a new TaoVecPetsc</font>
+
+<a name="line37"> 37: </a><font color="#B22222">   Note:  A TaoVecPetsc is an object with the methods of an abstract</font>
+<a name="line38"> 38: </a><font color="#B22222">   TaoVec object.  A TaoVecPetsc contains an implementation of the TaoVec</font>
+<a name="line39"> 39: </a><font color="#B22222">   methods.  Routines using these vectors should declare a pointer to </font>
+<a name="line40"> 40: </a><font color="#B22222">   a TaoVec, assign this pointer to the address of a TaoVec object, </font>
+<a name="line41"> 41: </a><font color="#B22222">   use the pointer to invoke methods on the object, and use this pointer</font>
+<a name="line42"> 42: </a><font color="#B22222">   as an argument when calling other routines.  This usage is different</font>
+<a name="line43"> 43: </a><font color="#B22222">   from the usage of a PETSc Vec.  In PETSc, applications will typically</font>
+<a name="line44"> 44: </a><font color="#B22222">   declare a Vec, and pass it as an argument into routines.  That is,</font>
+<a name="line45"> 45: </a><font color="#B22222">   applications will typically declare a pointer to a TaoVec and use the</font>
+<a name="line46"> 46: </a><font color="#B22222">   pointer, or declare a Vec and use it directly.</font>
+<a name="line47"> 47: </a><font color="#B22222">  </font>
+<a name="line48"> 48: </a><font color="#B22222">   Note:</font>
+<a name="line49"> 49: </a><font color="#B22222">   The user is responsible for destroying the Vec V, in addition to</font>
+<a name="line50"> 50: </a><font color="#B22222">   to TaoVecPetsc vector TV.  The Vec can be destroyed immediately</font>
+<a name="line51"> 51: </a><font color="#B22222">   after this routine.</font>
+
+<a name="line53"> 53: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line55"> 55: </a><font color="#B22222">.seealso <A href="../../../docs/manualpages/ptaopages/TaoVecGetPetscVec.html#TaoVecGetPetscVec">TaoVecGetPetscVec</A>(), <A href="../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>()</font>
+
+<a name="line57"> 57: </a><font color="#B22222">@*/</font>
+<a name="line58"> 58: </a><strong><font color="#4169E1"><a name="TaoWrapPetscVec"></a>int <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>( Vec V, TaoVecPetsc* *TV)</font></strong>{
+<a name="line59"> 59: </a>  int info;
+<a name="line61"> 61: </a>  *TV = new  TaoVecPetsc(V);
+<a name="line62"> 62: </a>  info=(*TV)-&gt;<A href="../../../docs/manualpages/ptaopages/SetVec.html#SetVec">SetVec</A>(V); CHKERRQ(info);
+<a name="line63"> 63: </a>  <font color="#4169E1">return</font>(0);
+<a name="line64"> 64: </a>}
+<a name="line67"> 67: </a><font color="#B22222">/*@C                                                               </font>
+<a name="line68"> 68: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/TaoVecGetPetscVec.html#TaoVecGetPetscVec">TaoVecGetPetscVec</A> - Set the address of a Vec equal to the location</font>
+<a name="line69"> 69: </a><font color="#B22222">   of the underlying Vec structure in this TaoVecPetsc object.       </font>
+<a name="line70"> 70: </a><font color="#B22222">                                                                     </font>
+<a name="line71"> 71: </a><font color="#B22222">   Input Parameter:                                                  </font>
+<a name="line72"> 72: </a><font color="#B22222">+  TV - the TaoVecPetsc                                              </font>
+<a name="line73"> 73: </a><font color="#B22222">-  V -  the address of Vec                                           </font>
+<a name="line74"> 74: </a><font color="#B22222">                                                                     </font>
+<a name="line75"> 75: </a><font color="#B22222">   Output Parameter:                                                 </font>
+<a name="line76"> 76: </a><font color="#B22222">.  V -  the address of a specific Vec                                </font>
+<a name="line77"> 77: </a><font color="#B22222">                                                                     </font>
+<a name="line78"> 78: </a><font color="#B22222">   Note:                                                             </font>
+<a name="line79"> 79: </a><font color="#B22222">   This routine does not create a Vec.  It sets a pointer            </font>
+<a name="line80"> 80: </a><font color="#B22222">   to the location of an existing Vec.                               </font>
+<a name="line81"> 81: </a><font color="#B22222">                                                                     </font>
+<a name="line82"> 82: </a><font color="#B22222">                                                                     </font>
+<a name="line83"> 83: </a><font color="#B22222">   Note:                                                             </font>
+<a name="line84"> 84: </a><font color="#B22222">                                                                     </font>
+<a name="line85"> 85: </a><font color="#B22222">   VecObject is a void* pointer that can be cast to the underlying Vec object.</font>
+<a name="line86"> 86: </a><font color="#B22222">                                                                              </font>
+<a name="line87"> 87: </a><font color="#B22222">   Level: advanced                                                            </font>
+<a name="line88"> 88: </a><font color="#B22222">                                                                              </font>
+<a name="line89"> 89: </a><font color="#B22222">@*/</font>                                                                           
+<a name="line90"> 90: </a><strong><font color="#4169E1"><a name="TaoVecGetPetscVec"></a>int <A href="../../../docs/manualpages/ptaopages/TaoVecGetPetscVec.html#TaoVecGetPetscVec">TaoVecGetPetscVec</A>( TaoVec* TV, Vec *V)</font></strong>{                                   
+<a name="line92"> 92: </a>  <font color="#4169E1">if</font> (TV &amp;&amp; V){         
+<a name="line93"> 93: </a>    TaoVecPetsc *tvp = dynamic_cast&lt;TaoVecPetsc*&gt;(TV);
+<a name="line94"> 94: </a>    <font color="#4169E1">if</font> (tvp) {
+<a name="line95"> 95: </a>      *V=(Vec)(tvp-&gt;GetVec());                                                  
+<a name="line96"> 96: </a>    } <font color="#4169E1">else</font> {
+<a name="line97"> 97: </a>      *V=0;
+<a name="line98"> 98: </a>    }
+<a name="line99"> 99: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (V){                                                              
+<a name="line100">100: </a>    *V=0;                                                                     
+<a name="line101">101: </a>  }                                                                           
+<a name="line102">102: </a>  <font color="#4169E1">return</font>(0);                                                     
+<a name="line103">103: </a>}       
+
+<a name="line107">107: </a><strong><font color="#FF0000">TaoVecPetsc:</font></strong>:TaoVecPetsc(Vec VV)
+<a name="line108">108: </a>{
+<a name="line109">109: </a>  pv=0;
+<a name="line110">110: </a>  pvecviewer=0;
+<a name="line111">111: </a>  <font color="#4169E1">if</font> (VV) { 
+<a name="line112">112: </a>    <A href="../../../docs/manualpages/ptaopages/SetVec.html#SetVec">SetVec</A>(VV);
+<a name="line113">113: </a>  }
+<a name="line114">114: </a>  <font color="#4169E1">if</font> (petscminmaxevent==0){
+<a name="line115">115: </a>    PetscLogEventRegister(<font color="#666666">"PointwiseMinMax"</font>,VEC_COOKIE,&amp;petscminmaxevent);
+<a name="line116">116: </a>  }
+<a name="line117">117: </a>  <font color="#4169E1">return</font>;
+<a name="line118">118: </a>}
+
+<a name="line122">122: </a><strong><font color="#FF0000">TaoVecPetsc:</font></strong>:~TaoVecPetsc()
+<a name="line123">123: </a>{
+<a name="line124">124: </a>  <A href="../../../docs/manualpages/ptaopages/SetVec.html#SetVec">SetVec</A>(0);
+<a name="line125">125: </a>  <font color="#4169E1">return</font>;
+<a name="line126">126: </a>}
+
+<a name="line130">130: </a><font color="#B22222">/*@C</font>
+<a name="line131">131: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/SetVec.html#SetVec">SetVec</A> - Set or replace the underlying Vec object in this TaoVec.</font>
+
+<a name="line133">133: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line134">134: </a><font color="#B22222">.  V -  a PETSc vector</font>
+
+<a name="line136">136: </a><font color="#B22222">   Note:</font>
+<a name="line137">137: </a><font color="#B22222">   The user us repsonsible for destroying the Vec V, in addition to</font>
+<a name="line138">138: </a><font color="#B22222">   to TaoVecPetsc vector TV.  The Vec can be destroyed immediately</font>
+<a name="line139">139: </a><font color="#B22222">   after this routine.</font>
+
+<a name="line141">141: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line143">143: </a><font color="#B22222">.seealso <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>(), <A href="../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>()</font>
+
+<a name="line145">145: </a><font color="#B22222">@*/</font>
+<a name="line146">146: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/ptaopages/SetVec.html#SetVec">SetVec</A>(Vec VV){
+<a name="line147">147: </a>  int info;
+<a name="line149">149: </a>  <font color="#4169E1">if</font> (VV){
+<a name="line151">151: </a>    PetscObjectReference((PetscObject)VV); 
+<a name="line152">152: </a>    //    info = PetscInfo(VV,<font color="#666666">"Set the PETSc Vec in a TaoVec .\n"</font>); CHKERRQ(info);
+<a name="line153">153: </a>  }
+<a name="line154">154: </a>  <font color="#4169E1">if</font> (pv) {
+<a name="line155">155: </a>    info=VecDestroy(pv); CHKERRQ(info);
+<a name="line156">156: </a>  }
+<a name="line157">157: </a>  pv=VV;
+<a name="line158">158: </a>  <font color="#4169E1">return</font>(0);
+<a name="line159">159: </a>}
+
+<a name="line163">163: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(TaoVec**ntv){
+<a name="line164">164: </a>  int info;
+<a name="line165">165: </a>  TaoVecPetsc *nptv;
+<a name="line166">166: </a>  Vec npv;
+<a name="line168">168: </a>  info=VecDuplicate(pv,&amp;npv); CHKERRQ(info);
+<a name="line169">169: </a>  info = <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>(npv,&amp;nptv); CHKERRQ(info);
+<a name="line170">170: </a>  *ntv=nptv;
+<a name="line171">171: </a>  info = VecDestroy(npv); CHKERRQ(info);
+<a name="line172">172: </a>  nptv-&gt;pvecviewer=pvecviewer;
+<a name="line173">173: </a>  <font color="#4169E1">return</font>(0);
+<a name="line174">174: </a>}
+
+
+<a name="line179">179: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A>(TaoVec *tv, TaoTruth *flag){
+<a name="line180">180: </a>  TaoVecPetsc *vv = (TaoVecPetsc *)(tv);
+<a name="line181">181: </a>  PetscTruth flg=PETSC_TRUE;
+<a name="line182">182: </a>  int info=0;
+
+<a name="line185">185: </a>  <font color="#4169E1">if</font> (vv==0){
+<a name="line186">186: </a>    *flag=TAO_FALSE;
+<a name="line187">187: </a>    <font color="#4169E1">return</font>(0);
+<a name="line188">188: </a>  }
+<a name="line189">189: </a>  info = VecCompare(pv, vv-&gt;pv, &amp;flg); CHKERRQ(info);
+<a name="line190">190: </a>  <font color="#4169E1">if</font> (flg==PETSC_FALSE){
+<a name="line191">191: </a>    *flag=TAO_FALSE;
+<a name="line192">192: </a>  } <font color="#4169E1">else</font> {
+<a name="line193">193: </a>    *flag=TAO_TRUE;
+<a name="line194">194: </a>  }
+<a name="line195">195: </a>  <font color="#4169E1">return</font>(0);
+<a name="line196">196: </a>}
+
+<a name="line200">200: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>( double cc ){
+<a name="line201">201: </a>  int info;
+<a name="line202">202: </a>  PetscScalar c=cc;
+<a name="line204">204: </a>  info=VecSet(pv, c);  CHKERRQ(info);
+<a name="line205">205: </a>  <font color="#4169E1">return</font>(0);
+<a name="line206">206: </a>}
+
+<a name="line210">210: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(){
+<a name="line211">211: </a>  PetscScalar zero=0.0;
+<a name="line212">212: </a>  int info;
+<a name="line214">214: </a>  info=VecSet(pv, zero);  CHKERRQ(info);
+<a name="line215">215: </a>  <font color="#4169E1">return</font>(0);
+<a name="line216">216: </a>}
+
+<a name="line220">220: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(TaoVec* tv)
+<a name="line221">221: </a>{
+<a name="line222">222: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line223">223: </a>  int info;
+
+<a name="line226">226: </a>  info = VecCopy(mv-&gt;pv, pv);  CHKERRQ(info);
+<a name="line227">227: </a>  <font color="#4169E1">return</font>(0);
+<a name="line228">228: </a>}
+
+<a name="line232">232: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(double a, TaoVec *tv)
+<a name="line233">233: </a>{
+<a name="line234">234: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line235">235: </a>  PetscScalar alpha=a, zero=0.0;
+<a name="line236">236: </a>  int info;
+<a name="line238">238: </a>  info=VecAXPBY(pv,alpha,zero,mv-&gt;pv);  CHKERRQ(info);
+<a name="line239">239: </a>  <font color="#4169E1">return</font>(0);
+<a name="line240">240: </a>}
+
+<a name="line244">244: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(double *vnorm){
+<a name="line245">245: </a>  int info;
+<a name="line246">246: </a>  PetscReal vv;
+<a name="line248">248: </a>  info=VecNorm(pv,NORM_INFINITY,&amp;vv);  CHKERRQ(info);
+<a name="line249">249: </a>  *vnorm=(double)vv;
+<a name="line250">250: </a>  <font color="#4169E1">return</font>(0);
+<a name="line251">251: </a>}
+
+<a name="line255">255: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(double *vnorm){
+<a name="line256">256: </a>  int info;
+<a name="line257">257: </a>  PetscReal vv;
+<a name="line259">259: </a>  info=VecNorm(pv,NORM_1,&amp;vv);  CHKERRQ(info);
+<a name="line260">260: </a>  *vnorm=(double)vv;
+<a name="line261">261: </a>  <font color="#4169E1">return</font>(0);
+<a name="line262">262: </a>}
+
+<a name="line266">266: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(double *vnorm){
+<a name="line267">267: </a>  int info;
+<a name="line268">268: </a>  PetscReal vv;
+<a name="line270">270: </a>  info=VecNorm(pv,NORM_2,&amp;vv);  CHKERRQ(info);
+<a name="line271">271: </a>  *vnorm=(double)vv;
+<a name="line272">272: </a>  <font color="#4169E1">return</font>(0);
+<a name="line273">273: </a>}
+
+<a name="line277">277: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Norm2squared.html#Norm2squared">Norm2squared</A>(double *vnorm){
+<a name="line278">278: </a>  int info;
+<a name="line279">279: </a>  PetscReal vv;
+<a name="line281">281: </a>  info=VecNorm(pv,NORM_2,&amp;vv);  CHKERRQ(info);
+<a name="line282">282: </a>  *vnorm=(double)(vv*vv);
+<a name="line283">283: </a>  <font color="#4169E1">return</font>(0);
+<a name="line284">284: </a>}
+
+<a name="line288">288: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Scale.html#Scale">Scale</A>( double alpha ){
+<a name="line289">289: </a>  int info;
+<a name="line290">290: </a>  PetscScalar aalpha=alpha;
+<a name="line292">292: </a>  info=VecScale(pv, aalpha);  CHKERRQ(info);
+<a name="line293">293: </a>  <font color="#4169E1">return</font>(0);
+<a name="line294">294: </a>}
+
+
+<a name="line299">299: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(double alpha, TaoVec *tv)
+<a name="line300">300: </a>{
+<a name="line301">301: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line302">302: </a>  PetscScalar aalpha=alpha;
+<a name="line303">303: </a>  int info;
+<a name="line305">305: </a>  info=VecAXPY(pv, aalpha, mv-&gt;pv);  CHKERRQ(info);
+<a name="line306">306: </a>  <font color="#4169E1">return</font>(0);
+<a name="line307">307: </a>}
+
+
+<a name="line312">312: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Axpby.html#Axpby">Axpby</A>(double alpha, TaoVec *tv, double beta)
+<a name="line313">313: </a>{
+<a name="line314">314: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line315">315: </a>  PetscScalar aalpha = alpha, bbeta = beta;
+<a name="line316">316: </a>  int info;
+<a name="line318">318: </a>  info=VecAXPBY(pv,aalpha,bbeta,mv-&gt;pv);  CHKERRQ(info);
+<a name="line319">319: </a>  <font color="#4169E1">return</font>(0);
+<a name="line320">320: </a>}
+
+<a name="line324">324: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A>(double alpha, TaoVec *tv)
+<a name="line325">325: </a>{
+<a name="line326">326: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line327">327: </a>  PetscScalar aalpha = alpha;
+<a name="line328">328: </a>  int info;
+<a name="line330">330: </a>  info=VecAYPX(pv,aalpha,mv-&gt;pv);  CHKERRQ(info);
+<a name="line331">331: </a>  <font color="#4169E1">return</font>(0);
+<a name="line332">332: </a>}
+<a name="line333">333: </a> 
+<a name="line336">336: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>( double cc )
+<a name="line337">337: </a>{
+<a name="line338">338: </a>  int info;
+<a name="line339">339: </a>  PetscScalar c=cc;
+<a name="line341">341: </a>  info=VecShift(pv, c);  CHKERRQ(info);
+<a name="line342">342: </a>  <font color="#4169E1">return</font>(0);
+<a name="line343">343: </a>}
+
+<a name="line347">347: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>( TaoVec* tv, double *vDotv )
+<a name="line348">348: </a>{
+<a name="line349">349: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line350">350: </a>  PetscScalar c;
+<a name="line351">351: </a>  int info;
+<a name="line353">353: </a>  info=VecDot(pv, mv-&gt;pv, &amp;c);  CHKERRQ(info);
+<a name="line354">354: </a>  *vDotv=c;
+<a name="line355">355: </a>  <font color="#4169E1">return</font>(0);
+<a name="line356">356: </a>}
+
+<a name="line360">360: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(){ 
+<a name="line361">361: </a>  PetscScalar m1=-1.0; 
+<a name="line362">362: </a>  int info;
+<a name="line364">364: </a>  info=VecScale(pv, m1);  CHKERRQ(info);
+<a name="line365">365: </a>  <font color="#4169E1">return</font>(0);
+<a name="line366">366: </a>}
+
+<a name="line370">370: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(){ 
+<a name="line371">371: </a>  int info;
+<a name="line373">373: </a>  info=VecReciprocal(pv);  CHKERRQ(info);
+<a name="line374">374: </a>  <font color="#4169E1">return</font>(0);
+<a name="line375">375: </a>}
+
+<a name="line380">380: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Sqrt.html#Sqrt">Sqrt</A>(){ 
+<a name="line381">381: </a>  int info;
+<a name="line383">383: </a>  info=VecSqrt(pv);  CHKERRQ(info);
+<a name="line384">384: </a>  <font color="#4169E1">return</font>(0);
+<a name="line385">385: </a>}
+
+<a name="line390">390: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Pow.html#Pow">Pow</A>(double p){ 
+<a name="line391">391: </a>  int info;
+<a name="line393">393: </a>  info=VecPow(pv, p);  CHKERRQ(info);
+<a name="line394">394: </a>  <font color="#4169E1">return</font>(0);
+<a name="line395">395: </a>}
+
+<a name="line399">399: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(TaoInt *n){
+<a name="line400">400: </a>  int info;
+<a name="line402">402: </a>  info=VecGetSize(pv,n);  CHKERRQ(info);
+<a name="line403">403: </a>  <font color="#4169E1">return</font>(0);
+<a name="line404">404: </a>}
+
+<a name="line408">408: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(TaoVec *tv, TaoVec *tw)
+<a name="line409">409: </a>{
+<a name="line410">410: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line411">411: </a>  TaoVecPetsc *mw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line412">412: </a>  int info;
+<a name="line414">414: </a>  info=VecPointwiseMult(pv, mv-&gt;pv, mw-&gt;pv);  CHKERRQ(info);
+<a name="line415">415: </a>  <font color="#4169E1">return</font>(0);
+<a name="line416">416: </a>}
+
+
+<a name="line421">421: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>( TaoVec* tv , TaoVec* tw)
+<a name="line422">422: </a>{
+<a name="line423">423: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line424">424: </a>  TaoVecPetsc *mw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line425">425: </a>  int info;
+<a name="line427">427: </a>  info=VecPointwiseDivide(pv, mv-&gt;pv, mw-&gt;pv);  CHKERRQ(info);
+<a name="line428">428: </a>  <font color="#4169E1">return</font>(0);
+<a name="line429">429: </a>}
+
+<a name="line433">433: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Median.html#Median">Median</A>( TaoVec* tv, TaoVec* tw, TaoVec* tx)
+<a name="line434">434: </a>{
+<a name="line435">435: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line436">436: </a>  TaoVecPetsc *mw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line437">437: </a>  TaoVecPetsc *mx = dynamic_cast &lt;TaoVecPetsc *&gt; (tx);
+<a name="line438">438: </a>  int info;
+<a name="line440">440: </a>  info=PetscLogEventBegin(petscminmaxevent,0,0,0,0); CHKERRQ(info);
+<a name="line441">441: </a>  info=VecMedian(mv-&gt;pv,mw-&gt;pv,mx-&gt;pv,pv); CHKERRQ(info);
+<a name="line442">442: </a>  info=PetscLogEventEnd(petscminmaxevent,0,0,0,0); CHKERRQ(info);
+<a name="line443">443: </a>  <font color="#4169E1">return</font>(0);
+<a name="line444">444: </a>}
+
+<a name="line448">448: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A>( TaoVec* tv, TaoVec* tw)
+<a name="line449">449: </a>{
+<a name="line450">450: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line451">451: </a>  TaoVecPetsc *mw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line452">452: </a>  int info;
+<a name="line454">454: </a>  info=PetscLogEventBegin(petscminmaxevent,0,0,0,0); CHKERRQ(info);
+<a name="line455">455: </a>  info=VecPointwiseMin(pv, mv-&gt;pv, mw-&gt;pv); CHKERRQ(info);
+<a name="line456">456: </a>  info=PetscLogEventEnd(petscminmaxevent,0,0,0,0); CHKERRQ(info);
+<a name="line457">457: </a>  <font color="#4169E1">return</font>(0);
+<a name="line458">458: </a>}
+
+<a name="line462">462: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(TaoVec *tx, TaoVec *tf, TaoVec *tl, TaoVec *tu) 
+<a name="line463">463: </a>{
+<a name="line464">464: </a>  TaoVecPetsc *xx = dynamic_cast &lt;TaoVecPetsc *&gt; (tx);
+<a name="line465">465: </a>  TaoVecPetsc *ff = dynamic_cast &lt;TaoVecPetsc *&gt; (tf);
+<a name="line466">466: </a>  TaoVecPetsc *ll = dynamic_cast &lt;TaoVecPetsc *&gt; (tl);
+<a name="line467">467: </a>  TaoVecPetsc *uu = dynamic_cast &lt;TaoVecPetsc *&gt; (tu);
+<a name="line468">468: </a>  int info;
+
+<a name="line471">471: </a>  info=VecFischer(xx-&gt;pv, ff-&gt;pv, ll-&gt;pv, uu-&gt;pv, pv); CHKERRQ(info);
+<a name="line472">472: </a>  <font color="#4169E1">return</font>(0);
+<a name="line473">473: </a>}
+
+<a name="line477">477: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/SFischer.html#SFischer">SFischer</A>(TaoVec *tx, TaoVec *tf,
+<a name="line478">478: </a>                          TaoVec *tl, TaoVec *tu, double mu)
+<a name="line479">479: </a>{
+<a name="line480">480: </a>  TaoVecPetsc *xx = dynamic_cast &lt;TaoVecPetsc *&gt; (tx);
+<a name="line481">481: </a>  TaoVecPetsc *ff = dynamic_cast &lt;TaoVecPetsc *&gt; (tf);
+<a name="line482">482: </a>  TaoVecPetsc *ll = dynamic_cast &lt;TaoVecPetsc *&gt; (tl);
+<a name="line483">483: </a>  TaoVecPetsc *uu = dynamic_cast &lt;TaoVecPetsc *&gt; (tu);
+<a name="line484">484: </a>  int info;
+
+<a name="line487">487: </a>  <font color="#4169E1">if</font> ((mu &gt;= -TAO_EPSILON) &amp;&amp; (mu &lt;= TAO_EPSILON)) {
+<a name="line488">488: </a>    <A href="../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(tx, tf, tl, tu);
+<a name="line489">489: </a>  }
+<a name="line490">490: </a>  <font color="#4169E1">else</font> {
+<a name="line491">491: </a>    info=VecSFischer(xx-&gt;pv, ff-&gt;pv, ll-&gt;pv, uu-&gt;pv, mu, pv); CHKERRQ(info);
+<a name="line492">492: </a>  }
+<a name="line493">493: </a>  <font color="#4169E1">return</font>(0);
+<a name="line494">494: </a>}
+
+<a name="line498">498: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>( TaoVec* tv, TaoVec* tw)
+<a name="line499">499: </a>{
+<a name="line500">500: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line501">501: </a>  TaoVecPetsc *mw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line502">502: </a>  int info;
+<a name="line504">504: </a>  info=PetscLogEventBegin(petscminmaxevent,0,0,0,0); CHKERRQ(info);
+<a name="line505">505: </a>  info=VecPointwiseMax(pv, mv-&gt;pv, mw-&gt;pv);  CHKERRQ(info);
+<a name="line506">506: </a>  info=PetscLogEventEnd(petscminmaxevent,0,0,0,0); CHKERRQ(info);
+<a name="line507">507: </a>  <font color="#4169E1">return</font>(0); 
+<a name="line508">508: </a>}
+
+
+<a name="line513">513: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>  ( double aa, TaoVec* tv, double bb, TaoVec* tw)
+<a name="line514">514: </a>{
+<a name="line515">515: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line516">516: </a>  TaoVecPetsc *mw = dynamic_cast &lt;TaoVecPetsc *&gt; (tw);
+<a name="line517">517: </a>  int info;
+<a name="line518">518: </a>  PetscScalar a=aa, b=bb, zero=0.0;
+
+<a name="line521">521: </a>  <font color="#4169E1">if</font> (a==1){
+<a name="line522">522: </a>    info = VecWAXPY(pv,b,mw-&gt;pv,mv-&gt;pv); CHKERRQ(info);
+<a name="line523">523: </a>  } 
+<a name="line524">524: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (b==1) {
+<a name="line525">525: </a>    info = VecWAXPY(pv,a,mv-&gt;pv,mw-&gt;pv); CHKERRQ(info);
+<a name="line526">526: </a>  } 
+<a name="line527">527: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (a==0) {
+<a name="line528">528: </a>    info = VecSet(pv, zero); CHKERRQ(info);
+<a name="line529">529: </a>    info = VecAXPY(pv, b, mw-&gt;pv); CHKERRQ(info);
+<a name="line530">530: </a>  } 
+<a name="line531">531: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (b==0) {
+<a name="line532">532: </a>    info = VecSet(pv, zero); CHKERRQ(info);
+<a name="line533">533: </a>    info = VecAXPY(pv, a, mv-&gt;pv); CHKERRQ(info);
+<a name="line534">534: </a>  } 
+<a name="line535">535: </a>  <font color="#4169E1">else</font> {    
+<a name="line536">536: </a>    info = VecCopy(mw-&gt;pv,pv); CHKERRQ(info);
+<a name="line537">537: </a>    info = VecAXPBY(pv,a,b,mv-&gt;pv); CHKERRQ(info);
+<a name="line538">538: </a>  }
+<a name="line539">539: </a>  <font color="#4169E1">return</font>(0);
+<a name="line540">540: </a>}
+
+<a name="line544">544: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>(){
+<a name="line545">545: </a>  int info;
+<a name="line547">547: </a>  info=VecAbs(pv);  CHKERRQ(info);
+<a name="line548">548: </a>  <font color="#4169E1">return</font>(0);
+<a name="line549">549: </a>}
+
+<a name="line553">553: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/MinElement.html#MinElement">MinElement</A>(double*val){
+<a name="line554">554: </a>  int info;
+<a name="line555">555: </a>  PetscInt p;
+<a name="line556">556: </a>  PetscScalar a;
+<a name="line558">558: </a>  info = VecMin(pv,&amp;p, &amp;a);CHKERRQ(info);
+<a name="line559">559: </a>  *val=a;
+<a name="line560">560: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line561">561: </a>}
+
+
+<a name="line566">566: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>(TaoScalar **dptr, TaoInt *n){
+<a name="line567">567: </a>  int info;
+<a name="line568">568: </a>  PetscScalar *pptr;
+<a name="line570">570: </a>  <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(TaoScalar)==<font color="#4169E1">sizeof</font>(PetscScalar)){
+<a name="line571">571: </a>    info = VecGetLocalSize(pv,n);CHKERRQ(info);
+<a name="line572">572: </a>    info = VecGetArray(pv,&amp;pptr);CHKERRQ(info);
+<a name="line573">573: </a>    *dptr=(TaoScalar*)pptr;
+<a name="line574">574: </a>  } <font color="#4169E1">else</font> {
+<a name="line575">575: </a>    SETERRQ(1,<font color="#666666">"Incompatible data types"</font>);
+<a name="line576">576: </a>  }
+<a name="line577">577: </a>  <font color="#4169E1">return</font>(0);
+<a name="line578">578: </a>}
+
+<a name="line582">582: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>(TaoScalar **dptr,TaoInt *n){
+<a name="line583">583: </a>  int info;
+<a name="line584">584: </a>  PetscScalar *pptr;
+<a name="line586">586: </a>  <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(TaoScalar)==<font color="#4169E1">sizeof</font>(PetscScalar)){
+<a name="line587">587: </a>    pptr=(PetscScalar*)(*dptr);
+<a name="line588">588: </a>    info = VecRestoreArray(pv,&amp;pptr); CHKERRQ(info);
+<a name="line589">589: </a>    *dptr=PETSC_NULL;
+<a name="line590">590: </a>    *n=0;
+<a name="line591">591: </a>  } <font color="#4169E1">else</font> {
+<a name="line592">592: </a>    SETERRQ(1,<font color="#666666">"Incompatible data types"</font>);
+<a name="line593">593: </a>  }
+<a name="line594">594: </a>  <font color="#4169E1">return</font>(0);
+<a name="line595">595: </a>}
+
+
+<a name="line600">600: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(TaoVec *tv, TaoIndexSet *ti)
+<a name="line601">601: </a>{
+<a name="line602">602: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line603">603: </a>  TaoIndexSetPetsc *TSS = dynamic_cast &lt;TaoIndexSetPetsc *&gt; (ti);
+
+<a name="line605">605: </a>  int info;
+<a name="line606">606: </a>  PetscInt nn,nnn;
+<a name="line607">607: </a>  TaoPetscISType type;
+
+<a name="line610">610: </a>  info = TSS-&gt;<A href="../../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(&amp;nn); CHKERRQ(info); 
+<a name="line611">611: </a>  info = TSS-&gt;GetReducedType(&amp;type); CHKERRQ(info);
+<a name="line612">612: </a>  info = mv-&gt;<A href="../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(&amp;nnn); CHKERRQ(info); 
+<a name="line613">613: </a>  <font color="#4169E1">if</font> (type==TaoMaskFullSpace){
+<a name="line614">614: </a>  } 
+<a name="line615">615: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (type==TaoMatrixFree){
+<a name="line616">616: </a>    info = VecCopy(mv-&gt;pv,pv); CHKERRQ(info);
+<a name="line617">617: </a>    info = <A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(TSS-&gt;GetIS(),0.0,pv);CHKERRQ(info);
+<a name="line618">618: </a>  } 
+
+<a name="line620">620: </a>  info=<A href="../../../docs/manualpages/vector/ReducedCopyFromFull.html#ReducedCopyFromFull">ReducedCopyFromFull</A>(mv,TSS);CHKERRQ(info);
+
+<a name="line622">622: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line623">623: </a>}
+
+<a name="line627">627: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A>(TaoVec *tv, TaoIndexSet *ti)
+<a name="line628">628: </a>{
+<a name="line629">629: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line630">630: </a>  TaoIndexSetPetsc *TSS = dynamic_cast &lt;TaoIndexSetPetsc *&gt; (ti);
+
+<a name="line632">632: </a>  VecScatter scatterit;
+<a name="line633">633: </a>  int info;
+
+
+<a name="line637">637: </a>  info = TSS-&gt;GetReducedVecScatter(mv-&gt;pv,pv, &amp;scatterit);CHKERRQ(info); 
+<a name="line638">638: </a>  
+<a name="line639">639: </a>  info = VecScatterBegin(scatterit,mv-&gt;pv,pv,ADD_VALUES,SCATTER_REVERSE);
+<a name="line640">640: </a>  CHKERRQ(info); 
+<a name="line641">641: </a>  info = VecScatterEnd(scatterit,mv-&gt;pv,pv,ADD_VALUES,SCATTER_REVERSE);
+<a name="line642">642: </a>  CHKERRQ(info);
+
+<a name="line644">644: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line645">645: </a>}
+
+<a name="line649">649: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/ReducedCopyFromFull.html#ReducedCopyFromFull">ReducedCopyFromFull</A>(TaoVec *tv, TaoIndexSet *ti)
+<a name="line650">650: </a>{
+<a name="line651">651: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line652">652: </a>  TaoIndexSetPetsc *TSS = dynamic_cast &lt;TaoIndexSetPetsc *&gt; (ti);
+
+<a name="line654">654: </a>  int info;
+<a name="line655">655: </a>  PetscScalar zero=0.0;
+<a name="line656">656: </a>  VecScatter scatterit;
+
+
+<a name="line660">660: </a>  info = VecSet(pv, zero); CHKERRQ(info); 
+<a name="line661">661: </a>  info = TSS-&gt;GetReducedVecScatter(mv-&gt;pv,pv, &amp;scatterit);CHKERRQ(info); 
+<a name="line662">662: </a>  info = VecScatterBegin(scatterit,mv-&gt;pv,pv,INSERT_VALUES,SCATTER_FORWARD);
+<a name="line663">663: </a>  CHKERRQ(info); 
+<a name="line664">664: </a>  info = VecScatterEnd(scatterit,mv-&gt;pv,pv,INSERT_VALUES,SCATTER_FORWARD);
+<a name="line665">665: </a>  CHKERRQ(info);
+
+<a name="line667">667: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line668">668: </a>}
+
+
+
+<a name="line674">674: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>(TaoVec *tv, double *step)
+<a name="line675">675: </a>{
+<a name="line676">676: </a>  TaoVecPetsc *mv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+<a name="line677">677: </a>  PetscReal pstep;
+<a name="line678">678: </a>  int info;
+<a name="line680">680: </a>  info = VecStepMax(pv, mv-&gt;pv, &amp;pstep);CHKERRQ(info);
+<a name="line681">681: </a>  *step=pstep;
+<a name="line682">682: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line683">683: </a>}
+
+<a name="line687">687: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/StepBoundInfo.html#StepBoundInfo">StepBoundInfo</A>(TaoVec *txl ,TaoVec *txu, TaoVec *ts, 
+<a name="line688">688: </a>                               double *bmin1, double *bmin2, double *bmax)
+<a name="line689">689: </a>{
+<a name="line690">690: </a>  TaoVecPetsc *mxl = dynamic_cast &lt;TaoVecPetsc *&gt; (txl);
+<a name="line691">691: </a>  TaoVecPetsc *mxu = dynamic_cast &lt;TaoVecPetsc *&gt; (txu);
+<a name="line692">692: </a>  TaoVecPetsc *ms = dynamic_cast &lt;TaoVecPetsc *&gt; (ts);
+
+<a name="line694">694: </a>  int info;
+<a name="line695">695: </a>  PetscReal p1,p2,p3;
+<a name="line697">697: </a>  info=VecBoundStepInfo(pv,mxl-&gt;pv,mxu-&gt;pv,ms-&gt;pv,&amp;p1,&amp;p2,&amp;p3); CHKERRQ(info);
+<a name="line698">698: </a>  *bmin1=p1; *bmin2=p2; *bmax=p3;
+<a name="line699">699: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line700">700: </a>}
+
+<a name="line704">704: </a><font color="#B22222">/*@C</font>
+<a name="line705">705: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/SetPetscViewer.html#SetPetscViewer">SetPetscViewer</A></font>
+
+<a name="line707">707: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line708">708: </a><font color="#B22222">.  viewer - a viewer object to be used with <A href="../../../docs/manualpages/lsolver/View.html#View">View</A>() and VecView()</font>
+
+<a name="line710">710: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line712">712: </a><font color="#B22222">@*/</font>
+<a name="line713">713: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/ptaopages/SetPetscViewer.html#SetPetscViewer">SetPetscViewer</A>(PetscViewer viewer)
+<a name="line714">714: </a>{
+<a name="line716">716: </a>  pvecviewer= viewer;
+<a name="line717">717: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line718">718: </a>}
+
+
+<a name="line723">723: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/lsolver/View.html#View">View</A>()
+<a name="line724">724: </a>{
+<a name="line725">725: </a>  int info;
+<a name="line727">727: </a>  info=VecView(pv,pvecviewer);CHKERRQ(info);
+<a name="line728">728: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line729">729: </a>}
+
+<a name="line733">733: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(TaoVec *tg, TaoVec *txl, 
+<a name="line734">734: </a>                                         TaoVec *tx, TaoVec *txu)
+<a name="line735">735: </a>{
+<a name="line736">736: </a>  TaoVecPetsc *mg = dynamic_cast &lt;TaoVecPetsc *&gt; (tg);
+<a name="line737">737: </a>  TaoVecPetsc *mx = dynamic_cast &lt;TaoVecPetsc *&gt; (tx);
+<a name="line738">738: </a>  TaoVecPetsc *mxl = dynamic_cast &lt;TaoVecPetsc *&gt; (txl);
+<a name="line739">739: </a>  TaoVecPetsc *mxu = dynamic_cast &lt;TaoVecPetsc *&gt; (txu);
+<a name="line740">740: </a>  int info;
+<a name="line742">742: </a>  info = PetscLogEventBegin(petscminmaxevent,0,0,0,0);CHKERRQ(info);
+<a name="line743">743: </a>  info = VecBoundProjection(mg-&gt;pv,mx-&gt;pv,mxl-&gt;pv,mxu-&gt;pv,pv);CHKERRQ(info);
+<a name="line744">744: </a>  info = PetscLogEventEnd(petscminmaxevent,0,0,0,0);CHKERRQ(info);
+<a name="line745">745: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line746">746: </a>}
+
+<a name="line750">750: </a>int TaoVecPetsc::<A href="../../../docs/manualpages/vector/CreateIndexSet.html#CreateIndexSet">CreateIndexSet</A>(TaoIndexSet**SSS)
+<a name="line751">751: </a>{
+<a name="line752">752: </a>  TaoIndexSetPetsc *SS;
+
+<a name="line755">755: </a>  SS = new TaoIndexSetPetsc(pv);
+<a name="line756">756: </a>  *SSS=SS;
+<a name="line757">757: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line758">758: </a>}
+
+
+<a name="line761">761: </a><font color="#A020F0">#endif</font>
+
+
+
+
+
+</pre>
+</body>
+
+</html>

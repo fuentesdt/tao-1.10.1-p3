@@ -1,0 +1,194 @@
+<center><a href="nls.h">Actual source code: nls.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:10+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a>// Context <font color="#4169E1">for</font> a Newton line search method (unconstrained minimization)
+
+<a name="line5">  5: </a><font color="#A020F0">#ifndef __TAO_NLS_H</font>
+<a name="line7">  7: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+<a name="line8">  8: </a><font color="#A020F0">#include </font><font color="#666666">"src/matrix/lmvmmat.h"</font><font color="#A020F0"></font>
+
+<a name="line10"> 10: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line11"> 11: </a>  TaoLMVMMat *M;
+
+<a name="line13"> 13: </a>  TaoVec *G;
+<a name="line14"> 14: </a>  TaoVec *D;
+<a name="line15"> 15: </a>  TaoVec *W;
+
+<a name="line17"> 17: </a>  TaoVec *Xold;
+<a name="line18"> 18: </a>  TaoVec *Gold;
+<a name="line19"> 19: </a>  TaoVec *Diag;
+
+<a name="line21"> 21: </a>  // Parameters when updating the perturbation added to the Hessian matrix
+<a name="line22"> 22: </a>  double sval;          // Starting perturbation value, <font color="#4169E1">default</font> zero
+<a name="line23"> 23: </a>                        
+<a name="line24"> 24: </a>  double imin;          // Minimum perturbation added during initialization 
+<a name="line25"> 25: </a>  double imax;          // Maximum perturbation added during initialization
+<a name="line26"> 26: </a>  double imfac;         // Merit function factor during initialization
+
+<a name="line28"> 28: </a>  double pmin;          // Minimim perturbation value
+<a name="line29"> 29: </a>  double pmax;          // Maximum perturbation value
+<a name="line30"> 30: </a>  double pgfac;         // Perturbation growth factor
+<a name="line31"> 31: </a>  double psfac;         // Perturbation shrink factor
+<a name="line32"> 32: </a>  double pmgfac;        // Merit function growth factor
+<a name="line33"> 33: </a>  double pmsfac;        // Merit function shrink factor
+
+<a name="line35"> 35: </a>  // The perturbation to the Hessian matrix is initialized and updated
+<a name="line36"> 36: </a>  // according to the following scheme:
+<a name="line37"> 37: </a>  //
+<a name="line38"> 38: </a>  //   pert = sval;
+<a name="line39"> 39: </a>  //
+<a name="line40"> 40: </a>  //   <font color="#4169E1">do</font> until convergence
+<a name="line41"> 41: </a>  //     shift Hessian by pert
+<a name="line42"> 42: </a>  //     solve Newton system
+<a name="line43"> 43: </a>  //
+<a name="line44"> 44: </a>  //     <font color="#4169E1">if</font> (linear solver failed or did not compute a descent direction)
+<a name="line45"> 45: </a>  //       use steepest descent direction and increase perturbation
+<a name="line46"> 46: </a>  //
+<a name="line47"> 47: </a>  //       <font color="#4169E1">if</font> (0 == pert)
+<a name="line48"> 48: </a>  //         initialize perturbation
+<a name="line49"> 49: </a>  //         pert = min(imax, max(imin, imfac * norm(G)))
+<a name="line50"> 50: </a>  //       <font color="#4169E1">else</font>
+<a name="line51"> 51: </a>  //         increase perturbation
+<a name="line52"> 52: </a>  //         pert = min(pmax, max(pgfac * pert, pmgfac * norm(G)))
+<a name="line53"> 53: </a>  //       fi
+<a name="line54"> 54: </a>  //     <font color="#4169E1">else</font>
+<a name="line55"> 55: </a>  //       use linear solver direction and decrease perturbation
+<a name="line56"> 56: </a>  //
+<a name="line57"> 57: </a>  //       pert = min(psfac * pert, pmsfac * norm(G))
+<a name="line58"> 58: </a>  //       <font color="#4169E1">if</font> (pert &lt; pmin)
+<a name="line59"> 59: </a>  //         pert = 0
+<a name="line60"> 60: </a>  //       fi
+<a name="line61"> 61: </a>  //     fi
+<a name="line62"> 62: </a>  //
+<a name="line63"> 63: </a>  //     perform line search
+<a name="line64"> 64: </a>  //     function and gradient evaluation
+<a name="line65"> 65: </a>  //     check convergence
+<a name="line66"> 66: </a>  //   od
+
+<a name="line68"> 68: </a>  // Parameters when updating the trust-region radius based on steplength
+<a name="line69"> 69: </a>  double nu1;                // used to compute trust-region radius
+<a name="line70"> 70: </a>  double nu2;                // used to compute trust-region radius
+<a name="line71"> 71: </a>  double nu3;                // used to compute trust-region radius
+<a name="line72"> 72: </a>  double nu4;                // used to compute trust-region radius
+
+<a name="line74"> 74: </a>  double omega1;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line75"> 75: </a>  double omega2;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line76"> 76: </a>  double omega3;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line77"> 77: </a>  double omega4;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line78"> 78: </a>  double omega5;        // factor used <font color="#4169E1">for</font> trust-region update
+
+<a name="line80"> 80: </a>  // <font color="#4169E1">if</font>   step &lt; nu1                  (very bad step)
+<a name="line81"> 81: </a>  //   radius = omega1 * min(norm(d), radius)
+<a name="line82"> 82: </a>  // elif step &lt; nu2                (bad step)
+<a name="line83"> 83: </a>  //   radius = omega2 * min(norm(d), radius)
+<a name="line84"> 84: </a>  // elif step &lt; nu3                (okay step)
+<a name="line85"> 85: </a>  //   radius = omega3 * radius;
+<a name="line86"> 86: </a>  // elif step &lt; nu4                (good step)
+<a name="line87"> 87: </a>  //   radius = max(omega4 * norm(d), radius)
+<a name="line88"> 88: </a>  // <font color="#4169E1">else</font>                         (very good step)
+<a name="line89"> 89: </a>  //   radius = max(omega5 * norm(d), radius)
+<a name="line90"> 90: </a>  // fi
+<a name="line91"> 91: </a> 
+<a name="line92"> 92: </a>  // Parameters when updating the trust-region radius based on reduction
+<a name="line93"> 93: </a>  double eta1;                // used to compute trust-region radius
+<a name="line94"> 94: </a>  double eta2;                // used to compute trust-region radius
+<a name="line95"> 95: </a>  double eta3;                // used to compute trust-region radius
+<a name="line96"> 96: </a>  double eta4;                // used to compute trust-region radius
+
+<a name="line98"> 98: </a>  double alpha1;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line99"> 99: </a>  double alpha2;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line100">100: </a>  double alpha3;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line101">101: </a>  double alpha4;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line102">102: </a>  double alpha5;        // factor used <font color="#4169E1">for</font> trust-region update
+
+<a name="line104">104: </a>  // kappa = ared / pred
+<a name="line105">105: </a>  // <font color="#4169E1">if</font>   kappa &lt; eta1                 (very bad step)
+<a name="line106">106: </a>  //   radius = alpha1 * min(norm(d), radius)
+<a name="line107">107: </a>  // elif kappa &lt; eta2                (bad step)
+<a name="line108">108: </a>  //   radius = alpha2 * min(norm(d), radius)
+<a name="line109">109: </a>  // elif kappa &lt; eta3                (okay step)
+<a name="line110">110: </a>  //   radius = alpha3 * radius;
+<a name="line111">111: </a>  // elif kappa &lt; eta4                (good step)
+<a name="line112">112: </a>  //   radius = max(alpha4 * norm(d), radius)
+<a name="line113">113: </a>  // <font color="#4169E1">else</font>                         (very good step)
+<a name="line114">114: </a>  //   radius = max(alpha5 * norm(d), radius)
+<a name="line115">115: </a>  // fi
+<a name="line116">116: </a> 
+<a name="line117">117: </a>  // Parameters when updating the trust-region radius based on interpolation
+<a name="line118">118: </a>  double mu1;                // used <font color="#4169E1">for</font> model agreement in interpolation
+<a name="line119">119: </a>  double mu2;                // used <font color="#4169E1">for</font> model agreement in interpolation
+
+<a name="line121">121: </a>  double gamma1;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line122">122: </a>  double gamma2;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line123">123: </a>  double gamma3;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line124">124: </a>  double gamma4;        // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line126">126: </a>  double theta;                // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line128">128: </a>  // kappa = ared / pred
+<a name="line129">129: </a>  // <font color="#4169E1">if</font>   kappa &gt;= 1.0 - mu1        (very good step)
+<a name="line130">130: </a>  //   choose tau in [gamma3, gamma4]
+<a name="line131">131: </a>  //   radius = max(tau * norm(d), radius)
+<a name="line132">132: </a>  // elif kappa &gt;= 1.0 - mu2    (good step)
+<a name="line133">133: </a>  //   choose tau in [gamma2, gamma3]
+<a name="line134">134: </a>  //   <font color="#4169E1">if</font> (tau &gt;= 1.0)
+<a name="line135">135: </a>  //     radius = max(tau * norm(d), radius)
+<a name="line136">136: </a>  //   <font color="#4169E1">else</font>
+<a name="line137">137: </a>  //     radius = tau * min(norm(d), radius)
+<a name="line138">138: </a>  //   fi
+<a name="line139">139: </a>  // <font color="#4169E1">else</font>                         (bad step)
+<a name="line140">140: </a>  //   choose tau in [gamma1, 1.0]
+<a name="line141">141: </a>  //   radius = tau * min(norm(d), radius)
+<a name="line142">142: </a>  // fi
+<a name="line143">143: </a> 
+<a name="line144">144: </a>  // Parameters when initializing trust-region radius based on interpolation
+<a name="line145">145: </a>  double mu1_i;                // used <font color="#4169E1">for</font> model agreement in interpolation
+<a name="line146">146: </a>  double mu2_i;                // used <font color="#4169E1">for</font> model agreement in interpolation
+
+<a name="line148">148: </a>  double gamma1_i;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line149">149: </a>  double gamma2_i;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line150">150: </a>  double gamma3_i;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line151">151: </a>  double gamma4_i;        // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line153">153: </a>  double theta_i;        // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line155">155: </a>  // Other parameters
+<a name="line156">156: </a>  double min_radius;    // lower bound on initial radius value
+<a name="line157">157: </a>  double max_radius;    // upper bound on trust region radius
+<a name="line158">158: </a>  double epsilon;       // tolerance used when computing ared/pred
+
+<a name="line160">160: </a>  TaoInt newt;                // Newton directions attempted
+<a name="line161">161: </a>  TaoInt bfgs;                // BFGS directions attempted
+<a name="line162">162: </a>  TaoInt sgrad;                // Scaled gradient directions attempted
+<a name="line163">163: </a>  TaoInt grad;                // Gradient directions attempted
+
+
+<a name="line166">166: </a>  TaoInt ksp_type;                // KSP method <font color="#4169E1">for</font> the code
+<a name="line167">167: </a>  TaoInt pc_type;                // Preconditioner <font color="#4169E1">for</font> the code
+<a name="line168">168: </a>  TaoInt bfgs_scale_type;        // Scaling matrix to used <font color="#4169E1">for</font> the bfgs preconditioner
+<a name="line169">169: </a>  TaoInt init_type;        // Trust-region initialization method
+<a name="line170">170: </a>  TaoInt update_type;      // Trust-region update method
+
+<a name="line172">172: </a>  TaoInt ksp_atol;
+<a name="line173">173: </a>  TaoInt ksp_rtol;
+<a name="line174">174: </a>  TaoInt ksp_ctol;
+<a name="line175">175: </a>  TaoInt ksp_negc;
+<a name="line176">176: </a>  TaoInt ksp_dtol;
+<a name="line177">177: </a>  TaoInt ksp_iter;
+<a name="line178">178: </a>  TaoInt ksp_othr;
+<a name="line179">179: </a>} TAO_NLS;
+
+<a name="line181">181: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,628 @@
+<center><a href="taoapp_ga.c">Actual source code: taoapp_ga.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a>//File: taoapp_ga.c
+
+<a name="line3">  3: </a><font color="#B22222">/**************************************************************</font>
+
+<a name="line5">  5: </a><font color="#B22222">Author: Limin Zhang, Ph.D.</font>
+<a name="line6">  6: </a><font color="#B22222">        Mathematics Department</font>
+<a name="line7">  7: </a><font color="#B22222">        Columbia Basin College</font>
+<a name="line8">  8: </a><font color="#B22222">        Pasco, WA 99301</font>
+<a name="line9">  9: </a><font color="#B22222">        Limin.Zhang@cbc2.org</font>
+
+<a name="line11"> 11: </a><font color="#B22222">Mentor: Jarek Naplocha, Ph.D.</font>
+<a name="line12"> 12: </a><font color="#B22222">        Environmental Molecular Science Laboratory</font>
+<a name="line13"> 13: </a><font color="#B22222">        Pacific Northwest National Laboratory</font>
+<a name="line14"> 14: </a><font color="#B22222">        Richland, WA 99352</font>
+
+<a name="line16"> 16: </a><font color="#B22222">Date: 7/22/2002</font>
+
+<a name="line18"> 18: </a><font color="#B22222">Purpose:</font>
+<a name="line19"> 19: </a><font color="#B22222">      to design and implement an application interface between TAO and global arrays.</font>
+<a name="line20"> 20: </a><font color="#B22222">**************************************************************/</font>
+
+<a name="line22"> 22: </a><font color="#A020F0">#include </font><font color="#666666">"taoapp_ga.h"</font><font color="#A020F0">         </font><font color="#B22222">/*I "taoapp_ga.h" I*/</font><font color="#A020F0"></font>
+
+
+
+
+<a name="line29"> 29: </a><strong><font color="#FF0000">TaoGAApplication:</font></strong>:TaoGAApplication(MPI_Comm mpicomm){
+
+<a name="line31"> 31: </a>  this-&gt;comm=mpicomm;
+<a name="line32"> 32: </a>  this-&gt;taox=0;
+<a name="line33"> 33: </a>  this-&gt;V = 0;
+<a name="line34"> 34: </a>  this-&gt;usrfctx=0; 
+<a name="line35"> 35: </a>  this-&gt;usrgctx=0; 
+<a name="line36"> 36: </a>  this-&gt;usrfgctx=0; 
+<a name="line37"> 37: </a>  this-&gt;HesMat=0; 
+<a name="line38"> 38: </a>  this-&gt;taoh=0;
+<a name="line39"> 39: </a>  this-&gt;usrhctx=0;
+<a name="line40"> 40: </a>  this-&gt;numbermonitors = 0;
+
+<a name="line42"> 42: </a>  this-&gt;computeumfunction=0; 
+<a name="line43"> 43: </a>  this-&gt;computegradient=0;
+<a name="line44"> 44: </a>  this-&gt;computefunctiongradient=0; 
+<a name="line45"> 45: </a>  this-&gt;computehessian=0;
+<a name="line46"> 46: </a>  this-&gt;computebounds=0;
+<a name="line47"> 47: </a>  <font color="#4169E1">for</font> (int i=0;i&lt;MAX_TAO_MONITORS;i++) {
+<a name="line48"> 48: </a>    this-&gt;monitor[i] = 0;
+<a name="line49"> 49: </a>    this-&gt;monitorcontext[i] = 0;
+<a name="line50"> 50: </a>  }
+
+<a name="line52"> 52: </a>  <font color="#4169E1">return</font>;
+<a name="line53"> 53: </a>}
+
+<a name="line57"> 57: </a><strong><font color="#FF0000">TaoGAApplication:</font></strong>:~TaoGAApplication(){
+<a name="line58"> 58: </a>  <font color="#4169E1">return</font>;
+<a name="line59"> 59: </a>}
+
+<a name="line63"> 63: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **xx){
+<a name="line64"> 64: </a>  int info;
+<a name="line65"> 65: </a>  TaoFunctionBegin;
+<a name="line66"> 66: </a>  <font color="#4169E1">if</font> (this-&gt;V == 0) {
+<a name="line67"> 67: </a>    SETERRQ(1,<font color="#666666">"Variable vector is not set. Did you call <A href="../../../docs/manualpages/gaapp/TaoGAAppSetInitialSolutionVec.html#TaoGAAppSetInitialSolutionVec">TaoGAAppSetInitialSolutionVec</A>?"</font>);
+<a name="line68"> 68: </a>  }
+<a name="line69"> 69: </a>  <font color="#4169E1">if</font> (this-&gt;taox == 0) {
+<a name="line70"> 70: </a>    info = <A href="../../../docs/manualpages/gaapp/TaoWrapGaVec.html#TaoWrapGaVec">TaoWrapGaVec</A>(this-&gt;V,&amp;this-&gt;taox);
+<a name="line71"> 71: </a>  }
+<a name="line72"> 72: </a>  *xx= this-&gt;taox;
+<a name="line73"> 73: </a>  TaoFunctionReturn(0);
+<a name="line74"> 74: </a>}
+
+<a name="line78"> 78: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/GetHessianMatrix.html#GetHessianMatrix">GetHessianMatrix</A>(TaoMat **HH){
+<a name="line79"> 79: </a>  TaoFunctionBegin;
+<a name="line80"> 80: </a>  *HH = this-&gt;taoh;
+<a name="line81"> 81: </a>  TaoFunctionReturn(0);
+<a name="line82"> 82: </a>}
+
+<a name="line86"> 86: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *xxll, TaoVec *xxuu) {
+<a name="line87"> 87: </a>  int info;
+<a name="line88"> 88: </a>  GAVec XL=0, XU=0;
+<a name="line89"> 89: </a>  TaoFunctionBegin;
+<a name="line90"> 90: </a>  <font color="#4169E1">if</font> (this-&gt;computebounds) {
+<a name="line91"> 91: </a>    info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(xxll, &amp;XL); CHKERRQ(info);
+<a name="line92"> 92: </a>    info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(xxuu, &amp;XU); CHKERRQ(info);
+<a name="line93"> 93: </a>    info = (*this-&gt;computebounds)(this, XL, XU, this-&gt;usrvbctx); CHKERRQ(info);
+<a name="line94"> 94: </a>  } 
+<a name="line95"> 95: </a>  TaoFunctionReturn(0);
+<a name="line96"> 96: </a>}
+
+
+<a name="line101">101: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(TaoVec *xx, double *ff){
+<a name="line102">102: </a>  int     info;
+<a name="line103">103: </a>  GAVec X = 0;
+<a name="line104">104: </a>  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(xx, &amp;X);
+<a name="line105">105: </a>  GAVec G;
+<a name="line106">106: </a>  TaoVec *gg;
+<a name="line107">107: </a>  
+<a name="line108">108: </a>  TaoFunctionBegin;
+
+<a name="line110">110: </a>  <font color="#4169E1">if</font> (this-&gt;computeumfunction){
+<a name="line111">111: </a>    info = (*this-&gt;computeumfunction)(this,X,ff,this-&gt;usrfctx); CHKERRQ(info);
+<a name="line112">112: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (this-&gt;computefunctiongradient) {
+<a name="line113">113: </a>    info = xx-&gt;<A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;gg); CHKERRQ(info);
+<a name="line114">114: </a>    info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(gg, &amp;G); CHKERRQ(info);
+<a name="line115">115: </a>    info = (*this-&gt;computefunctiongradient)(this,X,ff,G,this-&gt;usrfgctx); CHKERRQ(info);
+<a name="line116">116: </a>    info=<A href="../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(gg); CHKERRQ(info);
+<a name="line117">117: </a>  }
+<a name="line118">118: </a>  <font color="#4169E1">else</font> {
+<a name="line119">119: </a>    SETERRQ(1,<font color="#666666">"function evaluation routine is not set"</font>);
+<a name="line120">120: </a>  }
+
+<a name="line122">122: </a>  TaoFunctionReturn(0);
+<a name="line123">123: </a>}
+
+
+
+<a name="line129">129: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(TaoVec *xx, TaoVec *gg){
+<a name="line130">130: </a>  int     info;
+<a name="line131">131: </a>  GAVec X = 0, G = 0;
+<a name="line132">132: </a>  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(xx, &amp;X);
+<a name="line133">133: </a>  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(gg, &amp;G);
+<a name="line134">134: </a>  double ff;
+
+<a name="line136">136: </a>  TaoFunctionBegin;
+
+<a name="line138">138: </a>  <font color="#4169E1">if</font> (this-&gt;computegradient){
+<a name="line139">139: </a>    info = (*this-&gt;computegradient)(this,X,G,this-&gt;usrgctx); CHKERRQ(info);
+<a name="line140">140: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ( this-&gt;computefunctiongradient ) {
+<a name="line141">141: </a>    info = (*this-&gt;computefunctiongradient)(this,X,&amp;ff,G,this-&gt;usrfgctx);
+<a name="line142">142: </a>    CHKERRQ(info);
+<a name="line143">143: </a>  }
+<a name="line144">144: </a>  <font color="#4169E1">else</font> {
+<a name="line145">145: </a>    SETERRQ(1,<font color="#666666">"Gradient evaluation routine is not set."</font>);
+<a name="line146">146: </a>  }
+<a name="line147">147: </a>  TaoFunctionReturn(0);
+<a name="line148">148: </a>}
+
+
+<a name="line153">153: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A>(TaoVec *xx, double *ff, TaoVec *gg){
+<a name="line154">154: </a>  int     info;
+<a name="line155">155: </a>  GAVec X = 0, G = 0;
+<a name="line156">156: </a>  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(xx, &amp;X);
+<a name="line157">157: </a>  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(gg, &amp;G);
+<a name="line158">158: </a>  TaoFunctionBegin;
+
+<a name="line160">160: </a>  <font color="#4169E1">if</font> (this-&gt;computefunctiongradient){
+<a name="line161">161: </a>    info = (*this-&gt;computefunctiongradient)(this,X,ff,G,this-&gt;usrfgctx);
+<a name="line162">162: </a>    CHKERRQ(info);
+<a name="line163">163: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ( this-&gt;computeumfunction &amp;&amp; this-&gt;computegradient ) {
+<a name="line164">164: </a>    info = (*this-&gt;computeumfunction)(this,X,ff,this-&gt;usrfctx); CHKERRQ(info);
+<a name="line165">165: </a>    info = (*this-&gt;computegradient)(this,X,G,this-&gt;usrgctx); CHKERRQ(info);
+<a name="line166">166: </a>  } <font color="#4169E1">else</font> {
+<a name="line167">167: </a>    SETERRQ(1,<font color="#666666">"Function and Gradient evaluation routines not set."</font>);
+<a name="line168">168: </a>  }
+<a name="line169">169: </a>  
+
+<a name="line171">171: </a>  TaoFunctionReturn(0);
+<a name="line172">172: </a>}
+
+<a name="line176">176: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A>(TaoVec *xx, TaoMat *HH){
+<a name="line177">177: </a>  int     info;
+
+<a name="line179">179: </a>  GAVec X = 0;
+<a name="line180">180: </a>  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(xx, &amp;X);
+<a name="line181">181: </a>  TaoMatGa *MM=(TaoMatGa*)HH;
+<a name="line182">182: </a>  GAMat H=MM-&gt;GetMat(), Hpre=MM-&gt;pm_pre;;
+
+<a name="line184">184: </a>  TaoFunctionBegin;
+<a name="line185">185: </a>  <font color="#4169E1">if</font> (this-&gt;computehessian){
+<a name="line186">186: </a>    info = (*this-&gt;computehessian)(this,X,H,this-&gt;usrhctx); CHKERRQ(info);
+<a name="line187">187: </a>    MM-&gt;pm=H;
+<a name="line188">188: </a>    MM-&gt;pm_pre=Hpre;
+<a name="line189">189: </a>  } <font color="#4169E1">else</font> {
+<a name="line190">190: </a>    SETERRQ(1,<font color="#666666">"Hessian calculation routine was not set"</font>);
+<a name="line191">191: </a>  }
+<a name="line192">192: </a>  TaoFunctionReturn(0);
+<a name="line193">193: </a>}
+
+
+<a name="line198">198: </a>int TaoGAApplication::<A href="../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *xx){
+<a name="line199">199: </a>  GAVec XX0=0;
+
+<a name="line201">201: </a>  TaoFunctionBegin; 
+<a name="line202">202: </a>  <font color="#4169E1">if</font> (xx){
+<a name="line203">203: </a>    <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(xx, &amp;XX0);
+<a name="line204">204: </a>  }
+<a name="line205">205: </a>  <font color="#4169E1">if</font> (XX0 &amp;&amp; this-&gt;V &amp;&amp; XX0!=this-&gt;V){
+<a name="line206">206: </a>     GA_Copy(this-&gt;V,XX0); 
+<a name="line207">207: </a>  }
+<a name="line208">208: </a>  TaoFunctionReturn(0);
+<a name="line209">209: </a>}
+
+
+
+
+<a name="line214">214: </a>// C stubs
+
+<a name="line218">218: </a><font color="#B22222">/*@C</font>
+<a name="line219">219: </a><font color="#B22222">  <A href="../../../docs/manualpages/gaapp/TaoGAApplicationCreate.html#TaoGAApplicationCreate">TaoGAApplicationCreate</A> - Creates a TaoApplication that</font>
+<a name="line220">220: </a><font color="#B22222">uses GA data structures.   The vectors used for gradient</font>
+<a name="line221">221: </a><font color="#B22222">and other information can be a GA Vec.  The routines</font>
+<a name="line222">222: </a><font color="#B22222">for function evaluation, and derivative information can</font>
+<a name="line223">223: </a><font color="#B22222">also used GA arguments.</font>
+
+<a name="line225">225: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line226">226: </a><font color="#B22222">.  comm - an MPI communiicator</font>
+
+<a name="line228">228: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line229">229: </a><font color="#B22222">.  newapp - the TaoApplication structure</font>
+
+<a name="line231">231: </a><font color="#B22222">.seealso <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), <A href="../../../docs/manualpages/gaapp/TaoGAAppDestroy.html#TaoGAAppDestroy">TaoGAAppDestroy</A>()</font>
+
+<a name="line233">233: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line235">235: </a><font color="#B22222">.keywords: GAApplication</font>
+<a name="line236">236: </a><font color="#B22222">@*/</font>
+<a name="line237">237: </a><strong><font color="#4169E1"><a name="TaoGAApplicationCreate"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAApplicationCreate.html#TaoGAApplicationCreate">TaoGAApplicationCreate</A>(MPI_Comm comm, TAO_GA_APPLICATION* newapp)</font></strong>{
+<a name="line238">238: </a>  *newapp=new TaoGAApplication(comm);
+<a name="line239">239: </a>  TaoFunctionReturn(0);
+<a name="line240">240: </a>}
+
+<a name="line244">244: </a><font color="#B22222">/*@C</font>
+<a name="line245">245: </a><font color="#B22222">  <A href="../../../docs/manualpages/gaapp/TaoGAAppDestroy.html#TaoGAAppDestroy">TaoGAAppDestroy</A> - Destroy the GA application </font>
+<a name="line246">246: </a><font color="#B22222">and all of the vectors and matrices associated wit it.</font>
+
+<a name="line248">248: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line249">249: </a><font color="#B22222">.  gaapp - the GAApplication structure</font>
+
+<a name="line251">251: </a><font color="#B22222">.seealso <A href="../../../docs/manualpages/gaapp/TaoGAApplicationCreate.html#TaoGAApplicationCreate">TaoGAApplicationCreate</A>()</font>
+
+<a name="line253">253: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line255">255: </a><font color="#B22222">.keywords: Concepts: GAApplication, Destroy</font>
+<a name="line256">256: </a><font color="#B22222">@*/</font>
+<a name="line257">257: </a><strong><font color="#4169E1"><a name="TaoGAAppDestroy"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppDestroy.html#TaoGAAppDestroy">TaoGAAppDestroy</A>(TAO_GA_APPLICATION gaapp)</font></strong> {
+<a name="line258">258: </a>  TaoFunctionBegin;
+<a name="line259">259: </a>  delete gaapp;
+<a name="line260">260: </a>  TaoFunctionReturn(0);
+<a name="line261">261: </a>}
+
+
+<a name="line266">266: </a><font color="#B22222">/*@C</font>
+<a name="line267">267: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A> - Sets the gradient evaluation routine and gradient</font>
+<a name="line268">268: </a><font color="#B22222">   vector for use by the TAO_GA_APPLICATION routines.</font>
+
+<a name="line270">270: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line272">272: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line273">273: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION context</font>
+<a name="line274">274: </a><font color="#B22222">.  grad - gradient evaluation routine</font>
+<a name="line275">275: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line277">277: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line278">278: </a><font color="#B22222">$     grad (TAO_GA_APPLICATION gaapp,GAVec x,GAVec g,void *ctx);</font>
+
+<a name="line280">280: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION application context</font>
+<a name="line281">281: </a><font color="#B22222">.  x - input vector</font>
+<a name="line282">282: </a><font color="#B22222">.  g - gradient vector</font>
+<a name="line283">283: </a><font color="#B22222">-  ctx - user-defined function gradient context</font>
+
+<a name="line285">285: </a><font color="#B22222">   Note:</font>
+<a name="line286">286: </a><font color="#B22222">   This routine should be called before <A href="../../../docs/manualpages/solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>()</font>
+
+<a name="line288">288: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line290">290: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line291">291: </a><font color="#B22222">.  -tao_view_gradient - view the gradient after each evaluation</font>
+
+<a name="line293">293: </a><font color="#B22222">.keywords: GAApplication, set, function</font>
+
+<a name="line295">295: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), <A href="../../../docs/manualpages/gaapp/TaoGAAppSetHessianRoutine.html#TaoGAAppSetHessianRoutine">TaoGAAppSetHessianRoutine</A>()</font>
+
+<a name="line297">297: </a><font color="#B22222">@*/</font>
+<a name="line298">298: </a><strong><font color="#4169E1"><a name="TaoGAAppSetGradientRoutine"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>(TAO_GA_APPLICATION gaapp, int (*grad)(TAO_GA_APPLICATION,GAVec,GAVec,void*),void *ctx)</font></strong>{
+
+<a name="line300">300: </a>  TaoFunctionBegin;
+<a name="line301">301: </a>  gaapp-&gt;computegradient=grad;
+<a name="line302">302: </a>  gaapp-&gt;usrgctx=ctx;
+<a name="line303">303: </a>  TaoFunctionReturn(0);
+<a name="line304">304: </a>}
+
+
+
+<a name="line310">310: </a><font color="#B22222">/*@</font>
+<a name="line311">311: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoSetupGAApplicationSolver.html#TaoSetupGAApplicationSolver">TaoSetupGAApplicationSolver</A> - This routine creates the vectors,</font>
+<a name="line312">312: </a><font color="#B22222">   matrices, linear solvers, and other data structures used in</font>
+<a name="line313">313: </a><font color="#B22222">   the during the optimization process.  The application provides</font>
+<a name="line314">314: </a><font color="#B22222">   the solver with an objective function, constraints, derivative </font>
+<a name="line315">315: </a><font color="#B22222">   information, and application data structures.  These structures</font>
+<a name="line316">316: </a><font color="#B22222">   include a vector of variables, and Hessian matrix.</font>
+
+<a name="line318">318: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line320">320: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line321">321: </a><font color="#B22222">+  myapp - user application context</font>
+<a name="line322">322: </a><font color="#B22222">-  tao - the TAO_SOLVER solver context</font>
+
+<a name="line324">324: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line326">326: </a><font color="#B22222">   Note: This routine should be called after <A href="../../../docs/manualpages/gaapp/TaoGAAppSetInitialSolutionVec.html#TaoGAAppSetInitialSolutionVec">TaoGAAppSetInitialSolutionVec</A>() </font>
+
+<a name="line328">328: </a><font color="#B22222">   Note: </font>
+<a name="line329">329: </a><font color="#B22222">   This method is called during  <A href="../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>() and TaoApplicationSolve();</font>
+<a name="line330">330: </a><font color="#B22222">   </font>
+<a name="line331">331: </a><font color="#B22222">.keywords: GAApplication</font>
+
+<a name="line333">333: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A>()</font>
+
+<a name="line335">335: </a><font color="#B22222">@*/</font>
+<a name="line336">336: </a><strong><font color="#4169E1"><a name="TaoSetupGAApplicationSolver"></a>int <A href="../../../docs/manualpages/gaapp/TaoSetupGAApplicationSolver.html#TaoSetupGAApplicationSolver">TaoSetupGAApplicationSolver</A>(TAO_GA_APPLICATION myapp, TAO_SOLVER tao )</font></strong>{
+<a name="line337">337: </a>  int info;
+<a name="line338">338: </a>  TaoFunctionBegin;
+<a name="line339">339: </a>  info = <A href="../../../docs/manualpages/solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>(tao,myapp);CHKERRQ(info);
+<a name="line340">340: </a>  TaoFunctionReturn(0);
+<a name="line341">341: </a>}
+
+
+<a name="line346">346: </a><font color="#B22222">/*@</font>
+<a name="line347">347: </a><font color="#B22222">  <A href="../../../docs/manualpages/gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A> - Find a solution to the application using a TAO solver.</font>
+
+<a name="line349">349: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line351">351: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line352">352: </a><font color="#B22222">.  tao - the TAO_GA_APPLICATION context</font>
+
+<a name="line354">354: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line356">356: </a><font color="#B22222">.keywords: solve</font>
+
+<a name="line358">358: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>();</font>
+
+<a name="line360">360: </a><font color="#B22222">@*/</font>
+<a name="line361">361: </a><strong><font color="#4169E1"><a name="TaoSolveGAApplication"></a>int <A href="../../../docs/manualpages/gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A>(TAO_GA_APPLICATION gaapp, TAO_SOLVER tao)</font></strong>{
+<a name="line362">362: </a>  int info;
+
+<a name="line364">364: </a>  TaoFunctionBegin;
+<a name="line365">365: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoSetupGAApplicationSolver.html#TaoSetupGAApplicationSolver">TaoSetupGAApplicationSolver</A>(gaapp, tao); CHKERRQ(info);
+<a name="line366">366: </a>  info = <A href="../../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>(tao); CHKERRQ(info);
+<a name="line367">367: </a>  TaoFunctionReturn(0);
+<a name="line368">368: </a>}
+
+
+
+<a name="line374">374: </a><font color="#B22222">/*@C</font>
+<a name="line375">375: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A> - Sets a routine for function and gradient evaluation.</font>
+
+<a name="line377">377: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line379">379: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line380">380: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION context</font>
+<a name="line381">381: </a><font color="#B22222">.  funcgrad - routine for evaluating the function and gradient</font>
+<a name="line382">382: </a><font color="#B22222">-  ctx - optional user-defined context for private data for the </font>
+<a name="line383">383: </a><font color="#B22222">         function and gradient evaluation routine (may be TAO_NULL)</font>
+
+<a name="line385">385: </a><font color="#B22222">   Calling sequence of funcgrad:</font>
+<a name="line386">386: </a><font color="#B22222">$     funcgrad (TAO_GA_APPLICATION tao,GAVec x,double *f,GAVec g,void *ctx);</font>
+
+<a name="line388">388: </a><font color="#B22222">+  tao - TAO_GA_APPLICATION application context</font>
+<a name="line389">389: </a><font color="#B22222">.  x - input vector</font>
+<a name="line390">390: </a><font color="#B22222">.  f - function value</font>
+<a name="line391">391: </a><font color="#B22222">.  g - gradient vector</font>
+<a name="line392">392: </a><font color="#B22222">-  ctx - optional user-defined context </font>
+
+<a name="line394">394: </a><font color="#B22222">   Notes:</font>
+<a name="line395">395: </a><font color="#B22222">   The user may call <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>() to set a routine</font>
+<a name="line396">396: </a><font color="#B22222">   that evaluates both the function and gradient.  Alternatively, the</font>
+<a name="line397">397: </a><font color="#B22222">   user may call both <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A>() and <A href="../../../docs/manualpages/gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>() to set</font>
+<a name="line398">398: </a><font color="#B22222">   separate routines for function and gradient evaluation.  </font>
+
+<a name="line400">400: </a><font color="#B22222">   Using a single routine to compute the function and gradient, as</font>
+<a name="line401">401: </a><font color="#B22222">   specified via <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), may enable better performance</font>
+<a name="line402">402: </a><font color="#B22222">   for applications in which many of the function and gradient computations</font>
+<a name="line403">403: </a><font color="#B22222">   are identical.</font>
+
+<a name="line405">405: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line407">407: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line408">408: </a><font color="#B22222">.   -tao_view_gradient - view the gradient after each iteration</font>
+
+<a name="line410">410: </a><font color="#B22222">.keywords: GAApplication, set, function</font>
+
+<a name="line412">412: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>(), <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A>(), <A href="../../../docs/manualpages/solver/TaoComputeFunctionGradient.html#TaoComputeFunctionGradient">TaoComputeFunctionGradient</A>()</font>
+
+<a name="line414">414: </a><font color="#B22222">@*/</font>
+<a name="line415">415: </a><strong><font color="#4169E1"><a name="TaoGAAppSetObjectiveAndGradientRoutine"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(TAO_GA_APPLICATION gaapp, int (*funcgrad)(TAO_GA_APPLICATION,GAVec,double*,GAVec, void*),void *ctx)</font></strong>{
+<a name="line416">416: </a>  TaoFunctionBegin;
+<a name="line417">417: </a>  gaapp-&gt;computefunctiongradient=funcgrad;
+<a name="line418">418: </a>  gaapp-&gt;usrfgctx=ctx;
+<a name="line419">419: </a>  TaoFunctionReturn(0);
+<a name="line420">420: </a>}
+
+
+<a name="line425">425: </a><font color="#B22222">/*@C</font>
+<a name="line426">426: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A> - Sets a routine for function evaluations.</font>
+
+<a name="line428">428: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line430">430: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line431">431: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION context</font>
+<a name="line432">432: </a><font color="#B22222">.  func - routine for evaluating the function</font>
+<a name="line433">433: </a><font color="#B22222">-  ctx - optional user-defined context for private data for the </font>
+<a name="line434">434: </a><font color="#B22222">         function evaluation routine (may be TAO_NULL)</font>
+
+<a name="line436">436: </a><font color="#B22222">   Calling sequence of funcgrad:</font>
+<a name="line437">437: </a><font color="#B22222">$     func (TAO_GA_APPLICATION tao,GAVec x,double *f,void *ctx);</font>
+
+<a name="line439">439: </a><font color="#B22222">+  tao - TAO_GA_APPLICATION application context</font>
+<a name="line440">440: </a><font color="#B22222">.  x - input vector</font>
+<a name="line441">441: </a><font color="#B22222">.  f - function value</font>
+<a name="line442">442: </a><font color="#B22222">-  ctx - optional user-defined context </font>
+
+<a name="line444">444: </a><font color="#B22222">   Notes:</font>
+<a name="line445">445: </a><font color="#B22222">   The user may call <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>() to set a routine</font>
+<a name="line446">446: </a><font color="#B22222">   that evaluates both the function and gradient.  Alternatively, the</font>
+<a name="line447">447: </a><font color="#B22222">   user may call both <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A>() and <A href="../../../docs/manualpages/gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>() to set</font>
+<a name="line448">448: </a><font color="#B22222">   separate routines for function and gradient evaluation.  </font>
+
+<a name="line450">450: </a><font color="#B22222">   Using a single routine to compute the function and gradient, as</font>
+<a name="line451">451: </a><font color="#B22222">   specified via <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), may enable better performance</font>
+<a name="line452">452: </a><font color="#B22222">   for applications in which many of the function and gradient computations</font>
+<a name="line453">453: </a><font color="#B22222">   are identical.</font>
+
+<a name="line455">455: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line457">457: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line458">458: </a><font color="#B22222">.   -tao_view_gradient - view the gradient after each iteration</font>
+
+<a name="line460">460: </a><font color="#B22222">.keywords: TAO_GA_APPLICATION, set, function</font>
+
+<a name="line462">462: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>(), <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), <A href="../../../docs/manualpages/solver/TaoComputeFunctionGradient.html#TaoComputeFunctionGradient">TaoComputeFunctionGradient</A>()</font>
+
+<a name="line464">464: </a><font color="#B22222">@*/</font>
+<a name="line465">465: </a><strong><font color="#4169E1"><a name="TaoGAAppSetObjectiveRoutine"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A>(TAO_GA_APPLICATION gaapp, int (*func)(TAO_GA_APPLICATION,GAVec,double*,void*), void *ctx)</font></strong> {
+<a name="line466">466: </a>  TaoFunctionBegin;
+<a name="line467">467: </a>  gaapp-&gt;computeumfunction = func;
+<a name="line468">468: </a>  gaapp-&gt;usrfctx=ctx;
+<a name="line469">469: </a>  TaoFunctionReturn(0);
+<a name="line470">470: </a>}
+
+<a name="line474">474: </a><font color="#B22222">/*@C</font>
+<a name="line475">475: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetHessianRoutine.html#TaoGAAppSetHessianRoutine">TaoGAAppSetHessianRoutine</A> - Sets the function to compute the Hessian as well as the</font>
+<a name="line476">476: </a><font color="#B22222">   location to store the matrix.</font>
+
+<a name="line478">478: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION and Mat</font>
+
+<a name="line480">480: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line481">481: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION context</font>
+<a name="line482">482: </a><font color="#B22222">.  hess - Hessian evaluation routine</font>
+<a name="line483">483: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line484">484: </a><font color="#B22222">         Hessian evaluation routine (may be TAO_NULL)</font>
+
+<a name="line486">486: </a><font color="#B22222">   Calling sequence of hess:</font>
+<a name="line487">487: </a><font color="#B22222">$    hess (TAO_GA_APPLICATION gaapp,GAVec x,GAMat H,void *ctx);</font>
+
+<a name="line489">489: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION application context</font>
+<a name="line490">490: </a><font color="#B22222">.  x - input vector</font>
+<a name="line491">491: </a><font color="#B22222">.  H - Hessian matrix</font>
+<a name="line492">492: </a><font color="#B22222">-  ctx - [optional] user-defined Hessian context</font>
+
+<a name="line494">494: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line495">495: </a><font color="#B22222">.  -tao_view_hessian - view the hessian after each evaluation</font>
+
+<a name="line497">497: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line499">499: </a><font color="#B22222">.keywords: GAApplication, Hessian</font>
+
+<a name="line501">501: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A>(), <A href="../../../docs/manualpages/gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>()</font>
+<a name="line502">502: </a><font color="#B22222">@*/</font>
+<a name="line503">503: </a><strong><font color="#4169E1"><a name="TaoGAAppSetHessianRoutine"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppSetHessianRoutine.html#TaoGAAppSetHessianRoutine">TaoGAAppSetHessianRoutine</A>(TAO_GA_APPLICATION gaapp, int (*hess)(TAO_GA_APPLICATION, GAVec, GAMat,void*),void *ctx)</font></strong>{
+<a name="line504">504: </a>  TaoFunctionBegin;
+<a name="line505">505: </a>  gaapp-&gt;computehessian=hess;
+<a name="line506">506: </a>  gaapp-&gt;usrhctx=ctx;
+<a name="line507">507: </a>  TaoFunctionReturn(0);
+<a name="line508">508: </a>}
+
+
+<a name="line513">513: </a><font color="#B22222">/*@C</font>
+<a name="line514">514: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetVariableBoundsRoutine.html#TaoGAAppSetVariableBoundsRoutine">TaoGAAppSetVariableBoundsRoutine</A> - Set bounds on the variables.</font>
+
+<a name="line516">516: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line518">518: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line519">519: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION context</font>
+<a name="line520">520: </a><font color="#B22222">.  func - the variable bounds evaluation routine</font>
+<a name="line521">521: </a><font color="#B22222">-  ctx - user-defined context for private data for the variable bounds</font>
+<a name="line522">522: </a><font color="#B22222">         evaluation routine (may be TAO_NULL)</font>
+
+<a name="line524">524: </a><font color="#B22222">   calling sequence of func:</font>
+<a name="line525">525: </a><font color="#B22222">$    func (TAO_GA_APPLICATION gaapp, GAVec xl, GAVec xu, void *ctx);</font>
+
+<a name="line527">527: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION application context</font>
+<a name="line528">528: </a><font color="#B22222">.  xl - lower bounds vector</font>
+<a name="line529">529: </a><font color="#B22222">.  xu - upper bounds vector</font>
+<a name="line530">530: </a><font color="#B22222">-  ctx - user-defined variable bounds context</font>
+
+<a name="line532">532: </a><font color="#B22222">.keywords: GAApplication, bounds</font>
+
+<a name="line534">534: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line536">536: </a><font color="#B22222">@*/</font>
+<a name="line537">537: </a><strong><font color="#4169E1"><a name="TaoGAAppSetVariableBoundsRoutine"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppSetVariableBoundsRoutine.html#TaoGAAppSetVariableBoundsRoutine">TaoGAAppSetVariableBoundsRoutine</A>(TAO_GA_APPLICATION gaapp, </font></strong>
+<a name="line538">538: </a><strong><font color="#4169E1">                                       int (*func)(TAO_GA_APPLICATION, GAVec, GAVec, void *), void *ctx)</font></strong> {
+<a name="line539">539: </a>  TaoFunctionBegin;
+<a name="line540">540: </a>  gaapp-&gt;computebounds = func;
+<a name="line541">541: </a>  gaapp-&gt;usrvbctx = ctx;
+<a name="line542">542: </a>  TaoFunctionReturn(0);
+<a name="line543">543: </a>}
+
+
+<a name="line548">548: </a><font color="#B22222">/*@</font>
+<a name="line549">549: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetInitialSolutionVec.html#TaoGAAppSetInitialSolutionVec">TaoGAAppSetInitialSolutionVec</A> - Sets the vector representing the variables</font>
+<a name="line550">550: </a><font color="#B22222">   and an initial guess.</font>
+
+<a name="line552">552: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line554">554: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line555">555: </a><font color="#B22222">+  taoapp - the TAO_GA_APPLICATION context</font>
+<a name="line556">556: </a><font color="#B22222">.  xx - variable vector that stores the solution</font>
+
+<a name="line558">558: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line560">560: </a><font color="#B22222">   Note: This vector will be used by the solver, so do not use it</font>
+<a name="line561">561: </a><font color="#B22222">   for other purposes.  The user should destroy this vector after</font>
+<a name="line562">562: </a><font color="#B22222">   solving the application.</font>
+
+<a name="line564">564: </a><font color="#B22222">   Note:  If the user is unaware of a decent initial solution,</font>
+<a name="line565">565: </a><font color="#B22222">   the vector should be set to zero.</font>
+
+<a name="line567">567: </a><font color="#B22222">   Note:  The TAO solvers will not use the contents of this </font>
+<a name="line568">568: </a><font color="#B22222">   GAVec until the <A href="../../../docs/manualpages/gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A>() is called.  Therefore the user</font>
+<a name="line569">569: </a><font color="#B22222">   may compute an initial solution in this vector after this</font>
+<a name="line570">570: </a><font color="#B22222">   routine -- but before <A href="../../../docs/manualpages/gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A>().</font>
+
+<a name="line572">572: </a><font color="#B22222">.seealso:  <A href="../../../docs/manualpages/ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A href="../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>()</font>
+<a name="line573">573: </a><font color="#B22222">@*/</font>
+<a name="line574">574: </a><strong><font color="#4169E1"><a name="TaoGAAppSetInitialSolutionVec"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppSetInitialSolutionVec.html#TaoGAAppSetInitialSolutionVec">TaoGAAppSetInitialSolutionVec</A>(TAO_GA_APPLICATION gaapp, GAVec xx)</font></strong>{
+<a name="line575">575: </a>  TaoFunctionBegin;
+<a name="line576">576: </a>  <font color="#4169E1">if</font> (gaapp-&gt;V){
+<a name="line577">577: </a>     GA_Destroy(gaapp-&gt;V);
+<a name="line578">578: </a>  }  
+<a name="line579">579: </a>  gaapp-&gt;V=xx;
+<a name="line580">580: </a>  TaoFunctionReturn(0);
+<a name="line581">581: </a>}
+
+
+<a name="line584">584: </a><font color="#B22222">/* -------------- Routines to set performance monitoring options --------------- */</font>
+
+<a name="line588">588: </a><font color="#B22222">/*@C</font>
+<a name="line589">589: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetMonitor.html#TaoGAAppSetMonitor">TaoGAAppSetMonitor</A> - Sets an ADDITIONAL function that is to be used at every</font>
+<a name="line590">590: </a><font color="#B22222">   iteration of the solver to display the interation's progress.</font>
+
+<a name="line592">592: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line594">594: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line595">595: </a><font color="#B22222">+  gaapp - the TAO_GA_APPLICATION application context</font>
+<a name="line596">596: </a><font color="#B22222">.  mymonitor - monitoring routine</font>
+<a name="line597">597: </a><font color="#B22222">-  mctx - [optional] user-defined context for private data for the</font>
+<a name="line598">598: </a><font color="#B22222">          monitor routine (may be TAO_NULL)</font>
+
+<a name="line600">600: </a><font color="#B22222">   Calling sequence of mymonitor:</font>
+<a name="line601">601: </a><font color="#B22222">$     int mymonitor(TAO_DA_APPLICATION gaapp, void *mctx)</font>
+
+<a name="line603">603: </a><font color="#B22222">+    gaapp - the TAO_GA_APPLICATION application context</font>
+<a name="line604">604: </a><font color="#B22222">-    mctx - [optional] monitoring context</font>
+
+<a name="line606">606: </a><font color="#B22222">   Notes:</font>
+<a name="line607">607: </a><font color="#B22222">   Several different monitoring routines may be set by calling</font>
+<a name="line608">608: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppSetMonitor.html#TaoGAAppSetMonitor">TaoGAAppSetMonitor</A>() mutiple times; all will be called in the</font>
+<a name="line609">609: </a><font color="#B22222">   order in which they were set.</font>
+
+<a name="line611">611: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line613">613: </a><font color="#B22222">.keywords: GAApplication, monitor, <A href="../../../docs/manualpages/lsolver/View.html#View">View</A></font>
+
+<a name="line615">615: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/gaapp/TaoGAAppMonitor.html#TaoGAAppMonitor">TaoGAAppMonitor</A>()</font>
+<a name="line616">616: </a><font color="#B22222">@*/</font>
+<a name="line617">617: </a><strong><font color="#4169E1"><a name="TaoGAAppSetMonitor"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppSetMonitor.html#TaoGAAppSetMonitor">TaoGAAppSetMonitor</A>(TAO_GA_APPLICATION gaapp, int (*mymonitor)(TAO_GA_APPLICATION, void*), void *mctx)</font></strong>
+<a name="line618">618: </a>{
+<a name="line619">619: </a>  TaoFunctionBegin;
+<a name="line620">620: </a>  <font color="#4169E1">if</font> (mymonitor) {
+<a name="line621">621: </a>    <font color="#4169E1">if</font> (gaapp-&gt;numbermonitors &gt;= MAX_TAO_MONITORS) {
+<a name="line622">622: </a>      SETERRQ(1,<font color="#666666">"Too many monitors set."</font>);
+<a name="line623">623: </a>    }
+<a name="line624">624: </a>    gaapp-&gt;monitor[gaapp-&gt;numbermonitors] = mymonitor;
+<a name="line625">625: </a>    gaapp-&gt;monitorcontext[gaapp-&gt;numbermonitors++] = (void*)mctx;
+<a name="line626">626: </a>  }
+<a name="line627">627: </a>  TaoFunctionReturn(0);
+<a name="line628">628: </a>}
+
+<a name="line632">632: </a><font color="#B22222">/*@</font>
+<a name="line633">633: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoGAAppMonitor.html#TaoGAAppMonitor">TaoGAAppMonitor</A> - Apply the monitor functions for a TAO_GA_APPLICATION object</font>
+
+<a name="line635">635: </a><font color="#B22222">   Collective on TAO_GA_APPLICATION</font>
+
+<a name="line637">637: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line638">638: </a><font color="#B22222">.  gaapp - the TAO_GA_APPLICATION application context</font>
+
+<a name="line640">640: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line642">642: </a><font color="#B22222">.keywords: GAApplication, monitor, <A href="../../../docs/manualpages/lsolver/View.html#View">View</A></font>
+
+<a name="line644">644: </a><font color="#B22222">.seealso: <A href="../../../docs/manualpages/gaapp/TaoGAAppSetMonitor.html#TaoGAAppSetMonitor">TaoGAAppSetMonitor</A>()</font>
+<a name="line645">645: </a><font color="#B22222">@*/</font>
+<a name="line646">646: </a><strong><font color="#4169E1"><a name="TaoGAAppMonitor"></a>int <A href="../../../docs/manualpages/gaapp/TaoGAAppMonitor.html#TaoGAAppMonitor">TaoGAAppMonitor</A>(TAO_GA_APPLICATION gaapp)</font></strong>
+<a name="line647">647: </a>{
+<a name="line648">648: </a>  int i, info;
+<a name="line649">649: </a>  TaoFunctionBegin;
+<a name="line650">650: </a>  <font color="#4169E1">for</font> (i=0; i&lt;gaapp-&gt;numbermonitors;i++) {
+<a name="line651">651: </a>    info = (*gaapp-&gt;monitor[i])(gaapp, gaapp-&gt;monitorcontext[i]); CHKERRQ(info);
+
+<a name="line653">653: </a>  }
+<a name="line654">654: </a>  TaoFunctionReturn(0);
+<a name="line655">655: </a>}
+
+
+
+</pre>
+</body>
+
+</html>

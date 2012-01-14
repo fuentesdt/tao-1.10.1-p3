@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoInitializeFortran</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoInitializeFortran"><H1>TaoInitializeFortran</H1></A>
+Routine that should be called from C after the call to <A HREF="../solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>() if one is using a C main program that calls Fortran routines that in turn call TAO routines. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int TaoInitializeFortran(void)
+</PRE>
+Collective on MPI_COMM_WORLD
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+<A HREF="../solver/TaoInitializeFortran.html#TaoInitializeFortran">TaoInitializeFortran</A>() initializes some of the default TAO variables
+for use in Fortran if a user's main program is written in C.
+<A HREF="../solver/TaoInitializeFortran.html#TaoInitializeFortran">TaoInitializeFortran</A>() is NOT needed if a user's main
+program is written in Fortran; in this case, just calling
+<A HREF="../solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>() in the main (Fortran) program is sufficient.
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>()
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ Mixing C and Fortran, passing TAO objects to Fortran
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/fortran/custom/ztao_startf.c.html#TaoInitializeFortran">src/fortran/custom/ztao_startf.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

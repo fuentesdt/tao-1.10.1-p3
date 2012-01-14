@@ -1,0 +1,80 @@
+<center><a href="tron.h">Actual source code: tron.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a><font color="#A020F0">#ifndef __TAO_TRON_H</font>
+
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+
+<a name="line8">  8: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+
+<a name="line10"> 10: </a>  <font color="#B22222">/* Parameters */</font>
+<a name="line11"> 11: </a>  double pg_ftol;
+<a name="line12"> 12: </a>  double actred;
+<a name="line13"> 13: </a>  double f_new;
+<a name="line14"> 14: </a> 
+<a name="line15"> 15: </a>  double eta1,eta2,eta3,eta4;
+<a name="line16"> 16: </a>  double sigma1,sigma2,sigma3;
+
+<a name="line18"> 18: </a>  TaoInt maxgpits;
+
+<a name="line20"> 20: </a>  <font color="#B22222">/* Problem variables, vectors and index sets */</font>
+<a name="line21"> 21: </a>  double stepsize;
+<a name="line22"> 22: </a>  double pgstepsize;
+
+<a name="line24"> 24: </a>  <font color="#B22222">/* Problem statistics */</font>
+
+<a name="line26"> 26: </a>  TaoInt n;   <font color="#B22222">/* Dimension of the Problem */</font>
+<a name="line27"> 27: </a>  double delta;  <font color="#B22222">/* Trust region size */</font>
+<a name="line28"> 28: </a>  double gnorm;
+<a name="line29"> 29: </a>  double f;
+
+<a name="line31"> 31: </a>  TaoInt total_cgits;
+<a name="line32"> 32: </a>  TaoInt cg_iterates;
+<a name="line33"> 33: </a>  TaoInt total_gp_its;
+<a name="line34"> 34: </a>  TaoInt gp_iterates;
+<a name="line35"> 35: </a>  TaoInt cgits;
+
+<a name="line37"> 37: </a>  TaoVec* DXFree;
+<a name="line38"> 38: </a>  TaoVec* R;
+
+<a name="line40"> 40: </a>  TaoVec* X;
+<a name="line41"> 41: </a>  TaoVec* G;
+<a name="line42"> 42: </a>  TaoVec* PG;
+
+<a name="line44"> 44: </a>  TaoVec* DX;
+<a name="line45"> 45: </a>  TaoVec* X_New;
+<a name="line46"> 46: </a>  TaoVec* G_New;
+<a name="line47"> 47: </a>  TaoVec* XU;
+<a name="line48"> 48: </a>  TaoVec* XL;
+<a name="line49"> 49: </a>  TaoVec* Work;
+<a name="line50"> 50: </a>  
+<a name="line51"> 51: </a>  TaoMat* Hsub;
+<a name="line52"> 52: </a>  TaoMat* H;
+
+<a name="line54"> 54: </a>  TaoIndexSet *TT;
+<a name="line55"> 55: </a>  TaoIndexSet *Free_Local;  <font color="#B22222">/* Indices of local variables equal to lower bound */</font>
+<a name="line56"> 56: </a>  TaoIndexSet *Lower_Local;  <font color="#B22222">/* Indices of local variables equal to lower bound */</font>
+<a name="line57"> 57: </a>  TaoIndexSet *Upper_Local;  <font color="#B22222">/* Indices of local variables equal to lower bound */</font>
+
+<a name="line59"> 59: </a>  TaoInt n_free;       <font color="#B22222">/* Number of free variables */</font>
+<a name="line60"> 60: </a>  TaoInt n_upper;
+<a name="line61"> 61: </a>  TaoInt n_lower;
+<a name="line62"> 62: </a>  TaoInt n_bind;       <font color="#B22222">/* Number of binding varibles */</font>
+
+<a name="line64"> 64: </a>} TAO_TRON;
+
+<a name="line66"> 66: </a><font color="#A020F0">#endif</font>
+
+</pre>
+</body>
+
+</html>

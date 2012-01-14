@@ -1,0 +1,399 @@
+<center><a href="taoapp_util.c">Actual source code: taoapp_util.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"taoapp_petsc.h"</font><font color="#A020F0">  </font><font color="#B22222">/*I  "tao.h"  I*/</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a>static int Tao_Solve=0;
+
+<a name="line8">  8: </a><strong><font color="#4169E1">int TaoAppGetTaoPetscApp(TAO_APPLICATION taoapp,TaoPetscApplication**tpapp)</font></strong>;
+
+<a name="line12"> 12: </a><font color="#B22222">/*@</font>
+<a name="line13"> 13: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A> - Find a solution to the application using the set TAO solver.</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line17"> 17: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line18"> 18: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line19"> 19: </a><font color="#B22222">-  tao - the TAO_SOLVER context</font>
+
+<a name="line21"> 21: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line23"> 23: </a><font color="#B22222">.keywords: solve</font>
+
+<a name="line25"> 25: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>()</font>
+
+<a name="line27"> 27: </a><font color="#B22222">@*/</font>
+<a name="line28"> 28: </a><strong><font color="#4169E1"><a name="TaoSolveApplication"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>(TAO_APPLICATION taoapp, TAO_SOLVER tao)</font></strong>{
+<a name="line29"> 29: </a>  int info;
+
+<a name="line32"> 32: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoSetupApplicationSolver.html#TaoSetupApplicationSolver">TaoSetupApplicationSolver</A>(taoapp,tao);CHKERRQ(info);
+<a name="line33"> 33: </a>  info = PetscLogEventBegin(Tao_Solve,tao,0,0,0);CHKERRQ(info);
+<a name="line34"> 34: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>(tao); CHKERRQ(info);
+<a name="line35"> 35: </a>  info = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(info);
+<a name="line36"> 36: </a>  //  info = <A href="../../../../docs/manualpages/solver/TaoGetSolutionStatus.html#TaoGetSolutionStatus">TaoGetSolutionStatus</A>(tao,&amp;taoapp-&gt;iter,&amp;taoapp-&gt;fval,&amp;taoapp-&gt;residual,0,0,&amp;taoapp-&gt;reason); 
+<a name="line37"> 37: </a>  CHKERRQ(info);
+<a name="line38"> 38: </a>  <font color="#4169E1">return</font>(0);
+<a name="line39"> 39: </a>}
+
+<a name="line43"> 43: </a><font color="#B22222">/*@</font>
+<a name="line44"> 44: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoSetupApplicationSolver.html#TaoSetupApplicationSolver">TaoSetupApplicationSolver</A> - This routine creates the vectors,</font>
+<a name="line45"> 45: </a><font color="#B22222">   matrices, linear solvers, and other data structures used in</font>
+<a name="line46"> 46: </a><font color="#B22222">   the during the optimization process.  The application provides</font>
+<a name="line47"> 47: </a><font color="#B22222">   the solver with an objective function, constraints, derivative </font>
+<a name="line48"> 48: </a><font color="#B22222">   information, and application data structures.  These structures</font>
+<a name="line49"> 49: </a><font color="#B22222">   include a vector of variables, and Hessian matrix.</font>
+
+<a name="line51"> 51: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line53"> 53: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line54"> 54: </a><font color="#B22222">+  myapp - user application context</font>
+<a name="line55"> 55: </a><font color="#B22222">-  tao - the TAO_SOLVER solver context</font>
+
+<a name="line57"> 57: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line59"> 59: </a><font color="#B22222">   Note: </font>
+<a name="line60"> 60: </a><font color="#B22222">   This routine should be called before <A href="../../../../docs/manualpages/ptaopages/TaoGetKSP.html#TaoGetKSP">TaoGetKSP</A>(), but after </font>
+<a name="line61"> 61: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>() and after <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>() (when Newton solvers are used). </font>
+
+<a name="line63"> 63: </a><font color="#B22222">   Note: </font>
+<a name="line64"> 64: </a><font color="#B22222">   This method is called during  <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>() and <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>()</font>
+<a name="line65"> 65: </a><font color="#B22222">   </font>
+<a name="line66"> 66: </a><font color="#B22222">.keywords: application, context</font>
+
+<a name="line68"> 68: </a><font color="#B22222">@*/</font>
+<a name="line69"> 69: </a><strong><font color="#4169E1"><a name="TaoSetupApplicationSolver"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoSetupApplicationSolver.html#TaoSetupApplicationSolver">TaoSetupApplicationSolver</A>(TAO_APPLICATION myapp, TAO_SOLVER tao )</font></strong>{
+<a name="line70"> 70: </a>  int info;
+<a name="line71"> 71: </a>  TaoPetscApplication* taopetscapp;
+<a name="line74"> 74: </a>  <font color="#4169E1">if</font> (Tao_Solve==0){
+<a name="line75"> 75: </a>    info = PetscLogEventRegister(<font color="#666666">"<A href="../../../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>"</font>,TAO_APP_COOKIE,&amp;Tao_Solve); CHKERRQ(info);
+<a name="line76"> 76: </a>  }
+<a name="line77"> 77: </a>  info = TaoAppGetTaoPetscApp(myapp,&amp;taopetscapp);
+<a name="line78"> 78: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>(tao,taopetscapp);CHKERRQ(info);
+<a name="line79"> 79: </a>  taopetscapp-&gt;tao=tao;
+<a name="line80"> 80: </a>  <font color="#4169E1">return</font>(0);
+<a name="line81"> 81: </a>}
+
+<a name="line85"> 85: </a><font color="#B22222">/*@</font>
+<a name="line86"> 86: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A> - Sets various TAO parameters from user options</font>
+
+<a name="line88"> 88: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line90"> 90: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line91"> 91: </a><font color="#B22222">+  taoapp - the TAO Application (optional)</font>
+<a name="line92"> 92: </a><font color="#B22222">-  tao - the TAO optimization solver (optional)</font>
+<a name="line93"> 93: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line95"> 95: </a><font color="#B22222">   Note: </font>
+<a name="line96"> 96: </a><font color="#B22222">   This routine should be called after <A href="../../../../docs/manualpages/ptaopages/TaoSetupApplicationSolver.html#TaoSetupApplicationSolver">TaoSetupApplicationSolver</A>()</font>
+
+<a name="line98"> 98: </a><font color="#B22222">   Note: </font>
+<a name="line99"> 99: </a><font color="#B22222">   This routine must be called if there are multiple processors involved and </font>
+<a name="line100">100: </a><font color="#B22222">   the MPI Communicator is different than MPI_COMM_WORLD.</font>
+
+<a name="line102">102: </a><font color="#B22222">.keywords:  options</font>
+
+<a name="line104">104: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>()</font>
+
+<a name="line106">106: </a><font color="#B22222">@*/</font>
+<a name="line107">107: </a><strong><font color="#4169E1"><a name="TaoSetOptions"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>(TAO_APPLICATION taoapp, TAO_SOLVER tao)</font></strong>{
+<a name="line108">108: </a>  int info;
+<a name="line109">109: </a>  const char *prefix=0;
+<a name="line110">110: </a>  PetscTruth flg;
+<a name="line111">111: </a>  MPI_Comm comm=MPI_COMM_WORLD;
+
+
+<a name="line115">115: </a>  <font color="#4169E1">if</font> (tao){
+<a name="line117">117: </a>    info = PetscObjectGetOptionsPrefix((PetscObject)tao,&amp;prefix); CHKERRQ(info);
+<a name="line118">118: </a>    info = PetscObjectGetComm((PetscObject)tao,&amp;comm);CHKERRQ(info);
+<a name="line119">119: </a>    info = PetscOptionsBegin(comm,prefix,<font color="#666666">"TAO PETSC APPLICATIONS "</font>,<font color="#666666">"solver"</font>);CHKERRQ(info);
+
+<a name="line121">121: </a>    info = <A href="../../../../docs/manualpages/solver/TaoSetFromOptions.html#TaoSetFromOptions">TaoSetFromOptions</A>(tao); CHKERRQ(info);
+
+<a name="line123">123: </a>    flg=PETSC_FALSE;
+<a name="line124">124: </a>    info = PetscOptionsName(<font color="#666666">"-tao_xmonitor"</font>,<font color="#666666">"Use graphics convergence"</font>,<font color="#666666">"TaoPetscXMonitor"</font>,&amp;flg);CHKERRQ(info);
+<a name="line125">125: </a>    <font color="#4169E1">if</font> (flg){
+<a name="line126">126: </a>      info = TaoSetPetscXMonitor(tao); CHKERRQ(info);
+<a name="line127">127: </a>    }
+
+<a name="line129">129: </a>    info = PetscOptionsEnd();CHKERRQ(info);
+<a name="line130">130: </a>  }
+
+<a name="line132">132: </a>  <font color="#4169E1">if</font> (taoapp){
+<a name="line133">133: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetFromOptions.html#TaoAppSetFromOptions">TaoAppSetFromOptions</A>(taoapp); CHKERRQ(info);
+<a name="line134">134: </a>  }
+
+<a name="line136">136: </a>  <font color="#4169E1">if</font> (tao &amp;&amp; taoapp){
+<a name="line137">137: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoSetupApplicationSolver.html#TaoSetupApplicationSolver">TaoSetupApplicationSolver</A>(taoapp,tao);CHKERRQ(info);
+<a name="line138">138: </a>    info = PetscOptionsName(<font color="#666666">"-tao_lmvmh"</font>,<font color="#666666">"User supplies approximate hessian for LMVM solvers"</font>,<font color="#666666">"TaoLMVMSetH0"</font>,&amp;flg);
+<a name="line139">139: </a>    <font color="#4169E1">if</font> (flg){
+<a name="line140">140: </a>      info=TaoBLMVMSetH0(tao,TAO_TRUE);CHKERRQ(info);
+<a name="line141">141: </a>      info=TaoLMVMSetH0(tao,TAO_TRUE);CHKERRQ(info);
+<a name="line142">142: </a>    }
+<a name="line143">143: </a>  }
+<a name="line144">144: </a>  
+<a name="line145">145: </a>  <font color="#4169E1">return</font>(0);
+<a name="line146">146: </a>}
+<a name="line147">147: </a> 
+
+
+<a name="line150">150: </a>static char TaoPetscAppXXX[] = <font color="#666666">"TaoPetscApp"</font>;
+
+<a name="line154">154: </a><strong><font color="#4169E1"><a name="TaoAppDestroyPetscAppXXX"></a>static int TaoAppDestroyPetscAppXXX(void*ctx)</font></strong>{
+<a name="line155">155: </a>  TaoPetscApplication *mctx=(TaoPetscApplication*)ctx;
+<a name="line157">157: </a>  <font color="#4169E1">if</font> (mctx){
+<a name="line158">158: </a>    delete mctx;
+<a name="line159">159: </a>  }
+<a name="line160">160: </a>  <font color="#4169E1">return</font>(0);
+<a name="line161">161: </a>}
+
+<a name="line165">165: </a><strong><font color="#4169E1"><a name="TaoAppGetTaoPetscApp"></a>int TaoAppGetTaoPetscApp(TAO_APPLICATION taoapp,TaoPetscApplication**tpapp)</font></strong>{
+<a name="line166">166: </a>  int info;
+<a name="line167">167: </a>  PetscInt ii;
+<a name="line168">168: </a>  MPI_Comm comm;
+<a name="line169">169: </a>  TaoPetscApplication*ttpapp;
+
+<a name="line173">173: </a>  info=<A href="../../../../docs/manualpages/ptaopages/TaoAppQueryForObject.html#TaoAppQueryForObject">TaoAppQueryForObject</A>(taoapp,TaoPetscAppXXX,(void**)&amp;ttpapp); CHKERRQ(info);
+<a name="line174">174: </a>  <font color="#4169E1">if</font> (ttpapp==0){
+<a name="line175">175: </a>    info=PetscObjectGetComm((PetscObject)taoapp,&amp;comm); CHKERRQ(info);
+<a name="line176">176: </a>    ttpapp=new TaoPetscApplication(comm);
+<a name="line177">177: </a>    info=<A href="../../../../docs/manualpages/ptaopages/TaoAppAddObject.html#TaoAppAddObject">TaoAppAddObject</A>(taoapp,TaoPetscAppXXX,(void*)ttpapp,&amp;ii); CHKERRQ(info);
+<a name="line178">178: </a>    info=<A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,TaoAppDestroyPetscAppXXX, (void*)ttpapp); CHKERRQ(info);
+<a name="line179">179: </a>  }
+<a name="line180">180: </a>  ttpapp-&gt;papp=taoapp;
+<a name="line181">181: </a>  *tpapp=ttpapp;
+<a name="line182">182: </a>  <font color="#4169E1">return</font>(0);
+<a name="line183">183: </a>}
+
+<a name="line187">187: </a><font color="#B22222">/*@C</font>
+<a name="line188">188: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoGetKSP.html#TaoGetKSP">TaoGetKSP</A> - Gets the linear solver used by the optimization solver.</font>
+<a name="line189">189: </a><font color="#B22222">  Application writers should use <A href="../../../../docs/manualpages/ptaopages/TaoAppGetKSP.html#TaoAppGetKSP">TaoAppGetKSP</A> if they need direct access</font>
+<a name="line190">190: </a><font color="#B22222">  to the PETSc KSP object.</font>
+<a name="line191">191: </a><font color="#B22222">  </font>
+<a name="line192">192: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line193">193: </a><font color="#B22222">.  tao - the TAO solver</font>
+
+<a name="line195">195: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line196">196: </a><font color="#B22222">.  ksp - the KSP linear solver used in the optimization solver</font>
+
+<a name="line198">198: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line200">200: </a><font color="#B22222">.keywords: Application</font>
+
+<a name="line202">202: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppGetKSP.html#TaoAppGetKSP">TaoAppGetKSP</A>()</font>
+
+<a name="line204">204: </a><font color="#B22222">@*/</font>
+<a name="line205">205: </a><strong><font color="#4169E1"><a name="TaoGetKSP"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoGetKSP.html#TaoGetKSP">TaoGetKSP</A>(TAO_SOLVER tao, KSP *ksp)</font></strong>
+<a name="line206">206: </a>{
+<a name="line207">207: </a>  int info;
+<a name="line208">208: </a>  TaoLinearSolver *tsolver;
+<a name="line209">209: </a>  
+<a name="line212">212: </a>  <font color="#4169E1">if</font> (ksp){
+<a name="line213">213: </a>    *ksp=0;
+<a name="line214">214: </a>    info = <A href="../../../../docs/manualpages/solver/TaoGetLinearSolver.html#TaoGetLinearSolver">TaoGetLinearSolver</A>(tao,&amp;tsolver); CHKERRQ(info);
+<a name="line215">215: </a>    <font color="#4169E1">if</font> (tsolver){
+<a name="line216">216: </a>      TaoLinearSolverPetsc *psolver = dynamic_cast &lt;TaoLinearSolverPetsc *&gt; (tsolver);
+<a name="line217">217: </a>      *ksp=psolver-&gt;GetKSP();
+<a name="line218">218: </a>    }
+<a name="line219">219: </a>  } 
+<a name="line220">220: </a>  <font color="#4169E1">return</font>(0);
+<a name="line221">221: </a>}
+
+
+<a name="line226">226: </a><strong><font color="#4169E1"><a name="TaoAppGetTaoSolver"></a>int TaoAppGetTaoSolver(TAO_APPLICATION taoapp, TAO_SOLVER *tao)</font></strong>{
+<a name="line227">227: </a>  int info;
+<a name="line228">228: </a>  TaoPetscApplication* taopetscapp;
+
+<a name="line232">232: </a>  info = TaoAppGetTaoPetscApp(taoapp,&amp;taopetscapp); CHKERRQ(info);
+<a name="line233">233: </a>  <font color="#4169E1">if</font> (tao){ *tao=taopetscapp-&gt;tao; }
+<a name="line234">234: </a>  <font color="#4169E1">return</font>(0);
+<a name="line235">235: </a>}
+
+
+<a name="line240">240: </a><font color="#B22222">/*@C</font>
+<a name="line241">241: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoGetVariableBoundVecs.html#TaoGetVariableBoundVecs">TaoGetVariableBoundVecs</A> - Get the vectors with the</font>
+<a name="line242">242: </a><font color="#B22222">  lower and upper bounds in current solver.</font>
+
+<a name="line244">244: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line245">245: </a><font color="#B22222">.  tao - the TAO solver</font>
+
+<a name="line247">247: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line248">248: </a><font color="#B22222">+  XL - the lower bounds</font>
+<a name="line249">249: </a><font color="#B22222">-  XU - the upper bounds</font>
+
+<a name="line251">251: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line253">253: </a><font color="#B22222">   Note: </font>
+<a name="line254">254: </a><font color="#B22222">   These vectors should not be destroyed.</font>
+
+<a name="line256">256: </a><font color="#B22222">.keywords: Application, bounds</font>
+
+<a name="line258">258: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppGetGradientVec.html#TaoAppGetGradientVec">TaoAppGetGradientVec</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBoundsRoutine.html#TaoAppSetVariableBoundsRoutine">TaoAppSetVariableBoundsRoutine</A>()</font>
+<a name="line259">259: </a><font color="#B22222">@*/</font>
+<a name="line260">260: </a><strong><font color="#4169E1"><a name="TaoGetVariableBoundVecs"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoGetVariableBoundVecs.html#TaoGetVariableBoundVecs">TaoGetVariableBoundVecs</A>(TAO_SOLVER tao, Vec *XL, Vec *XU)</font></strong>{
+<a name="line261">261: </a>  int info;
+<a name="line262">262: </a>  TaoVec *XXLL,*XXUU;
+<a name="line265">265: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao,&amp;XXLL,&amp;XXUU); CHKERRQ(info);
+<a name="line266">266: </a>  <font color="#4169E1">if</font> (XL){
+<a name="line267">267: </a>    *XL=0;
+<a name="line268">268: </a>    <font color="#4169E1">if</font> (XXLL){
+<a name="line269">269: </a>      TaoVecPetsc *pl = dynamic_cast &lt;TaoVecPetsc *&gt; (XXLL);
+<a name="line270">270: </a>      *XL = pl-&gt;GetVec();
+<a name="line271">271: </a>    }
+<a name="line272">272: </a>  }
+<a name="line273">273: </a>  <font color="#4169E1">if</font> (XU){
+<a name="line274">274: </a>    *XU=0;
+<a name="line275">275: </a>    <font color="#4169E1">if</font> (XXUU){
+<a name="line276">276: </a>      TaoVecPetsc *pu = dynamic_cast &lt;TaoVecPetsc *&gt; (XXUU);
+<a name="line277">277: </a>      *XU = pu-&gt;GetVec();
+<a name="line278">278: </a>    }
+<a name="line279">279: </a>  }
+<a name="line280">280: </a>  <font color="#4169E1">return</font>(0);
+<a name="line281">281: </a>}
+
+<a name="line285">285: </a><font color="#B22222">/*@C</font>
+<a name="line286">286: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoAppGetGradientVec.html#TaoAppGetGradientVec">TaoAppGetGradientVec</A> - Get the vector with the</font>
+<a name="line287">287: </a><font color="#B22222">  gradient in the current application.</font>
+
+<a name="line289">289: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line290">290: </a><font color="#B22222">.  tao - the solver</font>
+
+<a name="line292">292: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line293">293: </a><font color="#B22222">.  G - the gradient vector</font>
+
+<a name="line295">295: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line297">297: </a><font color="#B22222">   Note: </font>
+<a name="line298">298: </a><font color="#B22222">   This vector should not be destroyed.</font>
+
+<a name="line300">300: </a><font color="#B22222">.keywords: Application, gradient</font>
+
+<a name="line302">302: </a><font color="#B22222">.seealso:  <A href="../../../../docs/manualpages/ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>()</font>
+<a name="line303">303: </a><font color="#B22222">@*/</font>
+<a name="line304">304: </a><strong><font color="#4169E1"><a name="TaoAppGetGradientVec"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppGetGradientVec.html#TaoAppGetGradientVec">TaoAppGetGradientVec</A>(TAO_SOLVER tao, Vec *G)</font></strong>{
+<a name="line305">305: </a>  int info;
+<a name="line306">306: </a>  TaoVec* GG;
+<a name="line309">309: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetGradient.html#TaoGetGradient">TaoGetGradient</A>(tao,&amp;GG); CHKERRQ(info);
+<a name="line310">310: </a>  <font color="#4169E1">if</font> (G&amp;&amp;GG) {
+<a name="line311">311: </a>    TaoVecPetsc *pg = dynamic_cast &lt;TaoVecPetsc *&gt; (GG);
+<a name="line312">312: </a>    *G = pg-&gt;GetVec();
+<a name="line313">313: </a>  }
+<a name="line314">314: </a>  <font color="#4169E1">return</font>(0);
+<a name="line315">315: </a>}
+
+<a name="line319">319: </a><font color="#B22222">/*@C</font>
+<a name="line320">320: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoAppGetGessianMat.html#TaoAppGetGessianMat">TaoAppGetGessianMat</A> - Get the vector with the</font>
+<a name="line321">321: </a><font color="#B22222">  gradient in the current application.</font>
+
+<a name="line323">323: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line324">324: </a><font color="#B22222">.  tao - the solver</font>
+
+<a name="line326">326: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line327">327: </a><font color="#B22222">.  H - the hessian matrix</font>
+<a name="line328">328: </a><font color="#B22222">.  Hpre - the hessian preconditioner</font>
+
+<a name="line330">330: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line332">332: </a><font color="#B22222">   Note: </font>
+<a name="line333">333: </a><font color="#B22222">   These matrices should not be destroyed.</font>
+
+<a name="line335">335: </a><font color="#B22222">.keywords: Application, hessian</font>
+
+<a name="line337">337: </a><font color="#B22222">.seealso:  <A href="../../../../docs/manualpages/ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppGetGradientVec.html#TaoAppGetGradientVec">TaoAppGetGradientVec</A>()</font>
+<a name="line338">338: </a><font color="#B22222">@*/</font>
+<a name="line339">339: </a><strong><font color="#4169E1"><a name="TaoAppGetHessianMat"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppGetHessianMat.html#TaoAppGetHessianMat">TaoAppGetHessianMat</A>(TAO_SOLVER tao, Mat *H, Mat *Hpre)</font></strong>{
+<a name="line340">340: </a>  int info;
+<a name="line341">341: </a>  TaoMat* TM=0;
+<a name="line342">342: </a>  MatStructure flag;
+<a name="line345">345: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetHessian.html#TaoGetHessian">TaoGetHessian</A>(tao,&amp;TM); CHKERRQ(info);
+<a name="line346">346: </a>  <font color="#4169E1">if</font> (H &amp;&amp; TM) {
+<a name="line347">347: </a>    TaoMatPetsc *tmp = dynamic_cast &lt;TaoMatPetsc *&gt; (TM);
+<a name="line348">348: </a>    info = tmp-&gt;GetMatrix(H, Hpre, &amp;flag); CHKERRQ(info);
+<a name="line349">349: </a>  }
+<a name="line350">350: </a>  <font color="#4169E1">return</font>(0);
+<a name="line351">351: </a>}
+
+
+<a name="line356">356: </a><font color="#B22222">/*@</font>
+<a name="line357">357: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoCopyDualsOfVariableBounds.html#TaoCopyDualsOfVariableBounds">TaoCopyDualsOfVariableBounds</A> - Copy the current dual variables</font>
+<a name="line358">358: </a><font color="#B22222">  corresponding the lower and upper bounds on the variables.</font>
+<a name="line359">359: </a><font color="#B22222">  </font>
+<a name="line360">360: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line361">361: </a><font color="#B22222">.  tao - the solver</font>
+
+<a name="line363">363: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line364">364: </a><font color="#B22222">+  DXL - the lower bounds</font>
+<a name="line365">365: </a><font color="#B22222">-  DXU - the upper bounds</font>
+
+<a name="line367">367: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line369">369: </a><font color="#B22222">   Note:  </font>
+<a name="line370">370: </a><font color="#B22222">   Existing vectors of commensurate distribution to the</font>
+<a name="line371">371: </a><font color="#B22222">   variable bounds should be passed into this routine.</font>
+
+<a name="line373">373: </a><font color="#B22222">   Note: </font>
+<a name="line374">374: </a><font color="#B22222">   These variables may have to be computed.  It may not be efficient</font>
+<a name="line375">375: </a><font color="#B22222">   to call this routine in a <A href="../../../../docs/manualpages/taoapp/Monitor.html#Monitor">Monitor</A>.</font>
+
+<a name="line377">377: </a><font color="#B22222">   Note: </font>
+<a name="line378">378: </a><font color="#B22222">   These variables can be interpreted as the sensitivity of</font>
+<a name="line379">379: </a><font color="#B22222">   the objective value with respect to the bounds on the variables.</font>
+
+<a name="line381">381: </a><font color="#B22222">.keywords: Application, bounds, duals</font>
+
+<a name="line383">383: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppGetGradientVec.html#TaoAppGetGradientVec">TaoAppGetGradientVec</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetVariableBoundsRoutine.html#TaoAppSetVariableBoundsRoutine">TaoAppSetVariableBoundsRoutine</A>()</font>
+<a name="line384">384: </a><font color="#B22222">@*/</font>
+<a name="line385">385: </a><strong><font color="#4169E1"><a name="TaoCopyDualsOfVariableBounds"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoCopyDualsOfVariableBounds.html#TaoCopyDualsOfVariableBounds">TaoCopyDualsOfVariableBounds</A>(TAO_SOLVER tao, Vec DXL, Vec DXU)</font></strong>{
+<a name="line386">386: </a>  int info;
+<a name="line387">387: </a>  TaoVecPetsc *ddxl,*ddxu;
+<a name="line390">390: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>(DXL,&amp;ddxl); CHKERRQ(info);
+<a name="line391">391: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>(DXU,&amp;ddxu); CHKERRQ(info);
+<a name="line392">392: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetDualVariables.html#TaoGetDualVariables">TaoGetDualVariables</A>(tao, ddxl, ddxu); CHKERRQ(info);
+<a name="line393">393: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(ddxl); CHKERRQ(info);
+<a name="line394">394: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(ddxu); CHKERRQ(info);
+<a name="line395">395: </a>  <font color="#4169E1">return</font>(0);
+<a name="line396">396: </a>}
+
+
+
+<a name="line402">402: </a><font color="#B22222">/*@C</font>
+<a name="line403">403: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoSetInequality.html#TaoSetInequality">TaoSetInequality</A> Constraints - Set inequality constraints for OOQP</font>
+
+<a name="line405">405: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line407">407: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line408">408: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line409">409: </a><font color="#B22222">.  ll - vector to store lower bounds</font>
+<a name="line410">410: </a><font color="#B22222">.  uu - vector to store upper bounds</font>
+<a name="line411">411: </a><font color="#B22222">-  AA - matrix to store linear inequality constraints</font>
+
+<a name="line413">413: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line415">415: </a><font color="#B22222">.keywords: TAO_SOLVER, inequalities</font>
+
+<a name="line417">417: </a><font color="#B22222">@*/</font>
+<a name="line418">418: </a><strong><font color="#4169E1"><a name="TaoSetInequalityConstraints"></a>int TaoSetInequalityConstraints(TAO_APPLICATION taoapp, Vec ll, Mat A, Vec uu)</font></strong>{
+
+<a name="line420">420: </a>  int info;
+<a name="line421">421: </a>  TaoPetscApplication* taopetscapp;
+<a name="line423">423: </a>  info = TaoAppGetTaoPetscApp(taoapp,&amp;taopetscapp);
+<a name="line424">424: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(taopetscapp-&gt;taofvll); CHKERRQ(info); taopetscapp-&gt;taofvll=0;
+<a name="line425">425: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>(ll,&amp;taopetscapp-&gt;taofvll); CHKERRQ(info);
+<a name="line426">426: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(taopetscapp-&gt;taofvuu); CHKERRQ(info); taopetscapp-&gt;taofvuu=0;
+<a name="line427">427: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>(uu,&amp;taopetscapp-&gt;taofvuu); CHKERRQ(info);
+<a name="line428">428: </a>  info = <A href="../../../../docs/manualpages/matrix/TaoMatDestroy.html#TaoMatDestroy">TaoMatDestroy</A>(taopetscapp-&gt;taoAA); CHKERRQ(info); taopetscapp-&gt;taoAA=0;
+<a name="line429">429: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoWrapPetscMat.html#TaoWrapPetscMat">TaoWrapPetscMat</A>(A,&amp;taopetscapp-&gt;taoAA); CHKERRQ(info);
+<a name="line430">430: </a>  <font color="#4169E1">return</font>(0);
+<a name="line431">431: </a>}
+</pre>
+</body>
+
+</html>

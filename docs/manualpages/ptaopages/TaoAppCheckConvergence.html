@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppCheckConvergence</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppCheckConvergence"><H1>TaoAppCheckConvergence</H1></A>
+Check convergence of application. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppCheckConvergence(TAO_APPLICATION taoapp, Vec GL, PetscTruth *flag)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>GL </B></TD><TD>- the gradient of the Lagrangian function
+</TD></TR>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>flag </B></TD><TD>- set to PETSC_TRUE if the TAO solver should stop.
+</TD></TR>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_APPLICATION, monitor
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_monitor.c.html#TaoAppCheckConvergence">src/petsctao/application/petscapp/tao_app_monitor.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

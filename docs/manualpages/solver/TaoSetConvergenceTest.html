@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetConvergenceTest</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetConvergenceTest"><H1>TaoSetConvergenceTest</H1></A>
+Sets the function that is to be used  to test for convergence of the iterative minimization solution.  The  new convergence testing routine will replace TAO's default  convergence test.    
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetConvergenceTest(TAO_SOLVER tao,int (*conv)(TAO_SOLVER,void*),void *cctx)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>conv </B></TD><TD>- routine to test for convergence
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>cctx </B></TD><TD>- [optional] context for private data for the convergence routine 
+(may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of conv</FONT></H2>
+<pre>
+    int conv (TAO_SOLVER tao, void *cctx)
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>cctx </B></TD><TD>- [optional] convergence context
+</TD></TR></TABLE>
+<P>
+Note: The new convergence testing routine should call <A HREF="../solver/TaoSetTerminationReason.html#TaoSetTerminationReason">TaoSetTerminationReason</A>().
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ options, convergence
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoSetTerminationReason.html#TaoSetTerminationReason">TaoSetTerminationReason</A>(), <A HREF="../solver/TaoGetSolutionStatus.html#TaoGetSolutionStatus">TaoGetSolutionStatus</A>(), <A HREF="../solver/TaoGetTolerances.html#TaoGetTolerances">TaoGetTolerances</A>(),  <A HREF="../solver/TaoGetGradientTolerances.html#TaoGetGradientTolerances">TaoGetGradientTolerances</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao.c.html#TaoSetConvergenceTest">src/interface/tao.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

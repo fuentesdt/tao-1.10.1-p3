@@ -1,0 +1,4 @@
+#define 30437_img51_width 6
+#define 30437_img51_height 5
+static char 30437_img51_bits[] = {
+ 0x3c,0x12,0x11,0x19,0x0e};

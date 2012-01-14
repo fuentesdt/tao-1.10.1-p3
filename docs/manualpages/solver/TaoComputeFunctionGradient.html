@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoComputeFunctionGradient</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoComputeFunctionGradient"><H1>TaoComputeFunctionGradient</H1></A>
+Computes the function value and its gradient 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoComputeFunctionGradient(TAO_SOLVER solver,TaoVec* xx, double *f, TaoVec* gg)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>solver </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xx </B></TD><TD>- input vector
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- function value   
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gg </B></TD><TD>- gradient vector
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+<A HREF="../solver/TaoComputeFunctionGradient.html#TaoComputeFunctionGradient">TaoComputeFunctionGradient</A>() is typically used within minimization
+implementations, so most users would not generally call this routine
+themselves.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, compute, gradient
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  TaoApplication::<A HREF="../taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A>(), <A HREF="../solver/TaoComputeFunction.html#TaoComputeFunction">TaoComputeFunction</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao_fghj.c.html#TaoComputeFunctionGradient">src/interface/tao_fghj.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,157 @@
+\begin{thebibliography}{10}
+
+\bibitem{armijo:minimization}
+L.~Armijo.
+\newblock Minimization of functions having {L}ipschitz-continuous first partial
+  derivatives.
+\newblock {\em Pacific Journal of Mathematics}, 16:1--3, 1966.
+
+\bibitem{petsc-web-page}
+Satish Balay, William~D. Gropp, Lois~Curfman McInnes, and Barry~F. Smith.
+\newblock {PETSc} {W}eb page.
+\newblock See \url{http://www.mcs.anl.gov/petsc}.
+
+\bibitem{petsc}
+Satish Balay, William~D. Gropp, Lois~Curfman McInnes, and Barry~F. Smith.
+\newblock Efficient management of parallelism in object oriented numerical
+  software libraries.
+\newblock In E.~Arge, A.~M. Bruaset, and H.~P. Langtangen, editors, {\em Modern
+  Software Tools in Scientific Computing}, pages 163--202. Birkhauser Press,
+  1997.
+
+\bibitem{petsc-user-ref}
+Satish Balay, William~D. Gropp, Lois~Curfman McInnes, and Barry~F. Smith.
+\newblock {PETS}c 2.0 users manual.
+\newblock Technical Report ANL-95/11 - Revision 2.1.0, Argonne National
+  Laboratory, Apr 2001.
+
+\bibitem{CGT}
+A.~R. Conn, N.~I.~M. Gould, and Ph.~L. Toint.
+\newblock {\em Trust-Region Methods}.
+\newblock SIAM, Philadelphia, Pennsylvania, 2000.
+
+\bibitem{cottle:nonlinear}
+R.~W. Cottle.
+\newblock {\em Nonlinear programs with positively bounded {J}acobians}.
+\newblock PhD thesis, Department of Mathematics, University of California,
+  Berkeley, California, 1964.
+
+\bibitem{deluca.facchinei.ea:semismooth}
+T.~{De~Luca}, F.~Facchinei, and C.~Kanzow.
+\newblock A semismooth equation approach to the solution of nonlinear
+  complementarity problems.
+\newblock {\em Mathematical Programming}, 75:407--439, 1996.
+
+\bibitem{facchinei.fischer.ea:semismooth}
+F.~Facchinei, A.~Fischer, and C.~Kanzow.
+\newblock A semismooth {N}ewton method for variational inequalities: The case
+  of box constraints.
+\newblock In M.~C. Ferris and J.~S. Pang, editors, {\em Complementarity and
+  Variational Problems: State of the Art}, pages 76--90, Philadelphia,
+  Pennsylvania, 1997. SIAM Publications.
+
+\bibitem{ferris.pang:engineering}
+M.~C. Ferris and J.~S. Pang.
+\newblock Engineering and economic applications of complementarity problems.
+\newblock {\em SIAM Review}, 39:669--713, 1997.
+
+\bibitem{fischer:special}
+A.~Fischer.
+\newblock A special {N}ewton--type optimization method.
+\newblock {\em Optimization}, 24:269--284, 1992.
+
+\bibitem{grippo.lampariello.ea:nonmonotone}
+L.~Grippo, F.~Lampariello, and S.~Lucidi.
+\newblock A nonmonotone line search technique for {N}ewton's method.
+\newblock {\em SIAM Journal on Numerical Analysis}, 23:707--716, 1986.
+
+\bibitem{mpich-web-page}
+William Gropp and Ewing Lusk.
+\newblock {MPICH} {W}eb page.
+\newblock \url{http://www.mcs.anl.gov/mpi/mpich}.
+
+\bibitem{using-mpi}
+William Gropp, Ewing Lusk, and Anthony Skjellum.
+\newblock {\em Using {MPI}: Portable Parallel Programming with the Message
+  Passing Interface}.
+\newblock MIT Press, 1994.
+
+\bibitem{huang.pang:option}
+J.~Huang and J.~S. Pang.
+\newblock Option pricing and linear complementarity.
+\newblock {\em Journal of Computational Finance}, 2:31--60, 1998.
+
+\bibitem{bs-user-ref}
+Mark~T. Jones and Paul~E. Plassmann.
+\newblock {BlockSolve95} users manual: Scalable library software for the
+  parallel solution of sparse linear systems.
+\newblock Technical Report ANL-95/48, Argonne National Laboratory, December
+  1995.
+
+\bibitem{karush:minima}
+W.~Karush.
+\newblock Minima of functions of several variables with inequalities as side
+  conditions.
+\newblock Master's thesis, Department of Mathematics, University of Chicago,
+  1939.
+
+\bibitem{kuhn.tucker:nonlinear}
+H.~W. Kuhn and A.~W. Tucker.
+\newblock Nonlinear programming.
+\newblock In J.~Neyman, editor, {\em Proceedings of the Second Berkeley
+  Symposium on Mathematical Statistics and Probability}, pages 481--492.
+  University of California Press, Berkeley and Los Angeles, 1951.
+
+\bibitem{lin_c3}
+C.-J. Lin and J.~J. Mor\'e.
+\newblock Newton's method for large bound-constrained optimization problems.
+\newblock {\em SIOPT}, 9(4):1100--1127, 1999.
+
+\bibitem{mifflin:semismooth}
+R.~Mifflin.
+\newblock Semismooth and semiconvex functions in constrained optimization.
+\newblock {\em SIAM Journal on Control and Optimization}, 15:957--972, 1977.
+
+\bibitem{more-toraldo}
+Jorge~J. Mor\'e and G.~Toraldo.
+\newblock On the solution of large quadratic programming problems with bound
+  constraints.
+\newblock {\em SIOPT}, 1:93--113, 1991.
+
+\bibitem{MPI-final}
+{MPI}: {A} message-passing interface standard.
+\newblock {\em International J. Supercomputing Applications}, 8(3/4), 1994.
+
+\bibitem{munson.facchinei.ea:semismooth}
+T.~S. Munson, F.~Facchinei, M.~C. Ferris, A.~Fischer, and C.~Kanzow.
+\newblock The semismooth algorithm for large scale complementarity problems.
+\newblock {\em INFORMS Journal on Computing}, forthcoming, 2001.
+
+\bibitem{nash:equilibrium}
+J.~F. Nash.
+\newblock Equilibrium points in {N}--person games.
+\newblock {\em Proceedings of the National Academy of Sciences}, 36:48--49,
+  1950.
+
+\bibitem{nelder.mead:simplex}
+J.~A. Nelder and R.~Mead.
+\newblock A simplex method for function minimization.
+\newblock {\em Computer Journal}, 7:308--313, 1965.
+
+\bibitem{NW99}
+Jorge Nocedal and Stephen~J. Wright.
+\newblock {\em Numerical Optimization}.
+\newblock Springer-Verlag, New York, 1999.
+
+\bibitem{qi:convergence}
+L.~Qi.
+\newblock Convergence analysis of some algorithms for solving nonsmooth
+  equations.
+\newblock {\em Mathematics of Operations Research}, 18:227--244, 1993.
+
+\bibitem{qi.sun:nonsmooth}
+L.~Qi and J.~Sun.
+\newblock A nonsmooth version of {N}ewton's method.
+\newblock {\em Mathematical Programming}, 58:353--368, 1993.
+
+\end{thebibliography}

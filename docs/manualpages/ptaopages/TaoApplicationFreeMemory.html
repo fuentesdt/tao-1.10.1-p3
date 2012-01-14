@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoApplicationFreeMemory</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoApplicationFreeMemory"><H1>TaoApplicationFreeMemory</H1></A>
+Calls PetscFree() the argument. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoApplicationFreeMemory(void*ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>ctx </B> -pointer to structure created by PetscMalloc().
+<br>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+A pointer to this routine can be passed into TaoApp functions which will
+call this routine at a later time.
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ destroy
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(), PetscFree()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_util.c.html#TaoApplicationFreeMemory">src/petsctao/application/petscapp/tao_app_util.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

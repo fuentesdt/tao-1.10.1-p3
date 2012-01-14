@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppComputeGradient</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppComputeGradient"><H1>TaoAppComputeGradient</H1></A>
+Compute the gradient of the objective function using the routine set by TaoApplicationSetGradientRoutine(). 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppComputeVariableBounds(TAO_APPLICATION taoapp, Vec XL, Vec XU)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taopp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>X </B></TD><TD>- the point where the objective should be evaluated
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<DT><B>f </B> -function value
+<br>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_APPLICATION, objective
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(), <A HREF="../ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_j.c.html#TaoAppComputeGradient">src/petsctao/application/petscapp/tao_app_j.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

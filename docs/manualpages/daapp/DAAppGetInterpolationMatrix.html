@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppGetInterpolationMatrix</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppGetInterpolationMatrix"><H1>DAAppGetInterpolationMatrix</H1></A>
+Sets pointers to existing vectors containg upper and lower bounds on the variables. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taodaapplication.h" 
+int DAAppGetInterpolationMatrix(TAO_APPLICATION daapplication, PetscInt level, Mat *Interpolate, Vec *CScale)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the DA Application object
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>level </B></TD><TD>- the DA on which the current solution is desired (Level 0 is coarsest)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>Interpolate </B></TD><TD>- the interpolating matrix
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>CScale </B></TD><TD>- the scaling matrix for restriction Matrix
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../daapp/DAAppSetBeforeMonitor.html#DAAppSetBeforeMonitor">DAAppSetBeforeMonitor</A>(), <A HREF="../daapp/DAAppSetAfterMonitor.html#DAAppSetAfterMonitor">DAAppSetAfterMonitor</A>();
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ Interpolate, DA
+<BR><P><P><H2><FONT COLOR="#CC3333">Examples</FONT></H2><A HREF="../../../src/petsctao/gridapplication/examples/jbearing3f.F">src/petsctao/gridapplication/examples/jbearing3f.F</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c">src/petsctao/gridapplication/examples/jbearing3.c</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c">src/petsctao/gridapplication/examples/minsurf3.c</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c">src/petsctao/gridapplication/examples/eptorsion3.c</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c">src/petsctao/gridapplication/examples/combustion3.c</A><BR>
+<P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/interface/daapp.c.html#DAAppGetInterpolationMatrix">src/petsctao/gridapplication/interface/daapp.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c.html">src/petsctao/gridapplication/examples/eptorsion3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c.html">src/petsctao/gridapplication/examples/jbearing3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c.html">src/petsctao/gridapplication/examples/minsurf3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c.html">src/petsctao/gridapplication/examples/combustion3.c.html</A><BR>
+</BODY></HTML>
+

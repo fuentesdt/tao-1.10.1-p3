@@ -1,0 +1,4 @@
+#define 30767_img66_width 6
+#define 30767_img66_height 7
+static char 30767_img66_bits[] = {
+ 0x3a,0x25,0x22,0x12,0x12,0x10,0x08};

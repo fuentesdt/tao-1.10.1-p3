@@ -1,0 +1,524 @@
+<center><a href="projectedarmijo.c">Actual source code: projectedarmijo.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:10+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"projectedarmijo.h"</font><font color="#A020F0"></font>
+
+<a name="line3">  3: </a><strong><font color="#228B22">#define REPLACE_FIFO 1</font></strong>
+<a name="line4">  4: </a><strong><font color="#228B22">#define REPLACE_MRU  2</font></strong>
+
+<a name="line6">  6: </a><strong><font color="#228B22">#define REFERENCE_MAX 1</font></strong>
+<a name="line7">  7: </a><strong><font color="#228B22">#define REFERENCE_AVE 2</font></strong>
+<a name="line8">  8: </a><strong><font color="#228B22">#define REFERENCE_MEAN 3</font></strong>
+
+<a name="line12"> 12: </a><strong><font color="#4169E1"><a name="TaoDestroy_ProjectedArmijo"></a>static int TaoDestroy_ProjectedArmijo(TAO_SOLVER tao, void*ctx)</font></strong>
+<a name="line13"> 13: </a>{
+<a name="line14"> 14: </a>  TAO_PROJECTEDARMIJO *ls = (TAO_PROJECTEDARMIJO *)ctx;
+<a name="line15"> 15: </a>  int info;
+
+<a name="line17"> 17: </a>  TaoFunctionBegin;
+<a name="line18"> 18: </a>  <font color="#4169E1">if</font> (ls-&gt;work != TAO_NULL) {
+<a name="line19"> 19: </a>    delete ls-&gt;work;
+<a name="line20"> 20: </a>  }
+
+<a name="line22"> 22: </a>  <font color="#4169E1">if</font> (ls-&gt;memory != TAO_NULL) {
+<a name="line23"> 23: </a>    info = TaoFree(ls-&gt;memory); CHKERRQ(info);
+<a name="line24"> 24: </a>    ls-&gt;memory = TAO_NULL;
+<a name="line25"> 25: </a>  }
+<a name="line26"> 26: </a>  info = TaoFree(ls); CHKERRQ(info);
+<a name="line27"> 27: </a>  TaoFunctionReturn(0);
+<a name="line28"> 28: </a>}
+
+<a name="line32"> 32: </a><strong><font color="#4169E1"><a name="TaoSetOptions_ProjectedArmijo"></a>static int TaoSetOptions_ProjectedArmijo(TAO_SOLVER tao, void*ctx)</font></strong>
+<a name="line33"> 33: </a>{
+<a name="line34"> 34: </a>  TAO_PROJECTEDARMIJO *ls = (TAO_PROJECTEDARMIJO *)ctx;
+<a name="line35"> 35: </a>  int info;
+
+<a name="line37"> 37: </a>  TaoFunctionBegin;
+<a name="line38"> 38: </a>  info = TaoOptionsHead(<font color="#666666">"Projected Armijo linesearch options"</font>);CHKERRQ(info);
+<a name="line39"> 39: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_projected_armijo_alpha"</font>, <font color="#666666">"initial reference constant"</font>, <font color="#666666">""</font>, ls-&gt;alpha, &amp;ls-&gt;alpha, 0); CHKERRQ(info);
+<a name="line40"> 40: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_projected_armijo_beta"</font>, <font color="#666666">"decrease constant"</font>, <font color="#666666">""</font>, ls-&gt;beta, &amp;ls-&gt;beta, 0); CHKERRQ(info);
+<a name="line41"> 41: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_projected_armijo_sigma"</font>, <font color="#666666">"acceptance constant"</font>, <font color="#666666">""</font>, ls-&gt;sigma, &amp;ls-&gt;sigma, 0); CHKERRQ(info);
+<a name="line42"> 42: </a>  info = TaoOptionInt(<font color="#666666">"-tao_projected_armijo_memory_size"</font>, <font color="#666666">"number of historical elements"</font>, <font color="#666666">""</font>, ls-&gt;memorySize, &amp;ls-&gt;memorySize, 0); CHKERRQ(info);
+<a name="line43"> 43: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_projected_armijo_minimum_step"</font>, <font color="#666666">"minimum acceptable step"</font>, <font color="#666666">""</font>, ls-&gt;minimumStep, &amp;ls-&gt;minimumStep, 0); CHKERRQ(info);
+<a name="line44"> 44: </a>  info = TaoOptionInt(<font color="#666666">"-tao_projected_armijo_reference_policy"</font>, <font color="#666666">"policy for updating reference value"</font>, <font color="#666666">""</font>, ls-&gt;referencePolicy, &amp;ls-&gt;referencePolicy, 0); CHKERRQ(info);
+<a name="line45"> 45: </a>  info = TaoOptionInt(<font color="#666666">"-tao_projected_armijo_replacement_policy"</font>, <font color="#666666">"policy for updating memory"</font>, <font color="#666666">""</font>, ls-&gt;replacementPolicy, &amp;ls-&gt;replacementPolicy, 0); CHKERRQ(info);
+<a name="line46"> 46: </a>  info = TaoOptionsTail();CHKERRQ(info);
+<a name="line47"> 47: </a>  TaoFunctionReturn(0);
+<a name="line48"> 48: </a>}
+
+<a name="line52"> 52: </a><strong><font color="#4169E1"><a name="TaoView_ProjectedArmijo"></a>static int TaoView_ProjectedArmijo(TAO_SOLVER tao, void *ctx)</font></strong>
+<a name="line53"> 53: </a>{
+<a name="line54"> 54: </a>  TAO_PROJECTEDARMIJO *ls = (TAO_PROJECTEDARMIJO *)ctx;
+<a name="line55"> 55: </a>  int info;
+
+<a name="line57"> 57: </a>  TaoFunctionBegin;
+
+<a name="line59"> 59: </a>  info=TaoPrintDouble(tao,<font color="#666666">"  Projected Armijo linesearch: alpha=%g"</font>,ls-&gt;alpha);CHKERRQ(info);
+<a name="line60"> 60: </a>  info=TaoPrintDouble(tao,<font color="#666666">" beta=%g "</font>,ls-&gt;beta);CHKERRQ(info);
+<a name="line61"> 61: </a>  info=TaoPrintDouble(tao,<font color="#666666">"sigma=%g "</font>,ls-&gt;sigma);CHKERRQ(info);
+<a name="line62"> 62: </a>  info=TaoPrintDouble(tao,<font color="#666666">"minstep=%g,"</font>,ls-&gt;minimumStep);CHKERRQ(info);
+<a name="line63"> 63: </a>  info=TaoPrintInt(tao,<font color="#666666">"memsize=%d\n"</font>,ls-&gt;memorySize);CHKERRQ(info);
+
+<a name="line65"> 65: </a>  TaoFunctionReturn(0);
+<a name="line66"> 66: </a>}
+
+<a name="line70"> 70: </a><strong><font color="#4169E1"><a name="TaoApply_PreProjectedArmijo"></a>static int TaoApply_PreProjectedArmijo(TAO_SOLVER tao, TAO_PROJECTEDARMIJO *ls,</font></strong>
+<a name="line71"> 71: </a><strong><font color="#4169E1">                                       double f, double step,</font></strong>
+<a name="line72"> 72: </a><strong><font color="#4169E1">                                       double *ref, TaoInt *idx, TaoInt *info2)</font></strong>
+<a name="line73"> 73: </a>{
+<a name="line74"> 74: </a>  int info;
+<a name="line75"> 75: </a>  TaoInt i;
+
+<a name="line77"> 77: </a>  TaoFunctionBegin;
+
+<a name="line79"> 79: </a>  *info2 = 0;
+
+<a name="line81"> 81: </a>  // Check linesearch parameters
+<a name="line82"> 82: </a>  <font color="#4169E1">if</font> (step &lt; 0) {
+<a name="line83"> 83: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_ProjectedArmijo:Line search error: step (%g) &lt; 0\n"</font>, step); CHKERRQ(info);
+<a name="line84"> 84: </a>    *info2 = -1; 
+<a name="line85"> 85: </a>    TaoFunctionReturn(0);
+<a name="line86"> 86: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ls-&gt;alpha &lt; 1) {
+<a name="line87"> 87: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_ProjectedArmijo:Line search error: alpha (%g) &lt; 1\n"</font>, ls-&gt;alpha); CHKERRQ(info);
+<a name="line88"> 88: </a>    *info2 = -2; 
+<a name="line89"> 89: </a>    TaoFunctionReturn(0);
+<a name="line90"> 90: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((ls-&gt;beta &lt;= 0) || (ls-&gt;beta &gt;= 1)) {
+<a name="line91"> 91: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_ProjectedArmijo:Line search error: beta (%g) invalid\n"</font>, ls-&gt;beta); CHKERRQ(info);
+<a name="line92"> 92: </a>    *info2 = -3; 
+<a name="line93"> 93: </a>    TaoFunctionReturn(0);
+<a name="line94"> 94: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((ls-&gt;sigma &lt;= 0) || (ls-&gt;sigma &gt;= 0.5)) {
+<a name="line95"> 95: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_ProjectedArmijo:Line search error: sigma (%g) invalid\n"</font>, ls-&gt;sigma); CHKERRQ(info);
+<a name="line96"> 96: </a>    *info2 = -4; 
+<a name="line97"> 97: </a>    TaoFunctionReturn(0);
+<a name="line98"> 98: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ls-&gt;minimumStep &lt;= 0) {
+<a name="line99"> 99: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_ProjectedArmijo:Line search error: minimum_step (%g) &lt;= 0\n"</font>, ls-&gt;minimumStep); CHKERRQ(info);
+<a name="line100">100: </a>    *info2 = -5; 
+<a name="line101">101: </a>    TaoFunctionReturn(0);
+<a name="line102">102: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ls-&gt;memorySize &lt; 1) {
+<a name="line103">103: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_ProjectedArmijo:Line search error: memory_size (%d) &lt; 1\n"</font>, ls-&gt;memorySize); CHKERRQ(info);
+<a name="line104">104: </a>    *info2 = -6; 
+<a name="line105">105: </a>    TaoFunctionReturn(0);
+<a name="line106">106: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((ls-&gt;referencePolicy != REFERENCE_MAX) &amp;&amp;
+<a name="line107">107: </a>             (ls-&gt;referencePolicy != REFERENCE_AVE) &amp;&amp;
+<a name="line108">108: </a>             (ls-&gt;referencePolicy != REFERENCE_MEAN)){
+<a name="line109">109: </a>    info = PetscInfo(tao,<font color="#666666">"TaoApply_ProjectedArmijo:Line search error: reference_policy invalid\n"</font>); CHKERRQ(info);
+<a name="line110">110: </a>    *info2 = -7; 
+<a name="line111">111: </a>    TaoFunctionReturn(0);
+<a name="line112">112: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((ls-&gt;replacementPolicy != REPLACE_FIFO) &amp;&amp; 
+<a name="line113">113: </a>             (ls-&gt;replacementPolicy != REPLACE_MRU)) {
+<a name="line114">114: </a>    info = PetscInfo(tao,<font color="#666666">"TaoApply_ProjectedArmijo:Line search error: replacement_policy invalid\n"</font>); CHKERRQ(info);
+<a name="line115">115: </a>    *info2 = -8; 
+<a name="line116">116: </a>    TaoFunctionReturn(0);
+<a name="line117">117: </a>  }
+
+<a name="line119">119: </a>  // Check to see of the memory has been allocated.  If not, allocate
+<a name="line120">120: </a>  // the historical array and populate it with the initial function
+<a name="line121">121: </a>  // values.
+
+<a name="line123">123: </a>  <font color="#4169E1">if</font> (ls-&gt;memory == TAO_NULL) {
+<a name="line124">124: </a>    info = TaoMalloc(<font color="#4169E1">sizeof</font>(double)*ls-&gt;memorySize, &amp;ls-&gt;memory);CHKERRQ(info);
+<a name="line125">125: </a>    info = PetscLogObjectMemory(tao, <font color="#4169E1">sizeof</font>(double)*ls-&gt;memorySize); CHKERRQ(info);
+<a name="line126">126: </a>  }
+
+<a name="line128">128: </a>  <font color="#4169E1">if</font> (tao-&gt;iter == 0) {
+<a name="line129">129: </a>    <font color="#4169E1">for</font> (i = 0; i &lt; ls-&gt;memorySize; i++) {
+<a name="line130">130: </a>      ls-&gt;memory[i] = ls-&gt;alpha*(f);
+<a name="line131">131: </a>    }
+
+<a name="line133">133: </a>    ls-&gt;current = 0;
+<a name="line134">134: </a>    ls-&gt;lastReference = ls-&gt;memory[0];
+<a name="line135">135: </a>  }
+
+<a name="line137">137: </a>  // Calculate reference value (MAX)
+<a name="line138">138: </a>  *ref = ls-&gt;memory[0];
+<a name="line139">139: </a>  *idx = 0;
+
+<a name="line141">141: </a>  <font color="#4169E1">for</font> (i = 1; i &lt; ls-&gt;memorySize; i++) {
+<a name="line142">142: </a>    <font color="#4169E1">if</font> (ls-&gt;memory[i] &gt; *ref) {
+<a name="line143">143: </a>      *ref = ls-&gt;memory[i];
+<a name="line144">144: </a>      *idx = i;
+<a name="line145">145: </a>    }
+<a name="line146">146: </a>  }
+
+<a name="line148">148: </a>  <font color="#4169E1">if</font> (ls-&gt;referencePolicy == REFERENCE_AVE) {
+<a name="line149">149: </a>    *ref = 0;
+<a name="line150">150: </a>    <font color="#4169E1">for</font> (i = 0; i &lt; ls-&gt;memorySize; i++) {
+<a name="line151">151: </a>      *ref += ls-&gt;memory[i];
+<a name="line152">152: </a>    }
+<a name="line153">153: </a>    *ref = *ref / ls-&gt;memorySize;
+<a name="line154">154: </a>    *ref = TaoMax(*ref, ls-&gt;memory[ls-&gt;current]);
+<a name="line155">155: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ls-&gt;referencePolicy == REFERENCE_MEAN) {
+<a name="line156">156: </a>    *ref = TaoMin(*ref, 0.5*(ls-&gt;lastReference + ls-&gt;memory[ls-&gt;current]));
+<a name="line157">157: </a>  }
+
+<a name="line159">159: </a>  TaoFunctionReturn(0);
+<a name="line160">160: </a>}
+
+<a name="line164">164: </a><strong><font color="#4169E1"><a name="TaoApply_PostProjectedArmijo"></a>static int TaoApply_PostProjectedArmijo(TAO_SOLVER tao, TAO_PROJECTEDARMIJO *ls,</font></strong>
+<a name="line165">165: </a><strong><font color="#4169E1">                                        double f, double step,</font></strong>
+<a name="line166">166: </a><strong><font color="#4169E1">                                        double ref, TaoInt idx, TaoInt *info2)</font></strong>
+<a name="line167">167: </a>{
+<a name="line168">168: </a>  int info;
+<a name="line169">169: </a>  TaoFunctionBegin;
+
+<a name="line171">171: </a>  *info2 = 0;
+
+<a name="line173">173: </a>  // Check termination
+<a name="line174">174: </a>  <font color="#4169E1">if</font> (step &lt; ls-&gt;minimumStep) {
+<a name="line175">175: </a>    info = PetscInfo(tao, <font color="#666666">"TaoApply_ProjectedArmijo:Step is at lower bound.\n"</font>); CHKERRQ(info);
+<a name="line176">176: </a>    *info2 = 1;
+<a name="line177">177: </a>    TaoFunctionReturn(0);
+<a name="line178">178: </a>  }
+
+<a name="line180">180: </a>  // Successful termination, update memory
+<a name="line181">181: </a>  ls-&gt;lastReference = ref;
+<a name="line182">182: </a>  <font color="#4169E1">if</font> (ls-&gt;replacementPolicy == REPLACE_FIFO) {
+<a name="line183">183: </a>    ls-&gt;memory[ls-&gt;current++] = f;
+<a name="line184">184: </a>    <font color="#4169E1">if</font> (ls-&gt;current &gt;= ls-&gt;memorySize) {
+<a name="line185">185: </a>      ls-&gt;current = 0;
+<a name="line186">186: </a>    }
+<a name="line187">187: </a>  } <font color="#4169E1">else</font> {
+<a name="line188">188: </a>    ls-&gt;current = idx;
+<a name="line189">189: </a>    ls-&gt;memory[idx] = f;
+<a name="line190">190: </a>  }
+<a name="line191">191: </a>  TaoFunctionReturn(0);
+<a name="line192">192: </a>}
+
+<a name="line196">196: </a><font color="#B22222">/* @ TaoApply_ProjectedArmijo - This routine performs a linesearch. It</font>
+<a name="line197">197: </a><font color="#B22222">   backtracks until the (nonmonotone) Projected Armijo conditions are satisfied.</font>
+
+<a name="line199">199: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line200">200: </a><font color="#B22222">+  tao - TAO_SOLVER context</font>
+<a name="line201">201: </a><font color="#B22222">.  X - current iterate (on output X contains new iterate, X + step*S)</font>
+<a name="line202">202: </a><font color="#B22222">.  S - search direction</font>
+<a name="line203">203: </a><font color="#B22222">.  f - merit function evaluated at X</font>
+<a name="line204">204: </a><font color="#B22222">.  G - gradient of merit function evaluated at X</font>
+<a name="line205">205: </a><font color="#B22222">.  W - work vector</font>
+<a name="line206">206: </a><font color="#B22222">-  step - initial estimate of step length</font>
+
+<a name="line208">208: </a><font color="#B22222">   Output parameters:</font>
+<a name="line209">209: </a><font color="#B22222">+  f - merit function evaluated at new iterate, X + step*S</font>
+<a name="line210">210: </a><font color="#B22222">.  G - gradient of merit function evaluated at new iterate, X + step*S</font>
+<a name="line211">211: </a><font color="#B22222">.  X - new iterate</font>
+<a name="line212">212: </a><font color="#B22222">-  step - final step length</font>
+
+<a name="line214">214: </a><font color="#B22222">   Info is set to one of:</font>
+<a name="line215">215: </a><font color="#B22222">.   0 - the line search succeeds; the sufficient decrease</font>
+<a name="line216">216: </a><font color="#B22222">   condition and the directional derivative condition hold</font>
+
+<a name="line218">218: </a><font color="#B22222">   negative number if an input parameter is invalid</font>
+<a name="line219">219: </a><font color="#B22222">-   -1 -  step &lt; 0 </font>
+
+<a name="line221">221: </a><font color="#B22222">   positive number &gt; 1 if the line search otherwise terminates</font>
+<a name="line222">222: </a><font color="#B22222">+    1 -  Step is at the lower bound, stepmin.</font>
+<a name="line223">223: </a><font color="#B22222">@ */</font>
+
+<a name="line225">225: </a><strong><font color="#4169E1"><a name="TaoApply_ProjectedArmijo"></a>static int TaoApply_ProjectedArmijo(TAO_SOLVER tao, TaoVec *X, TaoVec *G, </font></strong>
+<a name="line226">226: </a><strong><font color="#4169E1">                                    TaoVec *S, TaoVec *W, </font></strong>
+<a name="line227">227: </a><strong><font color="#4169E1">                                    double *f, double *f_full, double *step,</font></strong>
+<a name="line228">228: </a><strong><font color="#4169E1">                                    TaoInt *info2, void *ctx)</font></strong>
+<a name="line229">229: </a>{
+<a name="line230">230: </a>  TAO_PROJECTEDARMIJO *ls = (TAO_PROJECTEDARMIJO *)ctx;
+<a name="line231">231: </a>  TaoVec *L, *U, *work;
+<a name="line232">232: </a>  double ref, innerd, t;
+<a name="line233">233: </a>  TaoInt idx;
+<a name="line234">234: </a>  int  info;
+<a name="line235">235: </a>  TaoTruth flag;
+
+<a name="line237">237: </a>  TaoFunctionBegin;
+
+<a name="line239">239: </a>  info = TaoApply_PreProjectedArmijo(tao, ls, *f, *step, &amp;ref, &amp;idx, info2);
+<a name="line240">240: </a>  <font color="#4169E1">if</font> (*info2) {
+<a name="line241">241: </a>    TaoFunctionReturn(0);
+<a name="line242">242: </a>  }
+
+<a name="line244">244: </a>  <font color="#4169E1">if</font> (ls-&gt;work!=TAO_NULL){
+<a name="line245">245: </a>    info=X-&gt;<A href="../../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A>(ls-&gt;work,&amp;flag); CHKERRQ(info);
+<a name="line246">246: </a>    <font color="#4169E1">if</font> (flag==TAO_FALSE){
+<a name="line247">247: </a>      info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(ls-&gt;work); CHKERRQ(info);
+<a name="line248">248: </a>      ls-&gt;work=TAO_NULL;
+<a name="line249">249: </a>    }
+<a name="line250">250: </a>  }
+
+<a name="line252">252: </a>  <font color="#4169E1">if</font> (ls-&gt;work == TAO_NULL) {
+<a name="line253">253: </a>     G-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;(ls-&gt;work));
+<a name="line254">254: </a>  }
+
+<a name="line256">256: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao, &amp;L, &amp;U);
+<a name="line257">257: </a>  work = ls-&gt;work;
+
+<a name="line259">259: </a>  const double sigma = ls-&gt;sigma;
+<a name="line260">260: </a>  const double beta = ls-&gt;beta;
+
+<a name="line262">262: </a>  t = *step;
+<a name="line263">263: </a>  tao-&gt;new_search=TAO_TRUE;
+<a name="line264">264: </a>  <font color="#4169E1">while</font> (t &gt;= ls-&gt;minimumStep) {
+<a name="line265">265: </a>    // Calculate iterate
+<a name="line266">266: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0, X, t, S); CHKERRQ(info);
+<a name="line267">267: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>(W, L); CHKERRQ(info);
+<a name="line268">268: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A>(W, U); CHKERRQ(info);
+
+<a name="line270">270: </a>    info = work-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0, X, -1.0, W); CHKERRQ(info);
+<a name="line271">271: </a>    info = work-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(G, &amp;innerd); CHKERRQ(info);
+
+<a name="line273">273: </a>    <font color="#4169E1">if</font> (innerd &gt; 0) {
+<a name="line274">274: </a>      // Calculate function at new iterate
+<a name="line275">275: </a>      tao-&gt;current_step=t;
+<a name="line276">276: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunction.html#TaoComputeMeritFunction">TaoComputeMeritFunction</A>(tao, W, f); CHKERRQ(info);
+<a name="line277">277: </a>      tao-&gt;new_search=TAO_FALSE;
+<a name="line278">278: </a>      <font color="#4169E1">if</font> (*step == t) {
+<a name="line279">279: </a>        *f_full = *f;
+<a name="line280">280: </a>      }
+
+<a name="line282">282: </a>      // Check descent condition
+<a name="line283">283: </a>      <font color="#4169E1">if</font> (*f &lt;= ref - sigma*innerd) {
+<a name="line284">284: </a>        <font color="#4169E1">break</font>;
+<a name="line285">285: </a>      }
+<a name="line286">286: </a>    }
+<a name="line287">287: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (*step == t) {
+<a name="line288">288: </a>      tao-&gt;current_step=t;
+<a name="line289">289: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunction.html#TaoComputeMeritFunction">TaoComputeMeritFunction</A>(tao, W, f_full); CHKERRQ(info);
+<a name="line290">290: </a>      tao-&gt;new_search=TAO_FALSE;
+<a name="line291">291: </a>    }
+
+<a name="line293">293: </a>    t *= beta;
+<a name="line294">294: </a>  }
+
+<a name="line296">296: </a>  info = TaoApply_PostProjectedArmijo(tao, ls, *f, t, ref, idx, info2);
+
+<a name="line298">298: </a>  // Update iterate and compute gradient
+<a name="line299">299: </a>  *step = t;
+<a name="line300">300: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(W); CHKERRQ(info);
+<a name="line301">301: </a>  tao-&gt;current_step=t;
+<a name="line302">302: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritGradient.html#TaoComputeMeritGradient">TaoComputeMeritGradient</A>(tao, X, G); CHKERRQ(info);
+
+<a name="line304">304: </a>  // Finish computations
+<a name="line305">305: </a>  info = PetscInfo1(tao,<font color="#666666">"TaoApply_ProjectedArmijo:step = %10.4f\n"</font>,*step); CHKERRQ(info);
+<a name="line306">306: </a>  TaoFunctionReturn(0);
+<a name="line307">307: </a>}
+
+<a name="line311">311: </a><font color="#B22222">/* @ TaoApply_NDProjectedArmijo - This routine performs a linesearch. It</font>
+<a name="line312">312: </a><font color="#B22222">   backtracks until the (nonmonotone) Projected Armijo conditions are </font>
+<a name="line313">313: </a><font color="#B22222">   satisfied.  This is a modified version for a nondifferentiable function.</font>
+
+<a name="line315">315: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line316">316: </a><font color="#B22222">+  tao - TAO_SOLVER context</font>
+<a name="line317">317: </a><font color="#B22222">.  X - current iterate (on output X contains new iterate, X + step*S)</font>
+<a name="line318">318: </a><font color="#B22222">.  S - search direction</font>
+<a name="line319">319: </a><font color="#B22222">.  f - merit function evaluated at X</font>
+<a name="line320">320: </a><font color="#B22222">-  step - initial estimate of step length</font>
+
+<a name="line322">322: </a><font color="#B22222">   Output parameters:</font>
+<a name="line323">323: </a><font color="#B22222">+  f - merit function evaluated at new iterate, X + step*S</font>
+<a name="line324">324: </a><font color="#B22222">.  X - new iterate</font>
+<a name="line325">325: </a><font color="#B22222">-  step - final step length</font>
+
+<a name="line327">327: </a><font color="#B22222">   Info is set to one of:</font>
+<a name="line328">328: </a><font color="#B22222">.   0 - the line search succeeds; the sufficient decrease</font>
+<a name="line329">329: </a><font color="#B22222">   condition and the directional derivative condition hold</font>
+
+<a name="line331">331: </a><font color="#B22222">   negative number if an input parameter is invalid</font>
+<a name="line332">332: </a><font color="#B22222">-   -1 -  step &lt; 0 </font>
+
+<a name="line334">334: </a><font color="#B22222">   positive number &gt; 1 if the line search otherwise terminates</font>
+<a name="line335">335: </a><font color="#B22222">+    1 -  Step is at the lower bound, stepmin.</font>
+<a name="line336">336: </a><font color="#B22222">@ */</font>
+
+<a name="line338">338: </a><strong><font color="#4169E1"><a name="TaoApply_NDProjectedArmijo"></a>static int TaoApply_NDProjectedArmijo(TAO_SOLVER tao, TaoVec *X, TaoVec *G, </font></strong>
+<a name="line339">339: </a><strong><font color="#4169E1">                                      TaoVec *S, TaoVec *W, </font></strong>
+<a name="line340">340: </a><strong><font color="#4169E1">                                      double *f, double *f_full, double *step,</font></strong>
+<a name="line341">341: </a><strong><font color="#4169E1">                                      TaoInt *info2, void *ctx)</font></strong>
+<a name="line342">342: </a>{
+<a name="line343">343: </a>  TAO_PROJECTEDARMIJO *ls = (TAO_PROJECTEDARMIJO *)ctx;
+<a name="line344">344: </a>  TaoVec *L, *U;
+<a name="line345">345: </a>  double ref, t;
+<a name="line346">346: </a>  int info;
+<a name="line347">347: </a>  TaoInt idx;
+
+<a name="line349">349: </a>  TaoFunctionBegin;
+
+<a name="line351">351: </a>  info = TaoApply_PreProjectedArmijo(tao, ls, *f, *step, &amp;ref, &amp;idx, info2);
+<a name="line352">352: </a>  <font color="#4169E1">if</font> (*info2) {
+<a name="line353">353: </a>    TaoFunctionReturn(0);
+<a name="line354">354: </a>  }
+
+<a name="line356">356: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao, &amp;L, &amp;U);
+
+<a name="line358">358: </a>  const double sigma = ls-&gt;sigma;
+<a name="line359">359: </a>  const double beta = ls-&gt;beta;
+
+<a name="line361">361: </a>  t = *step;
+<a name="line362">362: </a>  tao-&gt;new_search=TAO_TRUE;
+<a name="line363">363: </a>  <font color="#4169E1">while</font> (t &gt;= ls-&gt;minimumStep) {
+<a name="line364">364: </a>    // Calculate iterate
+<a name="line365">365: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0, X, t, S); CHKERRQ(info);
+<a name="line366">366: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>(W, L); CHKERRQ(info);
+<a name="line367">367: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A>(W, U); CHKERRQ(info);
+
+<a name="line369">369: </a>    // Calculate function at new iterate
+
+<a name="line371">371: </a>    tao-&gt;current_step=t;
+<a name="line372">372: </a>    info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunction.html#TaoComputeMeritFunction">TaoComputeMeritFunction</A>(tao, W, f); CHKERRQ(info);
+<a name="line373">373: </a>    tao-&gt;new_search=TAO_FALSE;
+<a name="line374">374: </a>    <font color="#4169E1">if</font> (*step == t) {
+<a name="line375">375: </a>      *f_full = *f;
+<a name="line376">376: </a>    }
+
+<a name="line378">378: </a>    // Check descent condition
+<a name="line379">379: </a>    <font color="#4169E1">if</font> (*f &lt;= (1 - sigma*t)*ref) {
+<a name="line380">380: </a>        <font color="#4169E1">break</font>;
+<a name="line381">381: </a>    }
+<a name="line382">382: </a>    
+<a name="line383">383: </a>    t *= beta;
+<a name="line384">384: </a>  }
+
+<a name="line386">386: </a>  info = TaoApply_PostProjectedArmijo(tao, ls, *f, t, ref, idx, info2);
+
+<a name="line388">388: </a>  // Update iterate and compute gradient
+<a name="line389">389: </a>  *step = t;
+<a name="line390">390: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(W); CHKERRQ(info);
+<a name="line391">391: </a>  tao-&gt;current_step=t;
+<a name="line392">392: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritGradient.html#TaoComputeMeritGradient">TaoComputeMeritGradient</A>(tao, X, G); CHKERRQ(info);
+
+
+<a name="line395">395: </a>  // Finish computations
+<a name="line396">396: </a>  info = PetscInfo1(tao,<font color="#666666">"TaoApply_NDProjectedArmijo:step = %10.4f\n"</font>,*step); CHKERRQ(info);
+<a name="line397">397: </a>  TaoFunctionReturn(0);
+<a name="line398">398: </a>}
+
+<a name="line402">402: </a><font color="#B22222">/*@</font>
+<a name="line403">403: </a><font color="#B22222">   <A href="../../../../docs/manualpages/solver/TaoCreateProjectedArmijoLineSearch.html#TaoCreateProjectedArmijoLineSearch">TaoCreateProjectedArmijoLineSearch</A> - Create a non-monotone projected linesearch</font>
+
+<a name="line405">405: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line406">406: </a><font color="#B22222">.  tao - TAO_SOLVER context</font>
+
+
+<a name="line409">409: </a><font color="#B22222">   Note:</font>
+<a name="line410">410: </a><font color="#B22222">   This algorithm is taken from the following references -- </font>
+
+<a name="line412">412: </a><font color="#B22222">   Armijo, "Minimization of Functions Having Lipschitz Continuous</font>
+<a name="line413">413: </a><font color="#B22222">     First-Partial Derivatives," Pacific Journal of Mathematics, volume 16,</font>
+<a name="line414">414: </a><font color="#B22222">     pages 1-3, 1966.</font>
+<a name="line415">415: </a><font color="#B22222">   Ferris and Lucidi, "Nonmonotone Stabilization Methods for Nonlinear</font>
+<a name="line416">416: </a><font color="#B22222">     Equations," Journal of Optimization Theory and Applications, volume 81,</font>
+<a name="line417">417: </a><font color="#B22222">     pages 53-71, 1994.</font>
+<a name="line418">418: </a><font color="#B22222">   Grippo, Lampariello, and Lucidi, "A Nonmonotone Line Search Technique</font>
+<a name="line419">419: </a><font color="#B22222">     for Newton's Method," SIAM Journal on Numerical Analysis, volume 23,</font>
+<a name="line420">420: </a><font color="#B22222">     pages 707-716, 1986.</font>
+<a name="line421">421: </a><font color="#B22222">   Grippo, Lampariello, and Lucidi, "A Class of Nonmonotone Stabilization</font>
+<a name="line422">422: </a><font color="#B22222">     Methods in Unconstrained Optimization," Numerische Mathematik, volume 59,</font>
+<a name="line423">423: </a><font color="#B22222">     pages 779-805, 1991.</font>
+
+<a name="line425">425: </a><font color="#B22222">   Note:</font>
+<a name="line426">426: </a><font color="#B22222">   This line seach enforces non-monotone Armijo descent conditions for</font>
+<a name="line427">427: </a><font color="#B22222">   bounds constrained optimization.  This routine is used within the </font>
+<a name="line428">428: </a><font color="#B22222">   following TAO solvers: feasible semismooth with linesearch (tao_ssfls).</font>
+
+<a name="line430">430: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line432">432: </a><font color="#B22222">.keywords: TAO_SOLVER, linesearch</font>
+<a name="line433">433: </a><font color="#B22222">@*/</font>
+<a name="line434">434: </a><strong><font color="#4169E1"><a name="TaoCreateProjectedArmijoLineSearch"></a>int <A href="../../../../docs/manualpages/solver/TaoCreateProjectedArmijoLineSearch.html#TaoCreateProjectedArmijoLineSearch">TaoCreateProjectedArmijoLineSearch</A>(TAO_SOLVER tao)</font></strong>
+<a name="line435">435: </a>{
+<a name="line436">436: </a>  TAO_PROJECTEDARMIJO *ls;
+<a name="line437">437: </a>  int info;
+
+<a name="line439">439: </a>  TaoFunctionBegin;
+
+<a name="line441">441: </a>  info = TaoNew(TAO_PROJECTEDARMIJO,&amp;ls); CHKERRQ(info);
+<a name="line442">442: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_PROJECTEDARMIJO)); CHKERRQ(info);
+
+<a name="line444">444: </a>  ls-&gt;work = TAO_NULL;
+<a name="line445">445: </a>  ls-&gt;memory = TAO_NULL;
+<a name="line446">446: </a>  ls-&gt;alpha = 1.0;
+<a name="line447">447: </a>  ls-&gt;beta = 0.5;
+<a name="line448">448: </a>  ls-&gt;sigma = 1e-4;
+<a name="line449">449: </a>  ls-&gt;minimumStep = TAO_EPSILON;
+<a name="line450">450: </a>  ls-&gt;memorySize = 1;
+<a name="line451">451: </a>  ls-&gt;referencePolicy = REFERENCE_MAX;
+<a name="line452">452: </a>  ls-&gt;replacementPolicy = REPLACE_MRU;
+
+<a name="line454">454: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLineSearch.html#TaoSetLineSearch">TaoSetLineSearch</A>(tao,0,
+<a name="line455">455: </a>                          TaoSetOptions_ProjectedArmijo,
+<a name="line456">456: </a>                          TaoApply_ProjectedArmijo,
+<a name="line457">457: </a>                          TaoView_ProjectedArmijo,
+<a name="line458">458: </a>                          TaoDestroy_ProjectedArmijo,
+<a name="line459">459: </a>                          (void *) ls);CHKERRQ(info);
+
+<a name="line461">461: </a>  TaoFunctionReturn(0);
+<a name="line462">462: </a>}
+
+<a name="line466">466: </a><font color="#B22222">/*@</font>
+<a name="line467">467: </a><font color="#B22222">   <A href="../../../../docs/manualpages/solver/TaoCreateNDProjectedArmijoLineSearch.html#TaoCreateNDProjectedArmijoLineSearch">TaoCreateNDProjectedArmijoLineSearch</A> - Create a non-monotone projected linesearch</font>
+<a name="line468">468: </a><font color="#B22222">     for a nondifferentiable function</font>
+
+<a name="line470">470: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line471">471: </a><font color="#B22222">.  tao - TAO_SOLVER context</font>
+
+
+<a name="line474">474: </a><font color="#B22222">   Note:</font>
+<a name="line475">475: </a><font color="#B22222">   This algorithm is taken from the following references -- </font>
+
+<a name="line477">477: </a><font color="#B22222">   Armijo, "Minimization of Functions Having Lipschitz Continuous</font>
+<a name="line478">478: </a><font color="#B22222">     First-Partial Derivatives," Pacific Journal of Mathematics, volume 16,</font>
+<a name="line479">479: </a><font color="#B22222">     pages 1-3, 1966.</font>
+<a name="line480">480: </a><font color="#B22222">   Ferris and Lucidi, "Nonmonotone Stabilization Methods for Nonlinear</font>
+<a name="line481">481: </a><font color="#B22222">     Equations," Journal of Optimization Theory and Applications, volume 81,</font>
+<a name="line482">482: </a><font color="#B22222">     pages 53-71, 1994.</font>
+<a name="line483">483: </a><font color="#B22222">   Grippo, Lampariello, and Lucidi, "A Nonmonotone Line Search Technique</font>
+<a name="line484">484: </a><font color="#B22222">     for Newton's Method," SIAM Journal on Numerical Analysis, volume 23,</font>
+<a name="line485">485: </a><font color="#B22222">     pages 707-716, 1986.</font>
+<a name="line486">486: </a><font color="#B22222">   Grippo, Lampariello, and Lucidi, "A Class of Nonmonotone Stabilization</font>
+<a name="line487">487: </a><font color="#B22222">     Methods in Unconstrained Optimization," Numerische Mathematik, volume 59,</font>
+<a name="line488">488: </a><font color="#B22222">     pages 779-805, 1991.</font>
+
+<a name="line490">490: </a><font color="#B22222">   Note:</font>
+<a name="line491">491: </a><font color="#B22222">   This line seach enforces non-monotone Armijo descent conditions for</font>
+<a name="line492">492: </a><font color="#B22222">   bounds constrained optimization.  This routine is used within the </font>
+<a name="line493">493: </a><font color="#B22222">   following TAO solvers: feasible semismooth with linesearch (tao_ssfls).</font>
+
+<a name="line495">495: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line497">497: </a><font color="#B22222">.keywords: TAO_SOLVER, linesearch</font>
+<a name="line498">498: </a><font color="#B22222">@*/</font>
+<a name="line499">499: </a><strong><font color="#4169E1"><a name="TaoCreateNDProjectedArmijoLineSearch"></a>int <A href="../../../../docs/manualpages/solver/TaoCreateNDProjectedArmijoLineSearch.html#TaoCreateNDProjectedArmijoLineSearch">TaoCreateNDProjectedArmijoLineSearch</A>(TAO_SOLVER tao)</font></strong>
+<a name="line500">500: </a>{
+<a name="line501">501: </a>  TAO_PROJECTEDARMIJO *ls;
+<a name="line502">502: </a>  int info;
+
+<a name="line504">504: </a>  TaoFunctionBegin;
+
+<a name="line506">506: </a>  info = TaoNew(TAO_PROJECTEDARMIJO,&amp;ls); CHKERRQ(info);
+<a name="line507">507: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_PROJECTEDARMIJO));CHKERRQ(info);
+
+<a name="line509">509: </a>  ls-&gt;work = TAO_NULL;
+<a name="line510">510: </a>  ls-&gt;memory = TAO_NULL;
+<a name="line511">511: </a>  ls-&gt;alpha = 1.0;
+<a name="line512">512: </a>  ls-&gt;beta = 0.5;
+<a name="line513">513: </a>  ls-&gt;sigma = 1e-4;
+<a name="line514">514: </a>  ls-&gt;minimumStep = TAO_EPSILON;
+<a name="line515">515: </a>  ls-&gt;memorySize = 1;
+<a name="line516">516: </a>  ls-&gt;referencePolicy = REFERENCE_MAX;
+<a name="line517">517: </a>  ls-&gt;replacementPolicy = REPLACE_MRU;
+
+<a name="line519">519: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLineSearch.html#TaoSetLineSearch">TaoSetLineSearch</A>(tao,0,
+<a name="line520">520: </a>                          TaoSetOptions_ProjectedArmijo,
+<a name="line521">521: </a>                          TaoApply_NDProjectedArmijo,
+<a name="line522">522: </a>                          TaoView_ProjectedArmijo,
+<a name="line523">523: </a>                          TaoDestroy_ProjectedArmijo,
+<a name="line524">524: </a>                          (void *) ls);CHKERRQ(info);
+
+<a name="line526">526: </a>  TaoFunctionReturn(0);
+<a name="line527">527: </a>}
+
+</pre>
+</body>
+
+</html>

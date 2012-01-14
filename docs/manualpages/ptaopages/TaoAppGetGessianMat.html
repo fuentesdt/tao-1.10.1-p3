@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppGetGessianMat</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppGetGessianMat"><H1>TaoAppGetGessianMat</H1></A>
+Get the vector with the gradient in the current application. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppGetHessianMat(TAO_SOLVER tao, Mat *H, Mat *Hpre)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>tao </B> -the solver
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<DT><B>H </B> -the hessian matrix
+<br>
+<DT><B>Hpre </B> -the hessian preconditioner
+<br>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+These matrices should not be destroyed.
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ Application, hessian
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A HREF="../ptaopages/TaoAppGetGradientVec.html#TaoAppGetGradientVec">TaoAppGetGradientVec</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/taoapp/taoapp_util.c.html#TaoAppGetGessianMat">src/petsctao/application/taoapp/taoapp_util.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

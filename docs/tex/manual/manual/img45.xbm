@@ -1,0 +1,4 @@
+#define 30303_img45_width 7
+#define 30303_img45_height 5
+static char 30303_img45_bits[] = {
+ 0x4c,0x52,0x31,0x11,0x2e};

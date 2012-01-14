@@ -1,0 +1,43 @@
+<center><a href="blmvm.h">Actual source code: blmvm.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a><font color="#B22222">/*</font>
+<a name="line4">  4: </a><font color="#B22222"> Context for limited memory variable metric method for bound constrained </font>
+<a name="line5">  5: </a><font color="#B22222"> optimization.</font>
+<a name="line6">  6: </a><font color="#B22222">*/</font>
+
+<a name="line8">  8: </a><font color="#A020F0">#ifndef __TAO_BLMVM_H</font>
+<a name="line10"> 10: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+<a name="line11"> 11: </a><font color="#A020F0">#include </font><font color="#666666">"src/matrix/lmvmmat.h"</font><font color="#A020F0"></font>
+
+<a name="line13"> 13: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+
+<a name="line15"> 15: </a>  TaoLMVMMat *M;
+
+<a name="line17"> 17: </a>  TaoVec *G;
+<a name="line18"> 18: </a>  TaoVec *GP;
+<a name="line19"> 19: </a>  TaoVec *D;
+<a name="line20"> 20: </a>  TaoVec *XL;
+<a name="line21"> 21: </a>  TaoVec *XU;
+
+<a name="line23"> 23: </a>  TaoInt n_free;
+<a name="line24"> 24: </a>  TaoInt n_bind;
+
+<a name="line26"> 26: </a>  TaoInt grad;
+<a name="line27"> 27: </a>  TaoInt reset;
+<a name="line28"> 28: </a>} TAO_BLMVM;
+
+<a name="line30"> 30: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

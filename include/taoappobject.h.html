@@ -1,0 +1,81 @@
+<center><a href="taoappobject.h">Actual source code: taoappobject.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:15+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOPROBLEMOBJECT_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOPROBLEMOBJECT_H</font></strong>
+
+<a name="line4">  4: </a><font color="#B22222">/** </font>
+<a name="line5">  5: </a><font color="#B22222">    An abstract class representing an optimization application.  The</font>
+<a name="line6">  6: </a><font color="#B22222">    methods in this class will be called by the optimization solver. </font>
+<a name="line7">  7: </a><font color="#B22222">**/</font>
+
+<a name="line9">  9: </a><font color="#A020F0">#include </font><font color="#666666">"tao_basictypes.h"</font><font color="#A020F0"></font>
+
+<a name="line11"> 11: </a>class TaoVec;
+<a name="line12"> 12: </a>class TaoIndexSet;
+<a name="line13"> 13: </a>class TaoMat;
+<a name="line14"> 14: </a>class TaoLinearSolver;
+
+<a name="line16"> 16: </a>class TaoApplication {
+<a name="line17"> 17: </a>  
+<a name="line18"> 18: </a><strong><font color="#FF0000"> public:</font></strong>
+<a name="line19"> 19: </a>  
+<a name="line20"> 20: </a>  virtual ~TaoApplication(){};
+<a name="line21"> 21: </a>  
+<a name="line22"> 22: </a>  <font color="#B22222">/* This method is really important and used frequently */</font>
+<a name="line23"> 23: </a>  virtual int <A href="../docs/manualpages/taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A>(TaoVec *, double *, TaoVec *);
+
+<a name="line25"> 25: </a>  <font color="#B22222">/* This method not often used, except by direct search methods  */</font>
+<a name="line26"> 26: </a>  virtual int <A href="../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(TaoVec *, double *);
+
+<a name="line28"> 28: </a>  <font color="#B22222">/* This method not often used  */</font>
+<a name="line29"> 29: </a>  virtual int <A href="../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(TaoVec *, TaoVec *);
+
+<a name="line31"> 31: </a>  <font color="#B22222">/* This method is used only by some solvers */</font>
+<a name="line32"> 32: </a>  virtual int <A href="../docs/manualpages/taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A>(TaoVec *, TaoMat *);
+
+<a name="line34"> 34: </a>  <font color="#B22222">/* This method is used only by some solvers */</font>
+<a name="line35"> 35: </a>  virtual int <A href="../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *, TaoVec *);
+
+<a name="line37"> 37: </a>  <font color="#B22222">/* This method is optional, but it can improve performance */</font>
+<a name="line38"> 38: </a>  virtual int <A href="../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *);
+
+<a name="line40"> 40: </a>  <font color="#B22222">/* These methods are important, the first one is mandatory */</font>
+<a name="line41"> 41: </a>  virtual int <A href="../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **);
+<a name="line42"> 42: </a>  virtual int <A href="../docs/manualpages/taoapp/GetHessianMatrix.html#GetHessianMatrix">GetHessianMatrix</A>(TaoMat **);
+
+<a name="line44"> 44: </a>  <font color="#B22222">/* This method may be used in LMVM methods  */</font>
+<a name="line45"> 45: </a>  virtual int <A href="../docs/manualpages/taoapp/HessianSolve.html#HessianSolve">HessianSolve</A>(TaoVec *, TaoVec*,TaoTruth *);
+
+<a name="line47"> 47: </a>  <font color="#B22222">/* This method is also important for some solvers */</font>
+<a name="line48"> 48: </a>  virtual int <A href="../docs/manualpages/taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A>(TaoMat *, int, TaoLinearSolver **);
+
+<a name="line50"> 50: </a>  <font color="#B22222">/* Used currently for complementarity, and least squares solvers */</font>
+<a name="line51"> 51: </a>  virtual int <A href="../docs/manualpages/taoapp/EvaluateConstraints.html#EvaluateConstraints">EvaluateConstraints</A>(TaoVec *, TaoVec *);
+<a name="line52"> 52: </a>  virtual int <A href="../docs/manualpages/taoapp/EvaluateJacobian.html#EvaluateJacobian">EvaluateJacobian</A>(TaoVec *, TaoMat *);
+<a name="line53"> 53: </a>  virtual int <A href="../docs/manualpages/taoapp/GetJacobianMatrix.html#GetJacobianMatrix">GetJacobianMatrix</A>(TaoMat **);
+<a name="line54"> 54: </a>  virtual int GetConstraintVector(TaoVec**);
+
+<a name="line56"> 56: </a>  <font color="#B22222">/* This method is called only by OOQP */</font>
+<a name="line57"> 57: </a>  virtual int GetInequalityConstraints(TaoVec**, TaoMat **, TaoVec **);
+
+<a name="line59"> 59: </a>  <font color="#B22222">/* This method is called at each iteration of a TAO solver. Optional, but useful */</font>
+<a name="line60"> 60: </a>  virtual int <A href="../docs/manualpages/taoapp/Monitor.html#Monitor">Monitor</A>();
+<a name="line61"> 61: </a>  virtual int <A href="../docs/manualpages/taoapp/Monitor2.html#Monitor2">Monitor2</A>(TaoVec*,TaoVec*,TaoVec*,TaoTruth*);
+<a name="line62"> 62: </a>};
+
+<a name="line64"> 64: </a><font color="#A020F0">#endif</font>
+
+
+
+</pre>
+</body>
+
+</html>

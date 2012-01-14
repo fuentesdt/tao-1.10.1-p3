@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGetConvergenceHistory</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGetConvergenceHistory"><H1>TaoGetConvergenceHistory</H1></A>
+Gets the array used to hold the convergence history. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoGetConvergenceHistory(TAO_SOLVER tao, double **a, TaoInt **its,TaoInt *na)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<DT><B>tao </B> -the TAO_SOLVER solver context
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>a   </B></TD><TD>- array to hold history
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>its </B></TD><TD>- integer array holds the number of linear iterations (or
+negative if not converged) for each solve.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>na  </B></TD><TD>- size of a and its
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+The calling sequence for this routine in Fortran is
+<pre>
+  call <A HREF="../solver/TaoGetConvergenceHistory.html#TaoGetConvergenceHistory">TaoGetConvergenceHistory</A>(TAO_SOLVER tao, integer na, integer info)
+</pre>
+<P>
+This routine is useful, e.g., when running a code for purposes
+of accurate performance monitoring, when no I/O should be done
+during the section of code that is being timed.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ convergence, history, monitor, <A HREF="../lsolver/View.html#View">View</A>
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ TaoSetConvergencHistory()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao.c.html#TaoGetConvergenceHistory">src/interface/tao.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

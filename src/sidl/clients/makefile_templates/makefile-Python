@@ -1,0 +1,16 @@
+all: pythonlib
+lib: pythonlib
+libfast: pythonlib
+CLEANFILES = babel.make
+pythonlib:
+	@sed "s^@SIDL_PACKAGE_NAME@/@SIDL_PACKAGE_NAME@-client-Python/^^" setup.py  > temp
+	@mv temp setup.py 
+	@python setup.py install  --include-dirs=${BABEL_HOME}/include \
+        --include-dirs=${BABEL_HOME}/include/python${PYTHON_VERSION}/babel \
+        --include-dirs=${TAO_DIR}/src/sidl/components/OptimizationPorts-Python \
+        --include-dirs=${TAO_DIR}/src/sidl/clients/LAFactory/LAFactory-client-Python \
+        --include-dirs=${TAO_DIR}/src/sidl/clients/Solver/Solver-client-Python \
+        --include-dirs=${TAO_DIR}/src/sidl/clients/Optimize/Optimize-client-Python \
+        --library-dirs=${BABEL_HOME}/lib --prefix=${TAO_DIR}  > /dev/null
+
+include ${TAO_DIR}/bmake/tao_common

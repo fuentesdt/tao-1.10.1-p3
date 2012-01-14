@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetElementObjectiveAndGradientRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetElementObjectiveAndGradientRoutine"><H1>DAAppSetElementObjectiveAndGradientRoutine</H1></A>
+Set routine that evaluates the local part of a function on a 2-dimensional DA with 1 degree of freedom.  
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int DAAppSetElementObjectiveAndGradientRoutine(TAO_APPLICATION daapplication, int (*funcgrad)(PetscInt[2],PetscScalar[4],double*,PetscScalar[4],void*),
+                                           PetscInt flops, void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapp </B></TD><TD>- the TAO_APPLICATION solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>funcgrad </B></TD><TD>- local function gradient routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>flops </B></TD><TD>- the number of flops done performed in the funcgrad routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>fgctx </B></TD><TD>- [optional] user-defined context for private data for the evaluation.
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of funcgrad</FONT></H2>
+<pre>
+    int funcgrad(int coordinates[2], PetscScalar x[4], double *f, PetscScalar g[4], void* ctx)
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>coord </B></TD><TD>- the global coordinates [i j] in each direction of the DA
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- the variables on the DA ( da[j][i], da[j][j+1], da[j+1][i], da[j+1][i+1] ) (bottom left, bottom right, top left, top right)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- the local function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>g </B></TD><TD>- the gradient of this local function for with respect to each variable
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user defined context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Fortran Note</FONT></H2>
+If your Fortran compiler does not recognize symbols over 31 characters in length, then
+use the identical routine with the shortened name DAAppSetElementObjectiveAndGrad()
+<P>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ DA, Object Function, Gradient
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>();
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/element/daelement.c.html#DAAppSetElementObjectiveAndGradientRoutine">src/petsctao/gridapplication/element/daelement.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c.html">src/petsctao/gridapplication/examples/eptorsion3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c.html">src/petsctao/gridapplication/examples/jbearing3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c.html">src/petsctao/gridapplication/examples/minsurf3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c.html">src/petsctao/gridapplication/examples/combustion3.c.html</A><BR>
+</BODY></HTML>

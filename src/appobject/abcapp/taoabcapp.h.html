@@ -1,0 +1,53 @@
+<center><a href="taoabcapp.h">Actual source code: taoabcapp.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOABCAPP_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOABCAPP_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"taoappobject.h"</font><font color="#A020F0"></font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"src/vector/tvecdouble.h"</font><font color="#A020F0"></font>
+
+<a name="line7">  7: </a>class TaoABCApplication: public TaoApplication{
+
+<a name="line9">  9: </a><strong><font color="#FF0000"> private:</font></strong>
+
+<a name="line11"> 11: </a><strong><font color="#FF0000"> public:</font></strong>
+<a name="line12"> 12: </a>  TaoABCApplication();
+<a name="line13"> 13: </a>  ~TaoABCApplication();
+
+<a name="line15"> 15: </a>  TaoVecDoubleArray *taox;   <font color="#B22222">/* The Variable Vector */</font>
+<a name="line16"> 16: </a>  int SetNumberOfVariables(TaoInt);
+<a name="line17"> 17: </a>  int GetSolution(double*&amp;, TaoInt&amp;);
+
+<a name="line19"> 19: </a>  <font color="#B22222">/* Function and Gradient */</font>
+<a name="line20"> 20: </a>  int <A href="../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **);
+<a name="line21"> 21: </a>  int <A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(TaoVec *, double *);
+<a name="line22"> 22: </a>  int <A href="../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(TaoVec *, TaoVec *);
+<a name="line23"> 23: </a>  int <A href="../../../docs/manualpages/taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A>(TaoVec *xx, double *ff, TaoVec *gg);
+
+<a name="line25"> 25: </a>  virtual int  <A href="../../../docs/manualpages/taoapp/ComputeObjectiveAndGradient.html#ComputeObjectiveAndGradient">ComputeObjectiveAndGradient</A>(double*,TaoInt,double*,double *)=0;
+
+<a name="line27"> 27: </a>  <font color="#B22222">/* Set Variable Bounds */</font>
+<a name="line28"> 28: </a>  int <A href="../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *xxll, TaoVec *xxuu);
+<a name="line29"> 29: </a>  virtual int ComputeVariableBounds(double *xl, double *xu, TaoInt n);
+
+<a name="line31"> 31: </a>  <font color="#B22222">/* Initialize Starting Point */</font>
+<a name="line32"> 32: </a>  int <A href="../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *x);
+<a name="line33"> 33: </a>  virtual int <A href="../../../docs/manualpages/taoapp/StartingPoint.html#StartingPoint">StartingPoint</A>(double *x, TaoInt n);
+
+<a name="line35"> 35: </a>};
+
+<a name="line37"> 37: </a><font color="#A020F0">#endif</font>
+
+
+</pre>
+</body>
+
+</html>

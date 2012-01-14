@@ -1,0 +1,83 @@
+<center><a href="taomat_petsc.h">Actual source code: taomat_petsc.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOPETSCMAT_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOPETSCMAT_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"taomat.h"</font><font color="#A020F0"></font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"petscksp.h"</font><font color="#A020F0"></font>
+
+<a name="line7">  7: </a>class TaoMatPetsc: public TaoMat {
+
+<a name="line9">  9: </a><strong><font color="#FF0000"> protected:</font></strong>
+
+<a name="line11"> 11: </a>  Mat pm;
+<a name="line12"> 12: </a>  MatStructure preflag;
+<a name="line13"> 13: </a>  Mat pm_pre;
+<a name="line14"> 14: </a>  PetscViewer pmatviewer;
+
+<a name="line16"> 16: </a><strong><font color="#FF0000"> public:</font></strong>
+
+<a name="line18"> 18: </a>  TaoMatPetsc( Mat M );
+<a name="line19"> 19: </a>  ~TaoMatPetsc();
+
+<a name="line21"> 21: </a>  int <A href="../../../docs/manualpages/ptaopages/SetPetscViewer.html#SetPetscViewer">SetPetscViewer</A>(PetscViewer);
+<a name="line22"> 22: </a>  int SetMatrix(Mat, Mat, MatStructure);
+<a name="line23"> 23: </a>  int GetMatrix(Mat*, Mat*, MatStructure*);
+
+<a name="line25"> 25: </a>  
+<a name="line26"> 26: </a>  <font color="#B22222">/*</font>
+<a name="line27"> 27: </a><font color="#B22222">     The following methods are implementations of </font>
+<a name="line28"> 28: </a><font color="#B22222">     the virtual methods in the base class </font>
+<a name="line29"> 29: </a><font color="#B22222">  */</font>
+
+<a name="line31"> 31: </a>  int <A href="../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A>(TaoVec*, TaoVec*, TaoTruth*);
+
+<a name="line33"> 33: </a>  int <A href="../../../docs/manualpages/matrix/GetDimensions.html#GetDimensions">GetDimensions</A>( TaoInt*, TaoInt * );
+<a name="line34"> 34: </a>  int <A href="../../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A>(TaoVec*,TaoVec*);
+<a name="line35"> 35: </a>  int <A href="../../../docs/manualpages/matrix/MultiplyTranspose.html#MultiplyTranspose">MultiplyTranspose</A>(TaoVec*,TaoVec*);
+
+<a name="line37"> 37: </a>  int <A href="../../../docs/manualpages/matrix/SetDiagonal.html#SetDiagonal">SetDiagonal</A>(TaoVec*);
+<a name="line38"> 38: </a>  int <A href="../../../docs/manualpages/matrix/AddDiagonal.html#AddDiagonal">AddDiagonal</A>(TaoVec*);
+<a name="line39"> 39: </a>  int <A href="../../../docs/manualpages/matrix/GetDiagonal.html#GetDiagonal">GetDiagonal</A>(TaoVec*);
+<a name="line40"> 40: </a>  int <A href="../../../docs/manualpages/matrix/ShiftDiagonal.html#ShiftDiagonal">ShiftDiagonal</A>(double);    
+
+<a name="line42"> 42: </a>  int <A href="../../../docs/manualpages/matrix/RowScale.html#RowScale">RowScale</A>(TaoVec*);
+<a name="line43"> 43: </a>  int <A href="../../../docs/manualpages/matrix/ColScale.html#ColScale">ColScale</A>(TaoVec*);
+
+<a name="line45"> 45: </a>  int <A href="../../../docs/manualpages/matrix/CreateReducedMatrix.html#CreateReducedMatrix">CreateReducedMatrix</A>(TaoIndexSet*,TaoIndexSet*,TaoMat**);
+<a name="line46"> 46: </a>  int <A href="../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(TaoMat*,TaoIndexSet*,TaoIndexSet*);
+
+<a name="line48"> 48: </a>  int <A href="../../../docs/manualpages/matrix/D_Fischer.html#D_Fischer">D_Fischer</A>(TaoVec *, TaoVec *, TaoVec *, TaoVec *, 
+<a name="line49"> 49: </a>                TaoVec *, TaoVec *, TaoVec *, TaoVec *);
+<a name="line50"> 50: </a>  int <A href="../../../docs/manualpages/matrix/D_SFischer.html#D_SFischer">D_SFischer</A>(TaoVec *, TaoVec *, TaoVec *, TaoVec *, double,
+<a name="line51"> 51: </a>                 TaoVec *, TaoVec *, TaoVec *, TaoVec *, TaoVec *);
+
+<a name="line53"> 53: </a>  int <A href="../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(double*);
+
+<a name="line55"> 55: </a>  int <A href="../../../docs/manualpages/lsolver/View.html#View">View</A>();
+
+<a name="line57"> 57: </a>  <font color="#B22222">/* </font>
+<a name="line58"> 58: </a><font color="#B22222">     The following methods are not currently needed by TAO</font>
+<a name="line59"> 59: </a><font color="#B22222">     but may be needed in the future.</font>
+<a name="line60"> 60: </a><font color="#B22222">  */</font>
+<a name="line61"> 61: </a>  int <A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(TaoMat**);
+<a name="line62"> 62: </a>  int <A href="../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(TaoMat*);
+<a name="line63"> 63: </a>  int MultiplyAdd(TaoVec*,TaoVec*,TaoVec*);
+<a name="line64"> 64: </a>  int MultiplyTransposeAdd(TaoVec*,TaoVec*,TaoVec*);
+
+<a name="line66"> 66: </a>};
+
+<a name="line68"> 68: </a><font color="#A020F0">#endif</font>
+
+</pre>
+</body>
+
+</html>

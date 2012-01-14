@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetHessianMat</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetHessianMat"><H1>TaoAppSetHessianMat</H1></A>
+Sets the matrix representing the Hessian and the matrix used to precondition it. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetHessianMat(TAO_APPLICATION taoapp, Mat H, Mat HP )</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>H </B></TD><TD>- the matrix used for the Hessian
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>HP </B></TD><TD>- the matrix used to precondition the Hessian matrix.
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+Usually H and HP are the same matrix
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_fg.c.html#TaoAppSetHessianMat">src/petsctao/application/petscapp/tao_app_fg.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/bound/examples/tutorials/plate2.c.html">src/bound/examples/tutorials/plate2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/jbearing2.c.html">src/bound/examples/tutorials/jbearing2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/plate2f.F.html">src/bound/examples/tutorials/plate2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion1.c.html">src/unconstrained/examples/tutorials/eptorsion1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2.c.html">src/unconstrained/examples/tutorials/eptorsion2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1.c.html">src/unconstrained/examples/tutorials/rosenbrock1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2f.F.html">src/unconstrained/examples/tutorials/eptorsion2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1f.F.html">src/unconstrained/examples/tutorials/rosenbrock1f.F.html</A><BR>
+</BODY></HTML>

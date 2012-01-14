@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoCheckConvergence</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoCheckConvergence"><H1>TaoCheckConvergence</H1></A>
+Checks the convergence of the solver 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoCheckConvergence(TAO_SOLVER tao, TaoTerminateReason *reason)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>tao </B> -the TAO_SOLVER context
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<DT><B>reason </B> -one of
+<br>
+<P>
+<pre>
+   TAO_CONVERGED_ATOL (2),        (res &lt;= atol)  
+</pre>
+<pre>
+   TAO_CONVERGED_RTOL (3),        (res/res0 &lt;= rtol) 
+</pre>
+<pre>
+   TAO_CONVERGED_TRTOL (4),       (xdiff &lt;= trtol) 
+</pre>
+<pre>
+   TAO_CONVERGED_MINF (5),        (f &lt;= fmin)
+</pre>
+<pre>
+   TAO_CONVERGED_USER (6),        (user defined)
+</pre>
+<P>
+<pre>
+   TAO_DIVERGED_MAXITS (-2),      (its&gt;maxits)
+</pre>
+<pre>
+   TAO_DIVERGED_NAN (-4),         (Numerical problems)
+</pre>
+<pre>
+   TAO_DIVERGED_MAXFCN (-5),      (nfunc &gt; maxnfuncts)
+</pre>
+<pre>
+   TAO_DIVERGED_LS_FAILURE (-6),  (line search failure)
+</pre>
+<pre>
+   TAO_DIVERGED_TR_REDUCTION (-7),
+</pre>
+<pre>
+   TAO_DIVERGED_USER (-8),        (user defined)
+</pre>
+<P>
+<pre>
+   TAO_CONTINUE_ITERATING  (0)
+</pre>
+<P>
+where
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>res </B></TD><TD>- residual of optimality conditions
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>res0 </B></TD><TD>- initial residual of optimality conditions
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xdiff </B></TD><TD>- current trust region size
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>atol </B></TD><TD>- absolute tolerance
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>rtol </B></TD><TD>- relative tolerance
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>its </B></TD><TD>- current iterate number
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>maxits </B></TD><TD>- maximum number of iterates
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>nfunc </B></TD><TD>- number of function evaluations
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>maxnfuncts </B></TD><TD>- maximum number of function evaluations
+</TD></TR></TABLE>
+<P>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoGetTerminationReason.html#TaoGetTerminationReason">TaoGetTerminationReason</A>()
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ Convergence
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao.c.html#TaoCheckConvergence">src/interface/tao.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

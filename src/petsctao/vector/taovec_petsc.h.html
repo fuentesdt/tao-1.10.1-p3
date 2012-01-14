@@ -1,0 +1,105 @@
+<center><a href="taovec_petsc.h">Actual source code: taovec_petsc.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOPETSCVECTOR_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOPETSCVECTOR_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"taovec.h"</font><font color="#A020F0"></font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"petscksp.h"</font><font color="#A020F0"></font>
+
+
+<a name="line8">  8: </a>class TaoVecPetsc: public TaoVec {
+
+<a name="line10"> 10: </a><strong><font color="#FF0000"> protected:</font></strong>
+
+<a name="line12"> 12: </a>  Vec pv;
+<a name="line13"> 13: </a>  PetscViewer pvecviewer;
+
+<a name="line15"> 15: </a><strong><font color="#FF0000"> public:</font></strong>
+
+<a name="line17"> 17: </a>  TaoVecPetsc( Vec);
+<a name="line18"> 18: </a>  ~TaoVecPetsc();
+
+<a name="line20"> 20: </a>  inline Vec GetVec(){<font color="#4169E1">return</font> pv;}
+<a name="line21"> 21: </a>  int <A href="../../../docs/manualpages/ptaopages/SetVec.html#SetVec">SetVec</A>(Vec);
+<a name="line22"> 22: </a>  int <A href="../../../docs/manualpages/ptaopages/SetPetscViewer.html#SetPetscViewer">SetPetscViewer</A>(PetscViewer);
+
+<a name="line24"> 24: </a>  <font color="#B22222">/* </font>
+<a name="line25"> 25: </a><font color="#B22222">     The following methods are implementations of </font>
+<a name="line26"> 26: </a><font color="#B22222">     the virtual method in the base class </font>
+<a name="line27"> 27: </a><font color="#B22222">  */</font>
+<a name="line28"> 28: </a>  int <A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(TaoVec**);
+<a name="line29"> 29: </a>         
+<a name="line30"> 30: </a>  int <A href="../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A> (TaoVec *v, TaoTruth*);
+
+<a name="line32"> 32: </a>  int <A href="../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>();
+<a name="line33"> 33: </a>  int <A href="../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>( double );
+<a name="line34"> 34: </a>  int <A href="../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(double *);
+<a name="line35"> 35: </a>  int <A href="../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(double *);
+<a name="line36"> 36: </a>  int <A href="../../../docs/manualpages/vector/Norm2squared.html#Norm2squared">Norm2squared</A>(double *);
+<a name="line37"> 37: </a>  int <A href="../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(double *);
+<a name="line38"> 38: </a>  int <A href="../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>( TaoVec*, double *);
+
+<a name="line40"> 40: </a>  int <A href="../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>( TaoVec* );
+<a name="line41"> 41: </a>  int <A href="../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>( double, TaoVec* );
+<a name="line42"> 42: </a>  int <A href="../../../docs/manualpages/vector/Scale.html#Scale">Scale</A>( double );
+<a name="line43"> 43: </a>  int <A href="../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>( double );
+<a name="line44"> 44: </a>  int <A href="../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>();
+<a name="line45"> 45: </a>  int <A href="../../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>();
+<a name="line46"> 46: </a>  int <A href="../../../docs/manualpages/vector/Sqrt.html#Sqrt">Sqrt</A>();
+<a name="line47"> 47: </a>  int <A href="../../../docs/manualpages/vector/Pow.html#Pow">Pow</A>(double);
+
+<a name="line49"> 49: </a>  int <A href="../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(TaoInt *);
+
+<a name="line51"> 51: </a>  int <A href="../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>( double, TaoVec* );
+<a name="line52"> 52: </a>  int <A href="../../../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A>( double, TaoVec* );
+<a name="line53"> 53: </a>  int <A href="../../../docs/manualpages/vector/Axpby.html#Axpby">Axpby</A>( double , TaoVec*, double  );
+
+<a name="line55"> 55: </a>  int <A href="../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>( double , TaoVec*, double , TaoVec* );
+
+<a name="line57"> 57: </a>  int <A href="../../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>( );
+<a name="line58"> 58: </a>  int <A href="../../../docs/manualpages/vector/MinElement.html#MinElement">MinElement</A>(double*);
+
+<a name="line60"> 60: </a>  int <A href="../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>( TaoVec*, TaoVec* );
+<a name="line61"> 61: </a>  int <A href="../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>( TaoVec*, TaoVec* ); 
+
+<a name="line63"> 63: </a>  int <A href="../../../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A>( TaoVec*, TaoVec* );
+<a name="line64"> 64: </a>  int <A href="../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>( TaoVec*, TaoVec* ); 
+<a name="line65"> 65: </a>  int <A href="../../../docs/manualpages/vector/Median.html#Median">Median</A>( TaoVec* , TaoVec*, TaoVec* );
+
+<a name="line67"> 67: </a>  int <A href="../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(TaoVec *, TaoVec *, TaoVec *, TaoVec *);
+<a name="line68"> 68: </a>  int <A href="../../../docs/manualpages/vector/SFischer.html#SFischer">SFischer</A>(TaoVec *, TaoVec *, TaoVec *, TaoVec *, double);
+
+<a name="line70"> 70: </a>  int <A href="../../../docs/manualpages/lsolver/View.html#View">View</A>();
+<a name="line71"> 71: </a>  int <A href="../../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>( TaoVec* , double* );
+<a name="line72"> 72: </a>  int StepMax2( TaoVec* , TaoVec* , TaoVec* , double* );
+<a name="line73"> 73: </a>  int <A href="../../../docs/manualpages/vector/StepBoundInfo.html#StepBoundInfo">StepBoundInfo</A>(TaoVec* ,TaoVec*,TaoVec*,double*,double*,double*);
+
+<a name="line75"> 75: </a>  int <A href="../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(TaoVec*,TaoVec*,TaoVec*, TaoVec*);
+
+<a name="line77"> 77: </a>  int <A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>(TaoScalar **, TaoInt*);
+<a name="line78"> 78: </a>  int <A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>(TaoScalar **, TaoInt*);
+
+
+<a name="line81"> 81: </a>  int <A href="../../../docs/manualpages/vector/CreateIndexSet.html#CreateIndexSet">CreateIndexSet</A>(TaoIndexSet**S);
+
+<a name="line83"> 83: </a>  int <A href="../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(TaoVec*, TaoIndexSet*);
+<a name="line84"> 84: </a>  int <A href="../../../docs/manualpages/vector/ReducedCopyFromFull.html#ReducedCopyFromFull">ReducedCopyFromFull</A>(TaoVec*, TaoIndexSet*);
+<a name="line85"> 85: </a>  int <A href="../../../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A>(TaoVec*, TaoIndexSet*);
+
+<a name="line87"> 87: </a>};
+
+<a name="line89"> 89: </a><font color="#A020F0">#endif</font>
+
+
+</pre>
+</body>
+
+</html>

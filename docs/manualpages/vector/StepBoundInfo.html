@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>StepBoundInfo</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="StepBoundInfo"><H1>StepBoundInfo</H1></A>
+Calculates the largest multiple of a vector that can be added to this vector while keeping each element of this vector nonnegative. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoVec::StepBoundInfo(TaoVec* XL ,TaoVec* XU, TaoVec*S, double *bmin1,double *bmin2, double *bmax)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>txl </B></TD><TD>- the lower bounds on this vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>txu </B></TD><TD>- the upper bounds on this vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tdx </B></TD><TD>- the step direction for this vector
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>boundmin </B></TD><TD>- the step to closest bound i.e min(a1, ..., an);
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>wolfemin </B></TD><TD>- the step to closest bound not equal i.e min(b1, ..., bn);
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>boundmax </B></TD><TD>- the step to farthest bound   i.e. max(c1, ..., cn);
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Where</FONT></H2>
+if tdx[i] &gt; 0;  ai = (txu[i] - this[i])/tdx[i] ; bi=ai, ci=ai;
+if tdx[i] &lt; 0;  ai = (txl[i] - this[i])/tdx[i] ; bi=ai, ci=ai
+if tdx[i] == 0 &amp;&amp; txl[i] &lt; x[i] &lt; txu[i] ; ai=TAO_INFINITY, bi=ai, ci=ai;
+if tdx[i] == 0 &amp;&amp; (txl[i] == x[i] || txu[i] == x[i]) ; ai= 0, bi=TAO_INFINITY, ci=0;
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+If there is no maximum steplength, the output scalar may be set
+to TAO_INFINITY.
+<P>
+
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/vector/taovec.c.html#StepBoundInfo">src/vector/taovec.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

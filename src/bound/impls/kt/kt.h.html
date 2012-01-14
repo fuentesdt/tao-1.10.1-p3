@@ -1,0 +1,49 @@
+<center><a href="kt.h">Actual source code: kt.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef __TAO_KT_H</font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a>class TaoKTApplication : public TaoApplication {
+<a name="line6">  6: </a><strong><font color="#FF0000"> public:</font></strong>
+<a name="line7">  7: </a>  TaoKTApplication(TAO_SOLVER,TAO_SOLVER);
+<a name="line8">  8: </a>  TAO_SOLVER orig;      // original solver structure
+<a name="line9">  9: </a>  TAO_SOLVER csolver;      // original solver structure
+<a name="line10"> 10: </a>  double func;          // function value
+
+<a name="line12"> 12: </a>  virtual int <A href="../../../../docs/manualpages/taoapp/EvaluateConstraints.html#EvaluateConstraints">EvaluateConstraints</A>(TaoVec *xx, TaoVec *RR);
+<a name="line13"> 13: </a>  virtual int <A href="../../../../docs/manualpages/taoapp/EvaluateJacobian.html#EvaluateJacobian">EvaluateJacobian</A>(TaoVec *xx, TaoMat *JJ);
+<a name="line14"> 14: </a>  virtual int <A href="../../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *x);
+
+<a name="line16"> 16: </a>  virtual int <A href="../../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **xx);
+<a name="line17"> 17: </a>  virtual int <A href="../../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *xxll, TaoVec *xxuu);
+<a name="line18"> 18: </a>  virtual int <A href="../../../../docs/manualpages/taoapp/GetJacobianMatrix.html#GetJacobianMatrix">GetJacobianMatrix</A>(TaoMat **JJ);
+<a name="line19"> 19: </a>  virtual int <A href="../../../../docs/manualpages/taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A>(TaoMat *, TaoInt, TaoLinearSolver **);
+<a name="line20"> 20: </a>  int SetItUp1();
+<a name="line21"> 21: </a>  int SetItUp2();
+<a name="line22"> 22: </a>};
+
+
+<a name="line25"> 25: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+
+<a name="line27"> 27: </a>  TaoKTApplication* ktapp;
+
+<a name="line29"> 29: </a>  TAO_SOLVER csolver;    // complementarity solver structure
+<a name="line30"> 30: </a>  char comp_method[256]; // complementarity solver
+
+<a name="line32"> 32: </a>  TaoVec *G;
+<a name="line33"> 33: </a>  TaoInt setupcalled;
+<a name="line34"> 34: </a>} TAO_KT;
+
+<a name="line36"> 36: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,100 @@
+%\documentclass[11pt]{article}
+\documentclass{aiaa-tc}% insert '[draft]' option to show overfull boxes
+
+%\setlength{\textwidth}{6.0in}
+%\setlength{\oddsidemargin}{23pt}
+%\setlength{\evensidemargin}{23pt}
+%\setlength{\topmargin}{-0.5in}
+%\setlength{\textheight}{8.5in}
+
+\usepackage{../sty/ifpdf}     % For pdf and postscript files
+%\usepackage{../sty/refcheck}  % For checking references
+
+\usepackage{graphicx}        % Standard graphics package
+\ifpdf
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\else
+\DeclareGraphicsExtensions{.eps,.ps}
+\fi
+
+\usepackage{amsmath}            % For \numberwithin, \split,...
+\usepackage{float}              % Adds the H parameter to floats.
+\usepackage{verbatim}           % For comments
+\usepackage{amssymb}            % For, e.g., \mathbb, \big, and \mapsto
+\usepackage{url}                % For email addresses, hypertext links, ...
+% \usepackage{sectsty}          % For changing sectional headings
+
+% Abbreviations - general
+
+\newcommand{\grad}{\nabla}
+\newcommand{\half}{{\textstyle{\frac{1}{2}}}}
+\newcommand{\fourth}{{\textstyle{\frac{1}{4}}}}
+\newcommand{\threefourths}{{\textstyle{\frac{3}{4}}}}
+\newcommand{\Ref}[1]{\mbox{\rm{(\ref{#1})}}}
+\newcommand{\qed}{$ \blacksquare $ \medskip}
+\newcommand{\R}{\mbox{${\mathbb R}$}}
+
+% Abbreviations -specific
+
+\newcommand{\niters}{\mbox{$ n_{\mathrm{iters}} $}}
+\newcommand{\tron} {\mbox{\sf \footnotesize TRON}}
+\newcommand{\tao} {\mbox{\sf \footnotesize TAO}}
+
+% Algorithm floating environment.
+
+%\newfloat{Algorithm}{thp}{loa}[section]
+
+% Script letters.
+
+\newcommand{\cD}{\mbox{$\cal D$}}
+\newcommand{\cA}{\mbox{$\cal A$}}
+
+% General options
+
+%\renewcommand{\arraystretch}{1.2}
+%\renewcommand{\baselinestretch}{1.1}
+%\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+% Options for amsmath style.
+
+%\numberwithin{equation}{section}
+%\numberwithin{figure}{section}
+%\numberwithin{table}{section}
+
+% \sectionfont{\Large} % This is possible with sectsty.
+
+\begin{document}
+
+%\pagestyle{plain}
+
+%\norefnames
+%\nocitenames
+
+\input{intro}
+\input{tao}
+\input{comp}
+\input{remarks}
+
+
+%\bibliographystyle{siam}
+\bibliographystyle{aiaa}
+
+\bibliography{mao}
+
+\vskip0.5in
+\begin{center}
+\scriptsize
+\framebox{\parbox{4.0in}{The submitted manuscript has been created
+by the University of Chicago as Operator of Argonne
+National Laboratory (``Argonne'') under Contract No.\
+W-31-109-ENG-38 with the U.S. Department of Energy.
+The U.S. Government retains for itself, and others
+acting on its behalf, a paid-up, nonexclusive, irrevocable
+worldwide license in said article to reproduce,
+prepare derivative works, distribute copies to the
+public, and perform publicly and display publicly, by or on
+behalf of the Government.}}
+\normalsize
+\end{center}
+
+\end{document} 

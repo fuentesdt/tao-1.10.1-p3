@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoCreateProjectedLineSearch</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoCreateProjectedLineSearch"><H1>TaoCreateProjectedLineSearch</H1></A>
+Create a line search 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h" 
+int TaoCreateProjectedLineSearch(TAO_SOLVER tao)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>tao </B> -TAO_SOLVER context
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine is used within the following TAO bound constrained
+minimization solvers: TRON (tao_tron) and limited memory variable metric
+(tao_blmvm). This line search projects points onto the feasible, bound
+constrained region.  It only enforces the Armijo descent condition.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, linesearch
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/linesearch/impls/boundproj/boundproj.c.html#TaoCreateProjectedLineSearch">src/linesearch/impls/boundproj/boundproj.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

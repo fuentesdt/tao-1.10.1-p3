@@ -1,0 +1,322 @@
+<center><a href="rscs.c">Actual source code: rscs.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:09+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"src/complementarity/impls/ssls/ssls.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a>// #include <font color="#666666">"src/tao_impl.h"</font>
+
+<a name="line4">  4: </a><strong><font color="#4169E1">int Tao_RSCS_FunctionGradient(TAO_SOLVER, TaoVec*, double*, TaoVec*, void *)</font></strong>;
+<a name="line5">  5: </a><strong><font color="#4169E1">int Tao_RSCS_Function(TAO_SOLVER, TaoVec *, double *, void *)</font></strong>;
+<a name="line6">  6: </a><strong><font color="#4169E1">static int TaoSolve_RSCS(TAO_SOLVER tao, void*solver)</font></strong>;
+
+<a name="line8">  8: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line9">  9: </a>  TaoVec *f;
+<a name="line10"> 10: </a>  TaoMat *J;
+<a name="line11"> 11: </a>} FGMeritCtx;
+
+
+<a name="line16"> 16: </a><strong><font color="#4169E1"><a name="TaoSolve_RSCS"></a>static int TaoSolve_RSCS(TAO_SOLVER tao, void*solver)</font></strong>{
+
+<a name="line18"> 18: </a>  TAO_SSLS *asls = (TAO_SSLS *)solver;
+<a name="line19"> 19: </a>  FGMeritCtx  meritctx;
+<a name="line20"> 20: </a>  TaoTerminateReason reason=TAO_CONTINUE_ITERATING;
+<a name="line21"> 21: </a>  TaoVec *x, *l, *u, *ff, *d, *w, *g;
+<a name="line22"> 22: </a>  TaoMat *J,*Jsub;
+<a name="line23"> 23: </a>  TaoVec *dxfree,*r1;
+<a name="line24"> 24: </a>  TaoIndexSet *FreeVariableSet;
+<a name="line25"> 25: </a>  int  info;
+<a name="line26"> 26: </a>  TaoInt lsflag,iter=0;
+<a name="line27"> 27: </a>  double ndpsi,stepsize=1.0;
+<a name="line28"> 28: </a>  //  double psi,psi1,psi2;
+<a name="line29"> 29: </a>  TaoTruth success;
+<a name="line30"> 30: </a>  double fff,fff_full,gdx;
+<a name="line31"> 31: </a>  double gamma = 0.0, gamma_factor =1.0e-12;
+<a name="line32"> 32: </a>  //  double fref;
+
+<a name="line34"> 34: </a>  TaoFunctionBegin;
+
+<a name="line36"> 36: </a>  ff = asls-&gt;dpsi;
+<a name="line37"> 37: </a>  d = asls-&gt;d;
+<a name="line38"> 38: </a>  g = asls-&gt;t1;
+<a name="line39"> 39: </a>  w = asls-&gt;w;
+
+<a name="line41"> 41: </a>  <font color="#B22222">/*</font>
+<a name="line42"> 42: </a><font color="#B22222">  f = asls-&gt;f;</font>
+<a name="line43"> 43: </a><font color="#B22222">  ff = asls-&gt;ff;</font>
+<a name="line44"> 44: </a><font color="#B22222">  t2 = asls-&gt;t2;</font>
+<a name="line45"> 45: </a><font color="#B22222">  da = asls-&gt;da;</font>
+<a name="line46"> 46: </a><font color="#B22222">  db = asls-&gt;db;</font>
+<a name="line47"> 47: </a><font color="#B22222">  */</font>
+<a name="line48"> 48: </a>  <font color="#B22222">/* Check if upper bound greater than lower bound. */</font>
+<a name="line49"> 49: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao, &amp;x); CHKERRQ(info);
+<a name="line50"> 50: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao, &amp;l, &amp;u); CHKERRQ(info);
+<a name="line51"> 51: </a>  info = <A href="../../../../docs/manualpages/solver/TaoEvaluateVariableBounds.html#TaoEvaluateVariableBounds">TaoEvaluateVariableBounds</A>(tao,l,u); CHKERRQ(info);
+<a name="line52"> 52: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetJacobian.html#TaoGetJacobian">TaoGetJacobian</A>(tao, &amp;J); CHKERRQ(info);
+<a name="line53"> 53: </a>  meritctx.J=J;
+<a name="line54"> 54: </a>  meritctx.f=ff;
+<a name="line55"> 55: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMeritFunction.html#TaoSetMeritFunction">TaoSetMeritFunction</A>(tao, Tao_RSCS_Function, Tao_RSCS_FunctionGradient,
+<a name="line56"> 56: </a>                             TAO_NULL, TAO_NULL, TAO_NULL, (void*)&amp;meritctx ); CHKERRQ(info);
+
+<a name="line58"> 58: </a>  <font color="#B22222">/*   Project the current point onto the feasible set */</font>
+<a name="line59"> 59: </a>  info = x-&gt;<A href="../../../../docs/manualpages/vector/Median.html#Median">Median</A>(l,x,u); CHKERRQ(info);
+<a name="line60"> 60: </a>  
+<a name="line61"> 61: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunctionGradient.html#TaoComputeMeritFunctionGradient">TaoComputeMeritFunctionGradient</A>(tao, x, &amp;fff, g); CHKERRQ(info);
+
+<a name="line63"> 63: </a>  info = x-&gt;<A href="../../../../docs/manualpages/vector/CreateIndexSet.html#CreateIndexSet">CreateIndexSet</A>(&amp;FreeVariableSet); CHKERRQ(info);
+<a name="line64"> 64: </a>  info = J-&gt;<A href="../../../../docs/manualpages/matrix/CreateReducedMatrix.html#CreateReducedMatrix">CreateReducedMatrix</A>(FreeVariableSet,FreeVariableSet,&amp;Jsub); CHKERRQ(info);
+<a name="line65"> 65: </a>  info = x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;dxfree); CHKERRQ(info);
+<a name="line66"> 66: </a>  info = x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;r1); CHKERRQ(info);
+
+<a name="line68"> 68: </a>  <font color="#4169E1">while</font> (reason==TAO_CONTINUE_ITERATING){
+<a name="line69"> 69: </a>    
+<a name="line70"> 70: </a>    <font color="#B22222">/* Project the gradient and calculate the norm */</font>
+<a name="line71"> 71: </a>    info = w-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(ff,l,x,u);CHKERRQ(info);
+<a name="line72"> 72: </a>    info = w-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;ndpsi); CHKERRQ(info);
+
+<a name="line74"> 74: </a>    info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao,iter++,fff,ndpsi,0.0,stepsize,&amp;reason);
+<a name="line75"> 75: </a>    CHKERRQ(info);
+
+<a name="line77"> 77: </a>    <font color="#4169E1">if</font> (reason!=TAO_CONTINUE_ITERATING) <font color="#4169E1">break</font>;
+
+<a name="line79"> 79: </a>    info = FreeVariableSet-&gt;<A href="../../../../docs/manualpages/indexset/WhichEqual.html#WhichEqual">WhichEqual</A>(w,ff); CHKERRQ(info);
+
+<a name="line81"> 81: </a>    <font color="#B22222">/* Create a reduced linear system */</font>
+<a name="line82"> 82: </a>    info = r1-&gt;<A href="../../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(ff,FreeVariableSet);CHKERRQ(info);
+<a name="line83"> 83: </a>    info = r1-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>();CHKERRQ(info);
+
+<a name="line85"> 85: </a>    info = dxfree-&gt;<A href="../../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(d,FreeVariableSet);CHKERRQ(info);
+<a name="line86"> 86: </a>    info = dxfree-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line87"> 87: </a>    
+<a name="line88"> 88: </a>    info = <A href="../../../../docs/manualpages/solver/TaoComputeJacobian.html#TaoComputeJacobian">TaoComputeJacobian</A>(tao,x,J);CHKERRQ(info);    
+<a name="line89"> 89: </a>    info = Jsub-&gt;<A href="../../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(J,FreeVariableSet,FreeVariableSet);CHKERRQ(info);
+<a name="line90"> 90: </a>    
+<a name="line91"> 91: </a>    success = TAO_FALSE;
+<a name="line92"> 92: </a>    gamma = gamma_factor*(ndpsi); 
+<a name="line93"> 93: </a>    <font color="#4169E1">while</font> (success==TAO_FALSE) {
+<a name="line94"> 94: </a>      
+<a name="line95"> 95: </a>      <font color="#B22222">/* Approximately solve the reduced linear system */</font>
+<a name="line96"> 96: </a>      info = <A href="../../../../docs/manualpages/solver/TaoPreLinearSolve.html#TaoPreLinearSolve">TaoPreLinearSolve</A>(tao,Jsub);CHKERRQ(info);
+<a name="line97"> 97: </a>      info = <A href="../../../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>(tao,Jsub,r1,dxfree,&amp;success);CHKERRQ(info);
+<a name="line98"> 98: </a>    
+<a name="line99"> 99: </a>      info = d-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line100">100: </a>      info = d-&gt;<A href="../../../../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A>(dxfree,FreeVariableSet);CHKERRQ(info);
+<a name="line101">101: </a>      
+<a name="line102">102: </a>      info = d-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(ff,&amp;gdx); CHKERRQ(info);
+<a name="line103">103: </a>      
+
+<a name="line105">105: </a>      <font color="#4169E1">if</font> (success==TAO_FALSE) { <font color="#B22222">/* Modify diagonal of Hessian if not a descent direction */</font>
+
+<a name="line107">107: </a>        info = Jsub-&gt;<A href="../../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(J,FreeVariableSet,FreeVariableSet);CHKERRQ(info);
+<a name="line108">108: </a>        gamma *=10; 
+<a name="line109">109: </a>        //          printf(<font color="#666666">"Shift diagonal: %4.2e\n"</font>,gamma);
+<a name="line110">110: </a>        info = PetscInfo2(tao,<font color="#666666">"TaoSolve_NLS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n"</font>,gamma_factor,gamma);CHKERRQ(info);
+<a name="line111">111: </a>        info = Jsub-&gt;<A href="../../../../docs/manualpages/matrix/ShiftDiagonal.html#ShiftDiagonal">ShiftDiagonal</A>(gamma);CHKERRQ(info);
+<a name="line112">112: </a>        success = TAO_FALSE;
+<a name="line113">113: </a>        
+<a name="line114">114: </a>      } <font color="#4169E1">else</font> {
+<a name="line115">115: </a>        success = TAO_TRUE;
+<a name="line116">116: </a>      }
+<a name="line117">117: </a>      
+<a name="line118">118: </a>    }
+
+<a name="line120">120: </a>    //    fref=fff;
+<a name="line121">121: </a>    info = g-&gt;<A href="../../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(-1.0,d);CHKERRQ(info);
+<a name="line122">122: </a>    stepsize=1.0;        
+<a name="line123">123: </a>    info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao,x,g,d,w,
+<a name="line124">124: </a>                              &amp;fff,&amp;fff_full, &amp;stepsize,&amp;lsflag);
+<a name="line125">125: </a>    CHKERRQ(info);
+
+
+<a name="line128">128: </a>    <font color="#4169E1">if</font> (lsflag!=0){
+<a name="line129">129: </a>      int attempts = 0;
+
+<a name="line131">131: </a>      printf(<font color="#666666">"Try Again \n"</font>);
+<a name="line132">132: </a>      info = FreeVariableSet-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(l,x,u); CHKERRQ(info);
+<a name="line133">133: </a>      
+<a name="line134">134: </a>      <font color="#B22222">/* Create a reduced linear system */</font>
+<a name="line135">135: </a>      info = r1-&gt;<A href="../../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(ff,FreeVariableSet);CHKERRQ(info);
+<a name="line136">136: </a>      info = r1-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>();CHKERRQ(info);
+<a name="line137">137: </a>      
+<a name="line138">138: </a>      info = dxfree-&gt;<A href="../../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(d,FreeVariableSet);CHKERRQ(info);
+<a name="line139">139: </a>      info = dxfree-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line140">140: </a>      
+<a name="line141">141: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeJacobian.html#TaoComputeJacobian">TaoComputeJacobian</A>(tao,x,J);CHKERRQ(info);    
+<a name="line142">142: </a>      info = Jsub-&gt;<A href="../../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(J,FreeVariableSet,FreeVariableSet);CHKERRQ(info);
+<a name="line143">143: </a>      
+<a name="line144">144: </a>      success = TAO_FALSE;
+<a name="line145">145: </a>      gamma = gamma_factor*(ndpsi); 
+<a name="line146">146: </a>      <font color="#4169E1">while</font> (success==TAO_FALSE &amp;&amp; attempts &lt; 10) {
+<a name="line147">147: </a>        
+<a name="line148">148: </a>        <font color="#B22222">/* Approximately solve the reduced linear system */</font>
+<a name="line149">149: </a>        info = <A href="../../../../docs/manualpages/solver/TaoPreLinearSolve.html#TaoPreLinearSolve">TaoPreLinearSolve</A>(tao,Jsub);CHKERRQ(info);
+<a name="line150">150: </a>        info = <A href="../../../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>(tao,Jsub,r1,dxfree,&amp;success);CHKERRQ(info);
+<a name="line151">151: </a>        
+<a name="line152">152: </a>        info = d-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line153">153: </a>        info = d-&gt;<A href="../../../../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A>(dxfree,FreeVariableSet);CHKERRQ(info);
+<a name="line154">154: </a>        
+<a name="line155">155: </a>        info = d-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(ff,&amp;gdx); CHKERRQ(info);
+<a name="line156">156: </a>        
+<a name="line157">157: </a>        <font color="#4169E1">if</font> (success==TAO_FALSE) { <font color="#B22222">/* Modify diagonal of Hessian if not a descent direction */</font>
+<a name="line158">158: </a>          
+<a name="line159">159: </a>          info = Jsub-&gt;<A href="../../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(J,FreeVariableSet,FreeVariableSet);CHKERRQ(info);
+<a name="line160">160: </a>          gamma *= 10; 
+<a name="line161">161: </a>          //          printf(<font color="#666666">"Shift diagonal: %4.2e\n"</font>,gamma);
+<a name="line162">162: </a>          info = PetscInfo2(tao,<font color="#666666">"TaoSolve_NLS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n"</font>,
+<a name="line163">163: </a>                               gamma_factor,gamma); CHKERRQ(info);
+<a name="line164">164: </a>          info = Jsub-&gt;<A href="../../../../docs/manualpages/matrix/ShiftDiagonal.html#ShiftDiagonal">ShiftDiagonal</A>(gamma);CHKERRQ(info);
+<a name="line165">165: </a>          success = TAO_FALSE;
+<a name="line166">166: </a>          
+<a name="line167">167: </a>        } <font color="#4169E1">else</font> {
+<a name="line168">168: </a>          success = TAO_TRUE;
+<a name="line169">169: </a>        }
+<a name="line170">170: </a>        ++attempts;
+<a name="line171">171: </a>      }
+<a name="line172">172: </a>      
+<a name="line173">173: </a>      //      fref=fff;
+<a name="line174">174: </a>      info = g-&gt;<A href="../../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(-1.0,d);CHKERRQ(info);
+<a name="line175">175: </a>      stepsize=1.0;        
+<a name="line176">176: </a>      info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao,x,g,d,w,
+<a name="line177">177: </a>                                &amp;fff,&amp;fff_full, &amp;stepsize,&amp;lsflag);
+<a name="line178">178: </a>      CHKERRQ(info);
+<a name="line179">179: </a>      
+<a name="line180">180: </a>    }
+
+<a name="line182">182: </a>    <font color="#4169E1">if</font> ( iter&gt;=40 &amp;&amp; (iter%10==0) ){
+<a name="line183">183: </a>      printf(<font color="#666666">"Steepest Descent \n"</font>);
+<a name="line184">184: </a>      info = d-&gt;<A href="../../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(-1.0,ff);CHKERRQ(info);
+<a name="line185">185: </a>      info = g-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(ff);CHKERRQ(info);
+<a name="line186">186: </a>      stepsize=1.0;        
+<a name="line187">187: </a>      info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao,x,g,d,w,
+<a name="line188">188: </a>                                &amp;fff,&amp;fff_full, &amp;stepsize,&amp;lsflag);
+<a name="line189">189: </a>      CHKERRQ(info);
+<a name="line190">190: </a>      stepsize = 1.0e-6;
+<a name="line191">191: </a>    }
+
+<a name="line193">193: </a>    <font color="#4169E1">if</font> (lsflag!=0 ){
+<a name="line194">194: </a>      printf(<font color="#666666">"Steepest Descent \n"</font>);
+<a name="line195">195: </a>      info = d-&gt;<A href="../../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(-1.0,ff);CHKERRQ(info);
+<a name="line196">196: </a>      info = g-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(ff);CHKERRQ(info);
+<a name="line197">197: </a>      stepsize=1.0;        
+<a name="line198">198: </a>      info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao,x,g,d,w,
+<a name="line199">199: </a>                                &amp;fff,&amp;fff_full, &amp;stepsize,&amp;lsflag);
+<a name="line200">200: </a>      CHKERRQ(info);
+<a name="line201">201: </a>      stepsize = 1.0e-6;
+<a name="line202">202: </a>      
+<a name="line203">203: </a>    }
+
+<a name="line205">205: </a>    printf(<font color="#666666">"Stepsize: %4.2e\n"</font>,stepsize);
+<a name="line206">206: </a>  }  <font color="#B22222">/* END MAIN LOOP  */</font>
+
+
+<a name="line209">209: </a>  info = <A href="../../../../docs/manualpages/matrix/TaoMatDestroy.html#TaoMatDestroy">TaoMatDestroy</A>(Jsub);CHKERRQ(info);
+<a name="line210">210: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(dxfree);CHKERRQ(info);
+<a name="line211">211: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(r1);CHKERRQ(info);
+<a name="line212">212: </a>  info = <A href="../../../../docs/manualpages/indexset/TaoIndexSetDestroy.html#TaoIndexSetDestroy">TaoIndexSetDestroy</A>(FreeVariableSet);CHKERRQ(info);
+
+<a name="line214">214: </a>  TaoFunctionReturn(0);
+<a name="line215">215: </a>}
+
+
+<a name="line218">218: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line222">222: </a><strong><font color="#4169E1"><a name="TaoCreate_RSCS"></a>int TaoCreate_RSCS(TAO_SOLVER tao)</font></strong>
+<a name="line223">223: </a>{
+<a name="line224">224: </a>  TAO_SSLS *asls;
+<a name="line225">225: </a>  int        info;
+
+<a name="line227">227: </a>  TaoFunctionBegin;
+
+<a name="line229">229: </a>  info = TaoNew(TAO_SSLS, &amp;asls); CHKERRQ(info);
+<a name="line230">230: </a>  info = PetscLogObjectMemory(tao, <font color="#4169E1">sizeof</font>(TAO_SSLS)); CHKERRQ(info);
+
+<a name="line232">232: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>(tao,TaoSolve_RSCS,(void*)asls); CHKERRQ(info);
+<a name="line233">233: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSetUpDownRoutines.html#TaoSetTaoSetUpDownRoutines">TaoSetTaoSetUpDownRoutines</A>(tao,TaoSetUp_SSLS,TaoSetDown_SSLS); CHKERRQ(info);
+<a name="line234">234: </a>  info=TaoSetTaoOptionsRoutine(tao,TaoSetOptions_SSLS); CHKERRQ(info);
+<a name="line235">235: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoViewRoutine.html#TaoSetTaoViewRoutine">TaoSetTaoViewRoutine</A>(tao,TaoView_SSLS); CHKERRQ(info);
+
+<a name="line237">237: </a>  // info = <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteBoundLineSearch.html#TaoCreateMoreThuenteBoundLineSearch">TaoCreateMoreThuenteBoundLineSearch</A>(tao,0,0.9); CHKERRQ(info);
+<a name="line238">238: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateNDProjectedArmijoLineSearch.html#TaoCreateNDProjectedArmijoLineSearch">TaoCreateNDProjectedArmijoLineSearch</A>(tao); CHKERRQ(info);
+<a name="line239">239: </a>  //   info = <A href="../../../../docs/manualpages/solver/TaoCreateProjectedArmijoLineSearch.html#TaoCreateProjectedArmijoLineSearch">TaoCreateProjectedArmijoLineSearch</A>(tao); CHKERRQ(info);
+<a name="line240">240: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMeritFunction.html#TaoSetMeritFunction">TaoSetMeritFunction</A>(tao, Tao_RSCS_Function, Tao_RSCS_FunctionGradient,
+<a name="line241">241: </a>                             TAO_NULL, TAO_NULL, TAO_NULL, asls); CHKERRQ(info);
+
+<a name="line243">243: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(tao,2000); CHKERRQ(info);
+<a name="line244">244: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumFunctionEvaluations.html#TaoSetMaximumFunctionEvaluations">TaoSetMaximumFunctionEvaluations</A>(tao,4000); CHKERRQ(info);
+
+<a name="line246">246: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao,0,0,0,0); CHKERRQ(info);
+<a name="line247">247: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetGradientTolerances.html#TaoSetGradientTolerances">TaoSetGradientTolerances</A>(tao,1.0e-16,0.0,0.0); CHKERRQ(info);
+<a name="line248">248: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetFunctionLowerBound.html#TaoSetFunctionLowerBound">TaoSetFunctionLowerBound</A>(tao,1.0e-8); CHKERRQ(info);
+
+<a name="line250">250: </a>  TaoFunctionReturn(0);
+<a name="line251">251: </a>}
+
+<a name="line254">254: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line257">257: </a><strong><font color="#4169E1"><a name="Tao_RSCS_Function"></a>int Tao_RSCS_Function(TAO_SOLVER tao, TaoVec *X, double *fcn, void *solver)</font></strong> 
+<a name="line258">258: </a>{
+<a name="line259">259: </a>  int info;
+<a name="line260">260: </a>  double ndpsi;
+<a name="line261">261: </a>  TaoVec *TT,*XL,*XU;
+<a name="line262">262: </a>  FGMeritCtx*ctx = (FGMeritCtx*)solver;
+
+<a name="line264">264: </a>  TaoFunctionBegin;
+<a name="line265">265: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao, &amp;XL, &amp;XU); CHKERRQ(info);
+<a name="line266">266: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;TT); CHKERRQ(info);
+<a name="line267">267: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeConstraints.html#TaoComputeConstraints">TaoComputeConstraints</A>(tao, X, ctx-&gt;f); CHKERRQ(info);
+<a name="line268">268: </a>  info = TT-&gt;<A href="../../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(X, ctx-&gt;f, XL, XU); CHKERRQ(info);
+<a name="line269">269: </a>  //  info = TT-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(ctx-&gt;f,XL,X,XU);CHKERRQ(info);
+<a name="line270">270: </a>  info = TT-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;ndpsi); CHKERRQ(info);
+<a name="line271">271: </a>  *fcn=ndpsi;
+<a name="line272">272: </a>  info = PetscInfo1(tao,<font color="#666666">"RSCS Function value: %4.2e\n"</font>,*fcn); CHKERRQ(info);
+<a name="line273">273: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(TT); CHKERRQ(info);
+<a name="line274">274: </a>  TaoFunctionReturn(0);
+<a name="line275">275: </a>}
+
+<a name="line277">277: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line280">280: </a><strong><font color="#4169E1"><a name="Tao_RSCS_FunctionGradient"></a>int Tao_RSCS_FunctionGradient(TAO_SOLVER tao, TaoVec *X, double *fcn, </font></strong>
+<a name="line281">281: </a><strong><font color="#4169E1">                              TaoVec *G, void *solver)</font></strong>
+<a name="line282">282: </a>{
+<a name="line283">283: </a>  int info;
+<a name="line284">284: </a>  double ndpsi;
+<a name="line285">285: </a>  TaoVec *XL,*XU,*TT,*f;
+<a name="line286">286: </a>  TaoMat *J;
+<a name="line287">287: </a>  FGMeritCtx*ctx = (FGMeritCtx*)solver;
+
+<a name="line289">289: </a>  TaoFunctionBegin;
+<a name="line290">290: </a>  J=ctx-&gt;J;
+<a name="line291">291: </a>  f=ctx-&gt;f;
+<a name="line292">292: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao, &amp;XL, &amp;XU); CHKERRQ(info);
+<a name="line293">293: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeConstraints.html#TaoComputeConstraints">TaoComputeConstraints</A>(tao, X, f); CHKERRQ(info);
+<a name="line294">294: </a>  //  info = <A href="../../../../docs/manualpages/solver/TaoComputeJacobian.html#TaoComputeJacobian">TaoComputeJacobian</A>(tao,X,J); CHKERRQ(info);
+
+<a name="line296">296: </a>  <font color="#4169E1">if</font> (0==1){
+<a name="line297">297: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(f,XL,X,XU);CHKERRQ(info);
+<a name="line298">298: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;ndpsi); CHKERRQ(info);
+<a name="line299">299: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(f);CHKERRQ(info);
+<a name="line300">300: </a>    *fcn=ndpsi;
+<a name="line301">301: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (2==2){
+<a name="line302">302: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(X, f, XL, XU); CHKERRQ(info);
+<a name="line303">303: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(fcn); CHKERRQ(info);
+<a name="line304">304: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(f);CHKERRQ(info);
+<a name="line305">305: </a>  } <font color="#4169E1">else</font> {
+<a name="line306">306: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;TT); CHKERRQ(info);
+<a name="line307">307: </a>    info = TT-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(f,XL,X,XU);CHKERRQ(info);
+<a name="line308">308: </a>    info = TT-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;ndpsi); CHKERRQ(info);
+<a name="line309">309: </a>    *fcn=ndpsi*ndpsi/2;
+<a name="line310">310: </a>    *fcn=ndpsi;
+<a name="line311">311: </a>    info = J-&gt;<A href="../../../../docs/manualpages/matrix/MultiplyTranspose.html#MultiplyTranspose">MultiplyTranspose</A>(TT,G);CHKERRQ(info);
+<a name="line312">312: </a>    info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(TT); CHKERRQ(info);
+<a name="line313">313: </a>  }
+
+<a name="line315">315: </a>  info = PetscInfo1(tao,<font color="#666666">"RSCS Function value: %4.2e\n"</font>,*fcn); CHKERRQ(info);
+
+<a name="line317">317: </a>  TaoFunctionReturn(0);
+<a name="line318">318: </a>}
+</pre>
+</body>
+
+</html>

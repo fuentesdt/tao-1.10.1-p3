@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoCreateLinearSolver</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoCreateLinearSolver"><H1>TaoCreateLinearSolver</H1></A>
+Create a linear solver for use in TAO 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoCreateLinearSolver(TAO_SOLVER tao, TaoMat *MM, TaoInt stype, TaoLinearSolver **ksp)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>MM  </B></TD><TD>- the matrix associated with the solver
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>stype </B></TD><TD>- the type of linear solver
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<DT><B>ksp </B> -a linear solver
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Types of linear solvers</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>100 </B></TD><TD>- Solver for any square matrix
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>110 </B></TD><TD>- GMRES
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>200 </B></TD><TD>- Any symmetric matrix
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>210 </B></TD><TD>- MINRES
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>220 </B></TD><TD>- CG with Trust Region
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>230 </B></TD><TD>- SYMMLQ
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>300 </B></TD><TD>- Any symmetric positive definite
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>310 </B></TD><TD>- Conjugate Gradient
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>()
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ linear solver
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao_lsolver.c.html#TaoCreateLinearSolver">src/interface/tao_lsolver.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

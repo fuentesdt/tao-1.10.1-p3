@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetMonitor</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetMonitor"><H1>TaoSetMonitor</H1></A>
+Sets an ADDITIONAL function that is to be used at every iteration of the unconstrained minimization solver to display the iteration's  progress.    
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetMonitor(TAO_SOLVER tao,int (*mymonitor)(TAO_SOLVER,void*),void *mctx)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mymonitor </B></TD><TD>- monitoring routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mctx </B></TD><TD>- [optional] user-defined context for private data for the 
+monitor routine (may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of mymonitor</FONT></H2>
+<pre>
+    int mymonitor(TAO_SOLVER tao,void *mctx)
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mctx </B></TD><TD>- [optional] monitoring context
+</TD></TR></TABLE>
+<P>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_monitor        </B></TD><TD>- sets <A HREF="../solver/TaoDefaultMonitor.html#TaoDefaultMonitor">TaoDefaultMonitor</A>()
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_smonitor        </B></TD><TD>- sets short monitor
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_cancelmonitors </B></TD><TD>- cancels all monitors that have been hardwired into a code by calls to <A HREF="../solver/TaoSetMonitor.html#TaoSetMonitor">TaoSetMonitor</A>(), but does not cancel those set via the options database.
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+Several different monitoring routines may be set by calling
+<A HREF="../solver/TaoSetMonitor.html#TaoSetMonitor">TaoSetMonitor</A>() multiple times; all will be called in the
+order in which they were set.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ options, monitor, <A HREF="../lsolver/View.html#View">View</A>
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoDefaultMonitor.html#TaoDefaultMonitor">TaoDefaultMonitor</A>(), <A HREF="../solver/TaoClearMonitor.html#TaoClearMonitor">TaoClearMonitor</A>(),  <A HREF="../solver/TaoSetDestroyRoutine.html#TaoSetDestroyRoutine">TaoSetDestroyRoutine</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao.c.html#TaoSetMonitor">src/interface/tao.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

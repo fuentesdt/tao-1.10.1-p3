@@ -1,0 +1,4 @@
+#define 30679_img62_width 7
+#define 30679_img62_height 7
+static char 30679_img62_bits[] = {
+ 0x24,0x22,0x12,0x52,0x3e,0x01,0x01};

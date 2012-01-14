@@ -1,0 +1,48 @@
+% part1.tex near line 78
+\documentclass[dvipdfm,11pt,openright]{book}\usepackage{}\usepackage{amssymb}\usepackage{moreverb}\usepackage{epsf}\usepackage{float}\usepackage{}\usepackage{afterpage}
+\pagestyle{empty}
+\thispagestyle{empty}
+\vsize=20in\setlength{\textheight}{20in}
+\begin{document}
+{\catcode`\_=\active\gdef_{{\tt\char`\_}}}
+{\catcode`\_=\active\gdef\makeustext{\def_{{\tt\char`\_}}}}
+{\catcode`\&=\active\gdef\makeamptext{\catcode`\&=\active\def&{{\tt\char`\&}}}}
+\def\eatcode{\catcode`\_=\active\makeustext\makeamptext\eatnext}
+\def\eatfile{\catcode`\_=\active\makeustext\makeamptext\eatnextfile}
+\def\eatnext#1{{\tt #1}\endgroup}
+\def\eatnextfile#1{`{\tt #1}'\endgroup}
+\def\file{\begingroup\eatfile}
+\def\code{\begingroup\eatcode}
+\setcounter{section}{1}
+\setcounter{figure}{2}
+\setcounter{table}{1}
+\setcounter{equation}{-1}
+% User definitions begin here
+\def\F{\mbox{\boldmath \(F\)}}
+\def\R{\mathbb R}
+\def\x{\mbox{\boldmath \(x\)}}
+\def\findex#1{\index{#1}}
+\def\sindex#1{\index{#1}}
+\def\Re{\R}
+\def\Comment#1{}
+\def\rr{\mbox{\boldmath \(r\)}}
+\def\half{{\textstyle{\frac{1}{2}}}}
+% User definitions end here
+% Disable other commands
+\def\index#1{\relax}
+% User command to run
+\({TAO\_DIR}/examples/}, compile the examples, and run the
+  programs.
+\item Select the example program matching the application most
+  closely, and use it as a starting point for developing a customized
+  code.
+\end{enumerate}
+
+\section{A Simple TAO Example}
+\label{eq-foo}label
+
+To help the user start using TAO immediately, we use a simple
+uniprocessor example. The code in
+Figure~\ref{fig:example1} is for minimizing the
+extended Rosenbrock function\)% End of user command to run
+\end{document}

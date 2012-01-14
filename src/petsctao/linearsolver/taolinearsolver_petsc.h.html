@@ -1,0 +1,69 @@
+<center><a href="taolinearsolver_petsc.h">Actual source code: taolinearsolver_petsc.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOPETSCSOLVER_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOPETSCSOLVER_H</font></strong>
+
+<a name="line4">  4: </a><strong><font color="#228B22">#define TAO_USE_PETSC</font></strong>
+
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"taolinearsolver.h"</font><font color="#A020F0"></font>
+
+<a name="line8">  8: </a><font color="#A020F0">#include </font><font color="#666666">"petscksp.h"</font><font color="#A020F0"></font>
+<a name="line9">  9: </a><font color="#A020F0">#include </font><font color="#666666">"petscpc.h"</font><font color="#A020F0"></font>
+
+
+<a name="line12"> 12: </a>class TaoLinearSolverPetsc : public TaoLinearSolver {
+
+<a name="line14"> 14: </a><strong><font color="#FF0000"> protected:</font></strong>
+<a name="line15"> 15: </a>  
+<a name="line16"> 16: </a>    KSP ksp;
+<a name="line17"> 17: </a>    PetscViewer pkspviewer;
+<a name="line18"> 18: </a>    int linear_its;
+
+<a name="line20"> 20: </a><strong><font color="#FF0000"> public:</font></strong>
+
+<a name="line22"> 22: </a>    TaoLinearSolverPetsc(KSP);    
+<a name="line23"> 23: </a>    ~TaoLinearSolverPetsc();
+<a name="line24"> 24: </a>    
+<a name="line25"> 25: </a>    inline KSP GetKSP() {<font color="#4169E1">return</font> ksp;}
+<a name="line26"> 26: </a>    int SetKSP(KSP);
+<a name="line27"> 27: </a>    int GetKSP(KSP*);
+
+<a name="line29"> 29: </a>    <font color="#B22222">/*</font>
+<a name="line30"> 30: </a><font color="#B22222">      The following methods are implementations of </font>
+<a name="line31"> 31: </a><font color="#B22222">      the virtual methods in the base class </font>
+<a name="line32"> 32: </a><font color="#B22222">    */</font>
+
+<a name="line34"> 34: </a>    <font color="#B22222">/* These ones are necessary */</font>
+<a name="line35"> 35: </a>    int <A href="../../../docs/manualpages/lsolver/PreSolve.html#PreSolve">PreSolve</A>(TaoMat*);
+<a name="line36"> 36: </a>    int <A href="../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(TaoVec*,TaoVec*, TaoTruth*);
+
+<a name="line38"> 38: </a>    <font color="#B22222">/* Some methods need this */</font>
+<a name="line39"> 39: </a>    int <A href="../../../docs/manualpages/lsolver/SolveTrustRegion.html#SolveTrustRegion">SolveTrustRegion</A>(TaoVec*,TaoVec*,double, TaoTruth*);
+<a name="line40"> 40: </a>    int <A href="../../../docs/manualpages/lsolver/SetTolerances.html#SetTolerances">SetTolerances</A>(double rtol, double atol, double dtol, int maxits);
+
+<a name="line42"> 42: </a>    <font color="#B22222">/* These ones are nice to have, but not necessary */</font>
+<a name="line43"> 43: </a>    int <A href="../../../docs/manualpages/lsolver/GetNumberIterations.html#GetNumberIterations">GetNumberIterations</A>(int *);
+<a name="line44"> 44: </a>    int <A href="../../../docs/manualpages/lsolver/View.html#View">View</A>();
+<a name="line45"> 45: </a>    int <A href="../../../docs/manualpages/lsolver/SetOptions.html#SetOptions">SetOptions</A>();
+
+<a name="line47"> 47: </a>    <font color="#B22222">/* These ones are extra, not virtual in base class */</font>
+<a name="line48"> 48: </a>    int SetTrustRadius(double);
+<a name="line49"> 49: </a>    int GetNormDirection(double *);
+<a name="line50"> 50: </a>    int GetObjFcn(double *);
+<a name="line51"> 51: </a>    int GetMinEig(double *);
+<a name="line52"> 52: </a>    int GetLambda(double *);
+<a name="line53"> 53: </a>};
+
+<a name="line55"> 55: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

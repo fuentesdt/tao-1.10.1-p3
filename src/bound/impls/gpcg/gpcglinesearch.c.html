@@ -1,0 +1,258 @@
+<center><a href="gpcglinesearch.c">Actual source code: gpcglinesearch.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"src/bound/impls/gpcg/gpcglinesearch.h"</font><font color="#A020F0">    </font><font color="#B22222">/*I "tao_solver.h" I*/</font><font color="#A020F0"></font>
+
+<a name="line4">  4: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line7">  7: </a><strong><font color="#4169E1"><a name="TaoGPCGDestroyLineSearch"></a>static int TaoGPCGDestroyLineSearch(TAO_SOLVER tao, void*lsctx)</font></strong>
+<a name="line8">  8: </a>{
+<a name="line9">  9: </a>  int  info;
+<a name="line10"> 10: </a>  TAO_GPCGLINESEARCH *ctx = (TAO_GPCGLINESEARCH *)lsctx;
+
+<a name="line12"> 12: </a>  TaoFunctionBegin;
+<a name="line13"> 13: </a>  <font color="#4169E1">if</font> (ctx-&gt;setupcalled==1){
+<a name="line14"> 14: </a>    info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(ctx-&gt;W2);CHKERRQ(info);
+<a name="line15"> 15: </a>    info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(ctx-&gt;Gold);CHKERRQ(info);
+<a name="line16"> 16: </a>  }
+<a name="line17"> 17: </a>  info = TaoFree(ctx);CHKERRQ(info);
+<a name="line18"> 18: </a>  TaoFunctionReturn(0);
+<a name="line19"> 19: </a>}
+<a name="line20"> 20: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line23"> 23: </a><strong><font color="#4169E1"><a name="TaoGPCGSetOptionsLineSearch"></a>static int TaoGPCGSetOptionsLineSearch(TAO_SOLVER tao, void*linectx)</font></strong>
+<a name="line24"> 24: </a>{
+<a name="line25"> 25: </a>  TAO_GPCGLINESEARCH *ctx = (TAO_GPCGLINESEARCH *)linectx;
+<a name="line26"> 26: </a>  double         tmp;
+<a name="line27"> 27: </a>  int            info;
+<a name="line28"> 28: </a>  TaoInt         itmp;
+<a name="line29"> 29: </a>  TaoTruth     flg;
+
+<a name="line31"> 31: </a>  TaoFunctionBegin;
+<a name="line32"> 32: </a>  info = TaoOptionsHead(<font color="#666666">"GPCG line search options"</font>);CHKERRQ(info);
+
+<a name="line34"> 34: </a>  info = TaoOptionInt(<font color="#666666">"-tao_nls_maxfev"</font>,<font color="#666666">"max function evals in line search"</font>,0,ctx-&gt;maxfev,&amp;itmp,&amp;flg);CHKERRQ(info);
+<a name="line35"> 35: </a>  <font color="#4169E1">if</font> (flg) {ctx-&gt;maxfev = itmp;}
+<a name="line36"> 36: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_nls_ftol"</font>,<font color="#666666">"tol for sufficient decrease"</font>,0,ctx-&gt;ftol,&amp;tmp,&amp;flg);CHKERRQ(info);
+<a name="line37"> 37: </a>  <font color="#4169E1">if</font> (flg) {ctx-&gt;ftol = tmp;}
+<a name="line38"> 38: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_nls_gtol"</font>,<font color="#666666">"tol for curvature condition"</font>,0,ctx-&gt;gtol,&amp;tmp,&amp;flg);CHKERRQ(info);
+<a name="line39"> 39: </a>  <font color="#4169E1">if</font> (flg) {ctx-&gt;gtol = tmp;}
+<a name="line40"> 40: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_nls_rtol"</font>,<font color="#666666">"relative tol for acceptable step"</font>,0,ctx-&gt;rtol,&amp;tmp,&amp;flg);CHKERRQ(info);
+<a name="line41"> 41: </a>  <font color="#4169E1">if</font> (flg) {ctx-&gt;rtol = tmp;}
+<a name="line42"> 42: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_nls_stepmin"</font>,<font color="#666666">"lower bound for step"</font>,0,ctx-&gt;stepmin,&amp;tmp,&amp;flg);CHKERRQ(info);
+<a name="line43"> 43: </a>  <font color="#4169E1">if</font> (flg) {ctx-&gt;stepmin = tmp;}
+<a name="line44"> 44: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_nls_stepmax"</font>,<font color="#666666">"upper bound for step"</font>,0,ctx-&gt;stepmax,&amp;tmp,&amp;flg);CHKERRQ(info);
+<a name="line45"> 45: </a>  <font color="#4169E1">if</font> (flg) {ctx-&gt;stepmax = tmp;}
+<a name="line46"> 46: </a>  info = TaoOptionsTail();CHKERRQ(info);
+
+<a name="line48"> 48: </a>  TaoFunctionReturn(0);
+<a name="line49"> 49: </a>}
+
+
+<a name="line52"> 52: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line55"> 55: </a><strong><font color="#4169E1"><a name="TaoGPCGViewLineSearch"></a>static int TaoGPCGViewLineSearch(TAO_SOLVER tao,void *ctx)</font></strong>
+<a name="line56"> 56: </a>{
+<a name="line57"> 57: </a>  TAO_GPCGLINESEARCH *ls = (TAO_GPCGLINESEARCH *)ctx;
+<a name="line58"> 58: </a>  int            info;
+
+<a name="line60"> 60: </a>  TaoFunctionBegin;
+<a name="line61"> 61: </a>  info = TaoPrintInt(tao,<font color="#666666">"  Line search: maxf=%d,"</font>,ls-&gt;maxfev);CHKERRQ(info);
+<a name="line62"> 62: </a>  info = TaoPrintDouble(tao,<font color="#666666">" ftol=%g,"</font>,ls-&gt;ftol);CHKERRQ(info);
+<a name="line63"> 63: </a>  info = TaoPrintDouble(tao,<font color="#666666">" rtol=%g,"</font>,ls-&gt;rtol);CHKERRQ(info);
+<a name="line64"> 64: </a>  info = TaoPrintDouble(tao,<font color="#666666">" gtol=%g\n"</font>,ls-&gt;gtol);CHKERRQ(info);
+<a name="line65"> 65: </a>  TaoFunctionReturn(0);
+<a name="line66"> 66: </a>}
+
+<a name="line68"> 68: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line71"> 71: </a><strong><font color="#4169E1"><a name="TaoGPCGApplyLineSearch"></a>static int TaoGPCGApplyLineSearch(TAO_SOLVER tao,TaoVec* X, </font></strong>
+<a name="line72"> 72: </a><strong><font color="#4169E1">                           TaoVec* G,TaoVec* S,TaoVec* W,</font></strong>
+<a name="line73"> 73: </a><strong><font color="#4169E1">                           double *f, double *f_full, double *step, TaoInt *info2,</font></strong>
+<a name="line74"> 74: </a><strong><font color="#4169E1">                           void*ctx)</font></strong>
+<a name="line75"> 75: </a>{
+<a name="line76"> 76: </a>  TAO_GPCGLINESEARCH *neP = (TAO_GPCGLINESEARCH *) ctx;
+<a name="line77"> 77: </a>  int       info;
+<a name="line78"> 78: </a>  TaoInt i;
+<a name="line79"> 79: </a>  double zero=0.0;
+<a name="line80"> 80: </a>  double d1,finit,actred,prered,rho, gdx;
+<a name="line81"> 81: </a>  TaoVec* XL, *XU, *Xold=neP-&gt;W2,*Gold=neP-&gt;Gold;
+<a name="line82"> 82: </a>  TaoTruth flag;
+
+<a name="line84"> 84: </a>  TaoFunctionBegin;
+<a name="line85"> 85: </a>  <font color="#B22222">/* neP-&gt;stepmin - lower bound for step */</font>
+<a name="line86"> 86: </a>  <font color="#B22222">/* neP-&gt;stepmax - upper bound for step */</font>
+<a name="line87"> 87: </a>  <font color="#B22222">/* neP-&gt;rtol           - relative tolerance for an acceptable step */</font>
+<a name="line88"> 88: </a>  <font color="#B22222">/* neP-&gt;ftol           - tolerance for sufficient decrease condition */</font>
+<a name="line89"> 89: </a>  <font color="#B22222">/* neP-&gt;gtol           - tolerance for curvature condition */</font>
+<a name="line90"> 90: </a>  <font color="#B22222">/* neP-&gt;nfev           - number of function evaluations */</font>
+<a name="line91"> 91: </a>  <font color="#B22222">/* neP-&gt;maxfev  - maximum number of function evaluations */</font>
+
+<a name="line93"> 93: </a>  <font color="#B22222">/* Check input parameters for errors */</font>
+<a name="line94"> 94: </a>  *info2=0;
+<a name="line95"> 95: </a>  <font color="#4169E1">if</font> (neP-&gt;setupcalled){
+<a name="line96"> 96: </a>    info=X-&gt;<A href="../../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A>(neP-&gt;W2,&amp;flag); CHKERRQ(info);
+<a name="line97"> 97: </a>    <font color="#4169E1">if</font> (flag==TAO_FALSE){
+<a name="line98"> 98: </a>      info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(neP-&gt;W2); CHKERRQ(info);neP-&gt;W2=0;
+<a name="line99"> 99: </a>      info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(neP-&gt;Gold); CHKERRQ(info);neP-&gt;Gold=0;
+<a name="line100">100: </a>      neP-&gt;setupcalled=0;
+<a name="line101">101: </a>    }
+<a name="line102">102: </a>  }
+
+<a name="line104">104: </a>  <font color="#4169E1">if</font> (neP-&gt;setupcalled==0){
+<a name="line105">105: </a>    info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;neP-&gt;W2); CHKERRQ(info);
+<a name="line106">106: </a>    Xold=neP-&gt;W2;
+<a name="line107">107: </a>    info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;neP-&gt;Gold); CHKERRQ(info);
+<a name="line108">108: </a>    Gold=neP-&gt;Gold;
+<a name="line109">109: </a>    neP-&gt;setupcalled=1;
+<a name="line110">110: </a>  }
+
+<a name="line112">112: </a>  info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;gdx); CHKERRQ(info);
+<a name="line113">113: </a>  info = Xold-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X); CHKERRQ(info);
+<a name="line114">114: </a>  info = Gold-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G); CHKERRQ(info);
+<a name="line115">115: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao,&amp;XL,&amp;XU); CHKERRQ(info);
+<a name="line116">116: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/StepBoundInfo.html#StepBoundInfo">StepBoundInfo</A>(XL,XU,S,&amp;rho,&amp;actred,&amp;d1);CHKERRQ(info);
+<a name="line117">117: </a>  rho=0; actred=0;
+<a name="line118">118: </a>  *step = TaoMin(*step,d1);
+
+<a name="line120">120: </a>  <font color="#4169E1">if</font> (*step &lt; zero) {
+<a name="line121">121: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Line search error: step (%g) &lt; 0\n"</font>,*step); CHKERRQ(info);
+<a name="line122">122: </a>    *info2 = -1; TaoFunctionReturn(0);
+<a name="line123">123: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;ftol &lt; zero) {
+<a name="line124">124: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Line search error: ftol (%g) &lt; 0\n"</font>,neP-&gt;ftol); CHKERRQ(info);
+<a name="line125">125: </a>    *info2 = -2; TaoFunctionReturn(0);
+<a name="line126">126: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;rtol &lt; zero) {
+<a name="line127">127: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Line search error: rtol (%g) &lt; 0\n"</font>,neP-&gt;rtol); CHKERRQ(info);
+<a name="line128">128: </a>    *info2 = -3; TaoFunctionReturn(0);
+<a name="line129">129: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;gtol &lt; zero) {
+<a name="line130">130: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Line search error: gtol (%g) &lt; 0\n"</font>,neP-&gt;gtol); CHKERRQ(info);
+<a name="line131">131: </a>    *info2 = -4; TaoFunctionReturn(0);
+<a name="line132">132: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;stepmin &lt; zero) {
+<a name="line133">133: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Line search error: stepmin (%g) &lt; 0\n"</font>,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line134">134: </a>    *info2 = -5; TaoFunctionReturn(0);
+<a name="line135">135: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;stepmax &lt; neP-&gt;stepmin) {
+<a name="line136">136: </a>    info = PetscInfo2(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Line search error: stepmax (%g) &lt; stepmin (%g)\n"</font>,neP-&gt;stepmax,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line137">137: </a>    *info2 = -6; TaoFunctionReturn(0);
+<a name="line138">138: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;maxfev &lt; zero) {
+<a name="line139">139: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Line search error: maxfev (%d) &lt; 0\n"</font>,neP-&gt;maxfev); CHKERRQ(info);
+<a name="line140">140: </a>    *info2 = -7; TaoFunctionReturn(0);
+<a name="line141">141: </a>  }
+
+
+<a name="line144">144: </a>  <font color="#B22222">/* Check that search direction is a descent direction */</font>
+<a name="line145">145: </a>  <font color="#B22222">/*</font>
+<a name="line146">146: </a><font color="#B22222">  info = VecDot(G,S,&amp;dginit);CHKERRQ(info);  / * dginit = G^T S * /</font>
+<a name="line147">147: </a><font color="#B22222">  if (dginit &gt;= zero) {</font>
+<a name="line148">148: </a><font color="#B22222">    info = PetscLogInfo((tao,"TaoGPCGApplyLineSearch:Search direction not a descent direction\n")); CHKERRQ(info);</font>
+<a name="line149">149: </a><font color="#B22222">    *info2 = 7; return(0);</font>
+<a name="line150">150: </a><font color="#B22222">  }</font>
+<a name="line151">151: </a><font color="#B22222">  */</font>
+<a name="line152">152: </a>  <font color="#B22222">/* Initialization */</font>
+<a name="line153">153: </a>  neP-&gt;nfev = 0;
+<a name="line154">154: </a>  finit = *f;
+<a name="line155">155: </a>  <font color="#4169E1">for</font> (i=0; i&lt; neP-&gt;maxfev; i++) {
+<a name="line156">156: </a>    
+<a name="line157">157: </a>    <font color="#B22222">/* Force the step to be within the bounds */</font>
+<a name="line158">158: </a>    *step = TaoMax(*step,neP-&gt;stepmin);
+<a name="line159">159: </a>    *step = TaoMin(*step,neP-&gt;stepmax);
+<a name="line160">160: </a>    
+<a name="line161">161: </a>    info = X-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(*step,S,1.0,Xold); CHKERRQ(info);
+<a name="line162">162: </a>    info = X-&gt;<A href="../../../../docs/manualpages/vector/Median.html#Median">Median</A>(XL,X,XU); CHKERRQ(info);
+
+<a name="line164">164: </a>    info = TaoGPCGComputeFunctionGradient(tao, X, f, G); CHKERRQ(info);
+<a name="line165">165: </a>    <font color="#4169E1">if</font> (0 == i) {
+<a name="line166">166: </a>      *f_full = *f;
+<a name="line167">167: </a>    }
+
+<a name="line169">169: </a>    actred = *f - finit;
+<a name="line170">170: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(-1.0,Xold,1.0,X); CHKERRQ(info);
+<a name="line171">171: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Gold,&amp;prered); CHKERRQ(info);
+<a name="line172">172: </a>    <font color="#4169E1">if</font> (fabs(prered)&lt;1.0e-100) prered=1.0e-12;
+<a name="line173">173: </a>    rho = actred/prered;
+<a name="line174">174: </a>    <font color="#B22222">/* </font>
+<a name="line175">175: </a><font color="#B22222">       If sufficient progress has been obtained, accept the</font>
+<a name="line176">176: </a><font color="#B22222">       point.  Otherwise, backtrack. </font>
+<a name="line177">177: </a><font color="#B22222">    */</font>
+
+<a name="line179">179: </a>    <font color="#4169E1">if</font> (rho &gt; neP-&gt;ftol){
+<a name="line180">180: </a>      <font color="#4169E1">break</font>;
+<a name="line181">181: </a>    } <font color="#4169E1">else</font>{
+<a name="line182">182: </a>      *step = (*step)/2;
+<a name="line183">183: </a>    }
+<a name="line184">184: </a>  }
+
+<a name="line186">186: </a>  <font color="#B22222">/* Convergence testing */</font>
+<a name="line187">187: </a>  
+<a name="line188">188: </a>  <font color="#4169E1">if</font> (*step &lt;= neP-&gt;stepmin || *step &gt;= neP-&gt;stepmax) {
+<a name="line189">189: </a>    *info2 = 6;
+<a name="line190">190: </a>    info = PetscInfo(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Rounding errors may prevent further progress.  May not be a step satisfying\n"</font>); CHKERRQ(info);
+<a name="line191">191: </a>    info = PetscInfo(tao,<font color="#666666">"TaoGPCGApplyLineSearch:sufficient decrease and curvature conditions. Tolerances may be too small.\n"</font>); CHKERRQ(info);
+<a name="line192">192: </a>  }
+<a name="line193">193: </a>  <font color="#4169E1">if</font> (*step == neP-&gt;stepmax) {
+<a name="line194">194: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Step is at the upper bound, stepmax (%g)\n"</font>,neP-&gt;stepmax); CHKERRQ(info);
+<a name="line195">195: </a>    *info2 = 5;
+<a name="line196">196: </a>  }
+<a name="line197">197: </a>  <font color="#4169E1">if</font> (*step == neP-&gt;stepmin) {
+<a name="line198">198: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Step is at the lower bound, stepmin (%g)\n"</font>,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line199">199: </a>    *info2 = 4;
+<a name="line200">200: </a>  }
+<a name="line201">201: </a>  <font color="#4169E1">if</font> (neP-&gt;nfev &gt;= neP-&gt;maxfev) {
+<a name="line202">202: </a>    info = PetscInfo2(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Number of line search function evals (%d) &gt; maximum (%d)\n"</font>,neP-&gt;nfev,neP-&gt;maxfev); CHKERRQ(info);
+<a name="line203">203: </a>    *info2 = 3;
+<a name="line204">204: </a>  }
+<a name="line205">205: </a>  <font color="#4169E1">if</font> ((neP-&gt;bracket) &amp;&amp; (neP-&gt;stepmax - neP-&gt;stepmin &lt;= neP-&gt;rtol*neP-&gt;stepmax)){
+<a name="line206">206: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoGPCGApplyLineSearch:Relative width of interval of uncertainty is at most rtol (%g)\n"</font>,neP-&gt;rtol); CHKERRQ(info);
+<a name="line207">207: </a>    *info2 = 2;
+<a name="line208">208: </a>  }
+<a name="line209">209: </a>  <font color="#B22222">/*</font>
+<a name="line210">210: </a><font color="#B22222">  if ((*f &lt;= ftest1) &amp;&amp; (PetscAbsDouble(dg) &lt;= neP-&gt;gtol*(-dginit))) {</font>
+<a name="line211">211: </a><font color="#B22222">    info = PetscLogInfo((tao,"TaoGPCGApplyLineSearch:Line search success: Sufficient decrease and directional deriv conditions hold\n")); CHKERRQ(info);</font>
+<a name="line212">212: </a><font color="#B22222">    *info2 = 1;</font>
+<a name="line213">213: </a><font color="#B22222">  }</font>
+<a name="line214">214: </a><font color="#B22222">  */</font>
+<a name="line215">215: </a>  
+<a name="line216">216: </a>  <font color="#B22222">/* Finish computations */</font>
+<a name="line217">217: </a>  info = PetscInfo2(tao,<font color="#666666">"TaoGPCGApplyLineSearch:%d function evals in line search, step = %10.4f\n"</font>,neP-&gt;nfev,*step); CHKERRQ(info);
+
+<a name="line219">219: </a>  TaoFunctionReturn(0);
+<a name="line220">220: </a>}
+
+<a name="line222">222: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line225">225: </a><strong><font color="#4169E1"><a name="TaoGPCGCreateLineSearch"></a>int TaoGPCGCreateLineSearch(TAO_SOLVER tao)</font></strong>
+<a name="line226">226: </a>{
+<a name="line227">227: </a>  int info;
+<a name="line228">228: </a>  TAO_GPCGLINESEARCH *neP;
+
+<a name="line230">230: </a>  TaoFunctionBegin;
+
+<a name="line232">232: </a>  info = TaoNew(TAO_GPCGLINESEARCH,&amp;neP);CHKERRQ(info);
+<a name="line233">233: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_GPCGLINESEARCH)); CHKERRQ(info);
+<a name="line234">234: </a>  neP-&gt;ftol                  = 0.05;
+<a name="line235">235: </a>  neP-&gt;rtol                  = 0.0;
+<a name="line236">236: </a>  neP-&gt;gtol                  = 0.0;
+<a name="line237">237: </a>  neP-&gt;stepmin                  = 1.0e-20;
+<a name="line238">238: </a>  neP-&gt;stepmax                  = 1.0e+20;
+<a name="line239">239: </a>  neP-&gt;nfev                  = 0; 
+<a name="line240">240: </a>  neP-&gt;bracket                  = 0; 
+<a name="line241">241: </a>  neP-&gt;infoc              = 1;
+<a name="line242">242: </a>  neP-&gt;maxfev                  = 30;
+<a name="line243">243: </a>  neP-&gt;setupcalled        = 0;
+
+<a name="line245">245: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLineSearch.html#TaoSetLineSearch">TaoSetLineSearch</A>(tao,0,
+<a name="line246">246: </a>                          TaoGPCGSetOptionsLineSearch,
+<a name="line247">247: </a>                          TaoGPCGApplyLineSearch,
+<a name="line248">248: </a>                          TaoGPCGViewLineSearch,
+<a name="line249">249: </a>                          TaoGPCGDestroyLineSearch,
+<a name="line250">250: </a>                          (void *) neP);CHKERRQ(info);
+
+<a name="line252">252: </a>  TaoFunctionReturn(0);
+<a name="line253">253: </a>}
+
+</pre>
+</body>
+
+</html>

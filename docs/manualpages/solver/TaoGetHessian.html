@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGetHessian</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGetHessian"><H1>TaoGetHessian</H1></A>
+Sets the pointer to a TaoMat equal to the address a the TaoMat containing the Hessian matrix. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoGetHessian(TAO_SOLVER solver,TaoMat **HH)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>solver </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>HH </B></TD><TD>- address of a pointer to a TaoMat
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<DT><B>HH </B> -address of pointer to the Hessian matrix (or TAO_NULL)
+<br>
+<P>
+Note:  This routine does not create a matrix.  It sets a pointer
+to the location of an existing matrix.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ TaoApplication::<A HREF="../taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A>(), <A HREF="../solver/TaoComputeHessian.html#TaoComputeHessian">TaoComputeHessian</A>()
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, get, Hessian
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao_fghj.c.html#TaoGetHessian">src/interface/tao_fghj.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

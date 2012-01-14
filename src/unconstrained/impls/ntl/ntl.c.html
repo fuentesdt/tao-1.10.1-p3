@@ -1,0 +1,1085 @@
+<center><a href="ntl.c">Actual source code: ntl.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:10+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id: ntl.c,v 1.4 2009-08-25 16:25:11 sarich Exp $*/</font>
+
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"ntl.h"</font><font color="#A020F0">             </font><font color="#B22222">/*I "tao_solver.h" I*/</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><font color="#A020F0">#ifdef TAO_USE_PETSC</font>
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"petscksp.h"</font><font color="#A020F0"></font>
+<a name="line7">  7: </a><font color="#A020F0">#include </font><font color="#666666">"petscpc.h"</font><font color="#A020F0"></font>
+<a name="line8">  8: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/linearsolver/taolinearsolver_petsc.h"</font><font color="#A020F0"></font>
+<a name="line9">  9: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/vector/taovec_petsc.h"</font><font color="#A020F0"></font>
+
+<a name="line11"> 11: </a><font color="#A020F0">#include </font><font color="#666666">"private/kspimpl.h"</font><font color="#A020F0"></font>
+<a name="line12"> 12: </a><font color="#A020F0">#include </font><font color="#666666">"private/pcimpl.h"</font><font color="#A020F0"></font>
+
+<a name="line14"> 14: </a><strong><font color="#228B22">#define NTL_KSP_NASH        0</font></strong>
+<a name="line15"> 15: </a><strong><font color="#228B22">#define NTL_KSP_STCG        1</font></strong>
+<a name="line16"> 16: </a><strong><font color="#228B22">#define NTL_KSP_GLTR        2</font></strong>
+<a name="line17"> 17: </a><strong><font color="#228B22">#define NTL_KSP_TYPES        3</font></strong>
+
+<a name="line19"> 19: </a><strong><font color="#228B22">#define NTL_PC_NONE        0</font></strong>
+<a name="line20"> 20: </a><strong><font color="#228B22">#define NTL_PC_AHESS        1</font></strong>
+<a name="line21"> 21: </a><strong><font color="#228B22">#define NTL_PC_BFGS        2</font></strong>
+<a name="line22"> 22: </a><strong><font color="#228B22">#define NTL_PC_PETSC        3</font></strong>
+<a name="line23"> 23: </a><strong><font color="#228B22">#define NTL_PC_TYPES        4</font></strong>
+
+<a name="line25"> 25: </a><strong><font color="#228B22">#define BFGS_SCALE_AHESS        0</font></strong>
+<a name="line26"> 26: </a><strong><font color="#228B22">#define BFGS_SCALE_BFGS                1</font></strong>
+<a name="line27"> 27: </a><strong><font color="#228B22">#define BFGS_SCALE_TYPES        2</font></strong>
+
+<a name="line29"> 29: </a><strong><font color="#228B22">#define NTL_INIT_CONSTANT         0</font></strong>
+<a name="line30"> 30: </a><strong><font color="#228B22">#define NTL_INIT_DIRECTION        1</font></strong>
+<a name="line31"> 31: </a><strong><font color="#228B22">#define NTL_INIT_INTERPOLATION    2</font></strong>
+<a name="line32"> 32: </a><strong><font color="#228B22">#define NTL_INIT_TYPES            3</font></strong>
+
+<a name="line34"> 34: </a><strong><font color="#228B22">#define NTL_UPDATE_REDUCTION      0</font></strong>
+<a name="line35"> 35: </a><strong><font color="#228B22">#define NTL_UPDATE_INTERPOLATION  1</font></strong>
+<a name="line36"> 36: </a><strong><font color="#228B22">#define NTL_UPDATE_TYPES          2</font></strong>
+
+<a name="line38"> 38: </a>static const char *NTL_KSP[64] = {
+<a name="line39"> 39: </a>  <font color="#666666">"nash"</font>, <font color="#666666">"stcg"</font>, <font color="#666666">"gltr"</font>
+<a name="line40"> 40: </a>};
+
+<a name="line42"> 42: </a>static const char *NTL_PC[64] = {
+<a name="line43"> 43: </a>  <font color="#666666">"none"</font>, <font color="#666666">"ahess"</font>, <font color="#666666">"bfgs"</font>, <font color="#666666">"petsc"</font>
+<a name="line44"> 44: </a>};
+
+<a name="line46"> 46: </a>static const char *BFGS_SCALE[64] = {
+<a name="line47"> 47: </a>  <font color="#666666">"ahess"</font>, <font color="#666666">"bfgs"</font>
+<a name="line48"> 48: </a>};
+
+<a name="line50"> 50: </a>static const char *NTL_INIT[64] = {
+<a name="line51"> 51: </a>  <font color="#666666">"constant"</font>, <font color="#666666">"direction"</font>, <font color="#666666">"interpolation"</font>
+<a name="line52"> 52: </a>};
+
+<a name="line54"> 54: </a>static const char *NTL_UPDATE[64] = {
+<a name="line55"> 55: </a>  <font color="#666666">"reduction"</font>, <font color="#666666">"interpolation"</font>
+<a name="line56"> 56: </a>};
+
+<a name="line58"> 58: </a>// Routine <font color="#4169E1">for</font> BFGS preconditioner
+
+<a name="line62"> 62: </a><strong><font color="#4169E1"><a name="bfgs_apply"></a>static PetscErrorCode bfgs_apply(PC pc, Vec xin, Vec xout)</font></strong>
+<a name="line63"> 63: </a>{
+<a name="line64"> 64: </a>  TaoLMVMMat *M;
+
+<a name="line66"> 66: </a>  TaoVecPetsc Xin(xin);
+<a name="line67"> 67: </a>  TaoVecPetsc Xout(xout);
+<a name="line68"> 68: </a>  TaoTruth info2;
+<a name="line69"> 69: </a>  int info;
+
+<a name="line72"> 72: </a>  info = PCShellGetContext(pc,(void**)&amp;M); CHKERRQ(info);
+<a name="line73"> 73: </a>  info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(&amp;Xin, &amp;Xout, &amp;info2); CHKERRQ(info);
+<a name="line74"> 74: </a>  <font color="#4169E1">return</font>(0);
+<a name="line75"> 75: </a>}
+
+<a name="line77"> 77: </a>// Implements Newton's Method with a trust-region, line-search approach <font color="#4169E1">for</font> 
+<a name="line78"> 78: </a>// solving unconstrained minimization problems.  A More'-Thuente line search 
+<a name="line79"> 79: </a>// is used to guarantee that the bfgs preconditioner remains positive
+<a name="line80"> 80: </a>// definite.
+
+<a name="line82"> 82: </a><strong><font color="#228B22">#define NTL_NEWTON                 0</font></strong>
+<a name="line83"> 83: </a><strong><font color="#228B22">#define NTL_BFGS                 1</font></strong>
+<a name="line84"> 84: </a><strong><font color="#228B22">#define NTL_SCALED_GRADIENT         2</font></strong>
+<a name="line85"> 85: </a><strong><font color="#228B22">#define NTL_GRADIENT                 3</font></strong>
+
+<a name="line89"> 89: </a><strong><font color="#4169E1"><a name="TaoSolve_NTL"></a>static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line90"> 90: </a>{
+<a name="line91"> 91: </a>  TAO_NTL *tl = (TAO_NTL *)solver;
+<a name="line92"> 92: </a>  TaoVec *X, *G = tl-&gt;G, *D = tl-&gt;D, *W = tl-&gt;W;
+<a name="line93"> 93: </a>  TaoVec *Xold = tl-&gt;Xold, *Gold = tl-&gt;Gold, *Diag = tl-&gt;Diag;
+<a name="line94"> 94: </a>  TaoMat *H;
+<a name="line95"> 95: </a>  TaoLMVMMat *M = tl-&gt;M;
+
+<a name="line97"> 97: </a>  TaoLinearSolver *tls;
+<a name="line98"> 98: </a>  TaoLinearSolverPetsc *pls;
+
+<a name="line100">100: </a>  KSP pksp;
+<a name="line101">101: </a>  PC ppc;
+
+<a name="line103">103: </a>  KSPConvergedReason ksp_reason;
+<a name="line104">104: </a>  TaoTerminateReason reason;
+<a name="line105">105: </a>  TaoTruth success;
+<a name="line106">106: </a>  
+<a name="line107">107: </a>  double fmin, ftrial, f_full, prered, actred, kappa, sigma;
+<a name="line108">108: </a>  double tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+<a name="line109">109: </a>  double f, fold, gdx, gnorm;
+<a name="line110">110: </a>  double step = 1.0;
+
+<a name="line112">112: </a>  double delta;
+<a name="line113">113: </a>  double radius, norm_d = 0.0;
+
+<a name="line115">115: </a>  int info;
+<a name="line116">116: </a>  TaoInt stepType;
+<a name="line117">117: </a>  TaoInt iter = 0, status = 0;
+<a name="line118">118: </a>  TaoInt bfgsUpdates = 0;
+<a name="line119">119: </a>  TaoInt needH;
+
+<a name="line121">121: </a>  TaoInt i_max = 5;
+<a name="line122">122: </a>  TaoInt j_max = 1;
+<a name="line123">123: </a>  TaoInt i, j;
+
+<a name="line125">125: </a>  TaoInt tr_reject;
+
+<a name="line127">127: </a>  TaoFunctionBegin;
+
+<a name="line129">129: </a>  // Initialize trust-region radius
+<a name="line130">130: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetInitialTrustRegionRadius.html#TaoGetInitialTrustRegionRadius">TaoGetInitialTrustRegionRadius</A>(tao, &amp;radius); CHKERRQ(info);
+<a name="line131">131: </a>  <font color="#4169E1">if</font> (radius &lt; 0.0) {
+<a name="line132">132: </a>    SETERRQ(1, <font color="#666666">"Initial radius negative"</font>);
+<a name="line133">133: </a>  }
+
+<a name="line135">135: </a>  // Modify the radius <font color="#4169E1">if</font> it is too large or small
+<a name="line136">136: </a>  radius = TaoMax(radius, tl-&gt;min_radius);
+<a name="line137">137: </a>  radius = TaoMin(radius, tl-&gt;max_radius);
+
+<a name="line139">139: </a>  // Get vectors we will need
+<a name="line140">140: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao, &amp;X); CHKERRQ(info);
+<a name="line141">141: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetHessian.html#TaoGetHessian">TaoGetHessian</A>(tao, &amp;H); CHKERRQ(info);
+
+<a name="line143">143: </a>  <font color="#4169E1">if</font> (NTL_PC_BFGS == tl-&gt;pc_type &amp;&amp; !M) {
+<a name="line144">144: </a>    tl-&gt;M = new TaoLMVMMat(X);
+<a name="line145">145: </a>    M = tl-&gt;M;
+<a name="line146">146: </a>  }
+
+<a name="line148">148: </a>  // Check convergence criteria
+<a name="line149">149: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeFunctionGradient.html#TaoComputeFunctionGradient">TaoComputeFunctionGradient</A>(tao, X, &amp;f, G); CHKERRQ(info);
+<a name="line150">150: </a>  info = G-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;gnorm); CHKERRQ(info);
+<a name="line151">151: </a>  <font color="#4169E1">if</font> (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+<a name="line152">152: </a>    SETERRQ(1, <font color="#666666">"User provided compute function generated Inf or NaN"</font>);
+<a name="line153">153: </a>  }
+<a name="line154">154: </a>  needH = 1;
+
+<a name="line156">156: </a>  info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao, iter, f, gnorm, 0.0, 1.0, &amp;reason); CHKERRQ(info);
+<a name="line157">157: </a>  <font color="#4169E1">if</font> (reason != TAO_CONTINUE_ITERATING) {
+<a name="line158">158: </a>    TaoFunctionReturn(0);
+<a name="line159">159: </a>  }
+
+<a name="line161">161: </a>  // Create vectors <font color="#4169E1">for</font> the limited memory preconditioner
+<a name="line162">162: </a>  <font color="#4169E1">if</font> ((NTL_PC_BFGS == tl-&gt;pc_type) &amp;&amp; 
+<a name="line163">163: </a>      (BFGS_SCALE_BFGS != tl-&gt;bfgs_scale_type)) {
+<a name="line164">164: </a>    <font color="#4169E1">if</font> (!Diag) {
+<a name="line165">165: </a>      info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tl-&gt;Diag); CHKERRQ(info);
+<a name="line166">166: </a>      Diag = tl-&gt;Diag;
+<a name="line167">167: </a>    }
+<a name="line168">168: </a>  }
+
+<a name="line170">170: </a>  // Modify the linear solver to a conjugate gradient method
+<a name="line171">171: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetLinearSolver.html#TaoGetLinearSolver">TaoGetLinearSolver</A>(tao, &amp;tls); CHKERRQ(info);
+<a name="line172">172: </a>  pls  = dynamic_cast &lt;TaoLinearSolverPetsc *&gt; (tls);
+
+<a name="line174">174: </a>  pksp = pls-&gt;GetKSP();
+<a name="line175">175: </a>  <font color="#4169E1">switch</font>(tl-&gt;ksp_type) {
+<a name="line176">176: </a>  <font color="#4169E1">case</font> NTL_KSP_NASH:
+<a name="line177">177: </a>    info = KSPSetType(pksp, KSPNASH); CHKERRQ(info);
+<a name="line178">178: </a>    <font color="#4169E1">if</font> (pksp-&gt;ops-&gt;setfromoptions) {
+<a name="line179">179: </a>      (*pksp-&gt;ops-&gt;setfromoptions)(pksp);
+<a name="line180">180: </a>    }
+<a name="line181">181: </a>    <font color="#4169E1">break</font>;
+
+<a name="line183">183: </a>  <font color="#4169E1">case</font> NTL_KSP_STCG:
+<a name="line184">184: </a>    info = KSPSetType(pksp, KSPSTCG); CHKERRQ(info);
+<a name="line185">185: </a>    <font color="#4169E1">if</font> (pksp-&gt;ops-&gt;setfromoptions) {
+<a name="line186">186: </a>      (*pksp-&gt;ops-&gt;setfromoptions)(pksp);
+<a name="line187">187: </a>    }
+<a name="line188">188: </a>    <font color="#4169E1">break</font>;
+
+<a name="line190">190: </a><strong><font color="#FF0000">  default:</font></strong>
+<a name="line191">191: </a>    info = KSPSetType(pksp, KSPGLTR); CHKERRQ(info);
+<a name="line192">192: </a>    <font color="#4169E1">if</font> (pksp-&gt;ops-&gt;setfromoptions) {
+<a name="line193">193: </a>      (*pksp-&gt;ops-&gt;setfromoptions)(pksp);
+<a name="line194">194: </a>    }
+<a name="line195">195: </a>    <font color="#4169E1">break</font>;
+<a name="line196">196: </a>  }
+
+<a name="line198">198: </a>  // Modify the preconditioner to use the bfgs approximation
+<a name="line199">199: </a>  info = KSPGetPC(pksp, &amp;ppc); CHKERRQ(info);
+<a name="line200">200: </a>  <font color="#4169E1">switch</font>(tl-&gt;pc_type) {
+<a name="line201">201: </a>  <font color="#4169E1">case</font> NTL_PC_NONE:
+<a name="line202">202: </a>    info = PCSetType(ppc, PCNONE); CHKERRQ(info);
+<a name="line203">203: </a>    <font color="#4169E1">if</font> (ppc-&gt;ops-&gt;setfromoptions) {
+<a name="line204">204: </a>      (*ppc-&gt;ops-&gt;setfromoptions)(ppc);
+<a name="line205">205: </a>    }
+<a name="line206">206: </a>    <font color="#4169E1">break</font>;
+
+<a name="line208">208: </a>  <font color="#4169E1">case</font> NTL_PC_AHESS:
+<a name="line209">209: </a>    info = PCSetType(ppc, PCJACOBI); CHKERRQ(info);
+<a name="line210">210: </a>    <font color="#4169E1">if</font> (ppc-&gt;ops-&gt;setfromoptions) {
+<a name="line211">211: </a>      (*ppc-&gt;ops-&gt;setfromoptions)(ppc);
+<a name="line212">212: </a>    }
+<a name="line213">213: </a>    info = PCJacobiSetUseAbs(ppc); CHKERRQ(info);
+<a name="line214">214: </a>    <font color="#4169E1">break</font>;
+
+<a name="line216">216: </a>  <font color="#4169E1">case</font> NTL_PC_BFGS:
+<a name="line217">217: </a>    info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
+<a name="line218">218: </a>    <font color="#4169E1">if</font> (ppc-&gt;ops-&gt;setfromoptions) {
+<a name="line219">219: </a>      (*ppc-&gt;ops-&gt;setfromoptions)(ppc);
+<a name="line220">220: </a>    }
+<a name="line221">221: </a>    info = PCShellSetName(ppc, <font color="#666666">"bfgs"</font>); CHKERRQ(info);
+<a name="line222">222: </a>    info = PCShellSetContext(ppc, M); CHKERRQ(info);
+<a name="line223">223: </a>    info = PCShellSetApply(ppc, bfgs_apply); CHKERRQ(info);
+<a name="line224">224: </a>    <font color="#4169E1">break</font>;
+
+<a name="line226">226: </a><strong><font color="#FF0000">  default:</font></strong>
+<a name="line227">227: </a>    // Use the pc method set by pc_type
+<a name="line228">228: </a>    <font color="#4169E1">break</font>;
+<a name="line229">229: </a>  }
+
+<a name="line231">231: </a>  // Initialize trust-region radius.  The initialization is only performed 
+<a name="line232">232: </a>  // when we are using Steihaug-Toint or the Generalized Lanczos method.
+<a name="line233">233: </a>  <font color="#4169E1">switch</font>(tl-&gt;init_type) {
+<a name="line234">234: </a>  <font color="#4169E1">case</font> NTL_INIT_CONSTANT:
+<a name="line235">235: </a>    // Use the initial radius specified
+<a name="line236">236: </a>    <font color="#4169E1">break</font>;
+
+<a name="line238">238: </a>  <font color="#4169E1">case</font> NTL_INIT_INTERPOLATION:
+<a name="line239">239: </a>    // Use the initial radius specified
+<a name="line240">240: </a>    max_radius = 0.0;
+<a name="line241">241: </a>  
+<a name="line242">242: </a>    <font color="#4169E1">for</font> (j = 0; j &lt; j_max; ++j) {
+<a name="line243">243: </a>      fmin = f;
+<a name="line244">244: </a>      sigma = 0.0;
+<a name="line245">245: </a>  
+<a name="line246">246: </a>      <font color="#4169E1">if</font> (needH) {
+<a name="line247">247: </a>        info = <A href="../../../../docs/manualpages/solver/TaoComputeHessian.html#TaoComputeHessian">TaoComputeHessian</A>(tao, X, H); CHKERRQ(info);
+<a name="line248">248: </a>        needH = 0;
+<a name="line249">249: </a>      }
+<a name="line250">250: </a>  
+<a name="line251">251: </a>      <font color="#4169E1">for</font> (i = 0; i &lt; i_max; ++i) {
+<a name="line252">252: </a>        info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0, X, -radius / gnorm, G); CHKERRQ(info);
+
+<a name="line254">254: </a>        info = <A href="../../../../docs/manualpages/solver/TaoComputeFunction.html#TaoComputeFunction">TaoComputeFunction</A>(tao, W, &amp;ftrial); CHKERRQ(info);
+<a name="line255">255: </a>        <font color="#4169E1">if</font> (TaoInfOrNaN(ftrial)) {
+<a name="line256">256: </a>          tau = tl-&gt;gamma1_i;
+<a name="line257">257: </a>        }
+<a name="line258">258: </a>        <font color="#4169E1">else</font> {
+<a name="line259">259: </a>          <font color="#4169E1">if</font> (ftrial &lt; fmin) {
+<a name="line260">260: </a>            fmin = ftrial;
+<a name="line261">261: </a>            sigma = -radius / gnorm;
+<a name="line262">262: </a>          }
+
+<a name="line264">264: </a>          info = H-&gt;<A href="../../../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A>(G, D); CHKERRQ(info);
+<a name="line265">265: </a>          info = D-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(G, &amp;prered); CHKERRQ(info);
+
+<a name="line267">267: </a>          prered = radius * (gnorm - 0.5 * radius * prered / (gnorm * gnorm));
+<a name="line268">268: </a>          actred = f - ftrial;
+<a name="line269">269: </a>          <font color="#4169E1">if</font> ((fabs(actred) &lt;= tl-&gt;epsilon) &amp;&amp; 
+<a name="line270">270: </a>              (fabs(prered) &lt;= tl-&gt;epsilon)) {
+<a name="line271">271: </a>            kappa = 1.0;
+<a name="line272">272: </a>          }
+<a name="line273">273: </a>          <font color="#4169E1">else</font> {
+<a name="line274">274: </a>            kappa = actred / prered;
+<a name="line275">275: </a>          }
+
+<a name="line277">277: </a>          tau_1 = tl-&gt;theta_i * gnorm * radius / (tl-&gt;theta_i * gnorm * radius + (1.0 - tl-&gt;theta_i) * prered - actred);
+<a name="line278">278: </a>          tau_2 = tl-&gt;theta_i * gnorm * radius / (tl-&gt;theta_i * gnorm * radius - (1.0 + tl-&gt;theta_i) * prered + actred);
+<a name="line279">279: </a>          tau_min = TaoMin(tau_1, tau_2);
+<a name="line280">280: </a>          tau_max = TaoMax(tau_1, tau_2);
+
+<a name="line282">282: </a>          <font color="#4169E1">if</font> (fabs(kappa - 1.0) &lt;= tl-&gt;mu1_i) {
+<a name="line283">283: </a>            // Great agreement
+<a name="line284">284: </a>            max_radius = TaoMax(max_radius, radius);
+
+<a name="line286">286: </a>            <font color="#4169E1">if</font> (tau_max &lt; 1.0) {
+<a name="line287">287: </a>              tau = tl-&gt;gamma3_i;
+<a name="line288">288: </a>            }
+<a name="line289">289: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_max &gt; tl-&gt;gamma4_i) {
+<a name="line290">290: </a>              tau = tl-&gt;gamma4_i;
+<a name="line291">291: </a>            }
+<a name="line292">292: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_1 &gt;= 1.0 &amp;&amp; tau_1 &lt;= tl-&gt;gamma4_i &amp;&amp; tau_2 &lt; 1.0) {
+<a name="line293">293: </a>              tau = tau_1;
+<a name="line294">294: </a>            }
+<a name="line295">295: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_2 &gt;= 1.0 &amp;&amp; tau_2 &lt;= tl-&gt;gamma4_i &amp;&amp; tau_1 &lt; 1.0) {
+<a name="line296">296: </a>              tau = tau_2;
+<a name="line297">297: </a>            }
+<a name="line298">298: </a>            <font color="#4169E1">else</font> {
+<a name="line299">299: </a>              tau = tau_max;
+<a name="line300">300: </a>            }
+<a name="line301">301: </a>          }
+<a name="line302">302: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (fabs(kappa - 1.0) &lt;= tl-&gt;mu2_i) {
+<a name="line303">303: </a>            // Good agreement
+<a name="line304">304: </a>            max_radius = TaoMax(max_radius, radius);
+
+<a name="line306">306: </a>            <font color="#4169E1">if</font> (tau_max &lt; tl-&gt;gamma2_i) {
+<a name="line307">307: </a>              tau = tl-&gt;gamma2_i;
+<a name="line308">308: </a>            }
+<a name="line309">309: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_max &gt; tl-&gt;gamma3_i) {
+<a name="line310">310: </a>              tau = tl-&gt;gamma3_i;
+<a name="line311">311: </a>            }
+<a name="line312">312: </a>            <font color="#4169E1">else</font> {
+<a name="line313">313: </a>              tau = tau_max;
+<a name="line314">314: </a>            }
+<a name="line315">315: </a>          }
+<a name="line316">316: </a>          <font color="#4169E1">else</font> {
+<a name="line317">317: </a>            // Not good agreement
+<a name="line318">318: </a>            <font color="#4169E1">if</font> (tau_min &gt; 1.0) {
+<a name="line319">319: </a>              tau = tl-&gt;gamma2_i;
+<a name="line320">320: </a>            }
+<a name="line321">321: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_max &lt; tl-&gt;gamma1_i) {
+<a name="line322">322: </a>              tau = tl-&gt;gamma1_i;
+<a name="line323">323: </a>            }
+<a name="line324">324: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((tau_min &lt; tl-&gt;gamma1_i) &amp;&amp; (tau_max &gt;= 1.0)) {
+<a name="line325">325: </a>              tau = tl-&gt;gamma1_i;
+<a name="line326">326: </a>            }
+<a name="line327">327: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((tau_1 &gt;= tl-&gt;gamma1_i) &amp;&amp; (tau_1 &lt; 1.0) &amp;&amp;
+<a name="line328">328: </a>                     ((tau_2 &lt; tl-&gt;gamma1_i) || (tau_2 &gt;= 1.0))) {
+<a name="line329">329: </a>              tau = tau_1;
+<a name="line330">330: </a>            }
+<a name="line331">331: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((tau_2 &gt;= tl-&gt;gamma1_i) &amp;&amp; (tau_2 &lt; 1.0) &amp;&amp;
+<a name="line332">332: </a>                     ((tau_1 &lt; tl-&gt;gamma1_i) || (tau_2 &gt;= 1.0))) {
+<a name="line333">333: </a>              tau = tau_2;
+<a name="line334">334: </a>            }
+<a name="line335">335: </a>            <font color="#4169E1">else</font> {
+<a name="line336">336: </a>              tau = tau_max;
+<a name="line337">337: </a>            }
+<a name="line338">338: </a>          }
+<a name="line339">339: </a>        }
+<a name="line340">340: </a>        radius = tau * radius;
+<a name="line341">341: </a>      }
+<a name="line342">342: </a>  
+<a name="line343">343: </a>      <font color="#4169E1">if</font> (fmin &lt; f) {
+<a name="line344">344: </a>        f = fmin;
+<a name="line345">345: </a>        info = X-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(sigma, G); CHKERRQ(info);
+<a name="line346">346: </a>        info = <A href="../../../../docs/manualpages/solver/TaoComputeGradient.html#TaoComputeGradient">TaoComputeGradient</A>(tao, X, G); CHKERRQ(info);
+<a name="line347">347: </a>  
+<a name="line348">348: </a>        info = G-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;gnorm); CHKERRQ(info);
+<a name="line349">349: </a>        <font color="#4169E1">if</font> (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+<a name="line350">350: </a>          SETERRQ(1, <font color="#666666">"User provided compute function generated Inf or NaN"</font>);
+<a name="line351">351: </a>        }
+<a name="line352">352: </a>        needH = 1;
+<a name="line353">353: </a>  
+<a name="line354">354: </a>        info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao, iter, f, gnorm, 0.0, 1.0, &amp;reason); CHKERRQ(info);
+<a name="line355">355: </a>        <font color="#4169E1">if</font> (reason != TAO_CONTINUE_ITERATING) {
+<a name="line356">356: </a>          TaoFunctionReturn(0);
+<a name="line357">357: </a>        }
+<a name="line358">358: </a>      }
+<a name="line359">359: </a>    }
+<a name="line360">360: </a>    radius = TaoMax(radius, max_radius);
+
+<a name="line362">362: </a>    // Modify the radius <font color="#4169E1">if</font> it is too large or small
+<a name="line363">363: </a>    radius = TaoMax(radius, tl-&gt;min_radius);
+<a name="line364">364: </a>    radius = TaoMin(radius, tl-&gt;max_radius);
+<a name="line365">365: </a>    <font color="#4169E1">break</font>;
+
+<a name="line367">367: </a><strong><font color="#FF0000">  default:</font></strong>
+<a name="line368">368: </a>    // Norm of the first direction will initialize radius
+<a name="line369">369: </a>    radius = 0.0;
+<a name="line370">370: </a>    <font color="#4169E1">break</font>;
+<a name="line371">371: </a>  }
+
+<a name="line373">373: </a>  // Set initial scaling <font color="#4169E1">for</font> the BFGS preconditioner
+<a name="line374">374: </a>  // This step is done after computing the initial trust-region radius
+<a name="line375">375: </a>  // since the function value may have decreased
+<a name="line376">376: </a>  <font color="#4169E1">if</font> (NTL_PC_BFGS == tl-&gt;pc_type) {
+<a name="line377">377: </a>    <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line378">378: </a>      delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line379">379: </a>    }
+<a name="line380">380: </a>    <font color="#4169E1">else</font> {
+<a name="line381">381: </a>      delta = 2.0 / (gnorm*gnorm);
+<a name="line382">382: </a>    }
+<a name="line383">383: </a>    info = M-&gt;SetDelta(delta); CHKERRQ(info);
+<a name="line384">384: </a>  }
+
+<a name="line386">386: </a>  // Set counter <font color="#4169E1">for</font> gradient/reset steps
+<a name="line387">387: </a>  tl-&gt;trust = 0;
+<a name="line388">388: </a>  tl-&gt;newt = 0;
+<a name="line389">389: </a>  tl-&gt;bfgs = 0;
+<a name="line390">390: </a>  tl-&gt;sgrad = 0;
+<a name="line391">391: </a>  tl-&gt;grad = 0;
+
+<a name="line393">393: </a>  // Have not converged; <font color="#4169E1">continue</font> with Newton method
+<a name="line394">394: </a>  <font color="#4169E1">while</font> (reason == TAO_CONTINUE_ITERATING) {
+<a name="line395">395: </a>    ++iter;
+
+<a name="line397">397: </a>    // Compute the Hessian
+<a name="line398">398: </a>    <font color="#4169E1">if</font> (needH) {
+<a name="line399">399: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeHessian.html#TaoComputeHessian">TaoComputeHessian</A>(tao, X, H); CHKERRQ(info);
+<a name="line400">400: </a>      needH = 0;
+<a name="line401">401: </a>    }
+
+<a name="line403">403: </a>    <font color="#4169E1">if</font> (NTL_PC_BFGS == tl-&gt;pc_type) {
+<a name="line404">404: </a>      <font color="#4169E1">if</font> (BFGS_SCALE_AHESS == tl-&gt;bfgs_scale_type) {
+<a name="line405">405: </a>        // Obtain diagonal <font color="#4169E1">for</font> the bfgs preconditioner 
+<a name="line406">406: </a>        info = H-&gt;<A href="../../../../docs/manualpages/matrix/GetDiagonal.html#GetDiagonal">GetDiagonal</A>(Diag); CHKERRQ(info);
+<a name="line407">407: </a>        info = Diag-&gt;<A href="../../../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>(); CHKERRQ(info);
+<a name="line408">408: </a>        info = Diag-&gt;<A href="../../../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(); CHKERRQ(info);
+<a name="line409">409: </a>        info = M-&gt;SetScale(Diag); CHKERRQ(info);
+<a name="line410">410: </a>      }
+
+<a name="line412">412: </a>      // Update the limited memory preconditioner
+<a name="line413">413: </a>      info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line414">414: </a>      ++bfgsUpdates;
+<a name="line415">415: </a>    }
+
+<a name="line417">417: </a>    // <A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> the Newton system of equations
+<a name="line418">418: </a>    info = <A href="../../../../docs/manualpages/solver/TaoPreLinearSolve.html#TaoPreLinearSolve">TaoPreLinearSolve</A>(tao, H); CHKERRQ(info);
+<a name="line419">419: </a>    info = <A href="../../../../docs/manualpages/solver/TaoLinearSolveTrustRegion.html#TaoLinearSolveTrustRegion">TaoLinearSolveTrustRegion</A>(tao, H, G, D, radius, &amp;success); CHKERRQ(info);
+<a name="line420">420: </a>    info = pls-&gt;GetNormDirection(&amp;norm_d); CHKERRQ(info);
+<a name="line421">421: </a>    <font color="#4169E1">if</font> (0.0 == radius) {
+<a name="line422">422: </a>      // Radius was uninitialized; use the norm of the direction
+<a name="line423">423: </a>      <font color="#4169E1">if</font> (norm_d &gt; 0.0) {
+<a name="line424">424: </a>        radius = norm_d;
+
+<a name="line426">426: </a>        // Modify the radius <font color="#4169E1">if</font> it is too large or small
+<a name="line427">427: </a>        radius = TaoMax(radius, tl-&gt;min_radius);
+<a name="line428">428: </a>        radius = TaoMin(radius, tl-&gt;max_radius);
+<a name="line429">429: </a>      }
+<a name="line430">430: </a>      <font color="#4169E1">else</font> {
+<a name="line431">431: </a>        // The direction was bad; set radius to <font color="#4169E1">default</font> value and re-solve 
+<a name="line432">432: </a>        // the trust-region subproblem to get a direction
+<a name="line433">433: </a>        info = <A href="../../../../docs/manualpages/solver/TaoGetInitialTrustRegionRadius.html#TaoGetInitialTrustRegionRadius">TaoGetInitialTrustRegionRadius</A>(tao, &amp;radius); CHKERRQ(info);
+
+<a name="line435">435: </a>        // Modify the radius <font color="#4169E1">if</font> it is too large or small
+<a name="line436">436: </a>        radius = TaoMax(radius, tl-&gt;min_radius);
+<a name="line437">437: </a>        radius = TaoMin(radius, tl-&gt;max_radius);
+
+<a name="line439">439: </a>        info = <A href="../../../../docs/manualpages/solver/TaoLinearSolveTrustRegion.html#TaoLinearSolveTrustRegion">TaoLinearSolveTrustRegion</A>(tao, H, G, D, radius, &amp;success); CHKERRQ(info);
+<a name="line440">440: </a>        info = pls-&gt;GetNormDirection(&amp;norm_d); CHKERRQ(info);
+<a name="line441">441: </a>        <font color="#4169E1">if</font> (norm_d == 0.0) {
+<a name="line442">442: </a>          SETERRQ(1, <font color="#666666">"Initial direction zero"</font>);
+<a name="line443">443: </a>        }
+<a name="line444">444: </a>      }
+<a name="line445">445: </a>    }
+<a name="line446">446: </a>    info = D-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+
+<a name="line448">448: </a>    info = KSPGetConvergedReason(pksp, &amp;ksp_reason); CHKERRQ(info);
+<a name="line449">449: </a>    <font color="#4169E1">if</font> ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) &amp;&amp;
+<a name="line450">450: </a>        (NTL_PC_BFGS == tl-&gt;pc_type) &amp;&amp; (bfgsUpdates &gt; 1)) {
+<a name="line451">451: </a>      // Preconditioner is numerically indefinite; reset the
+<a name="line452">452: </a>      // approximate <font color="#4169E1">if</font> using BFGS preconditioning.
+
+<a name="line454">454: </a>      <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line455">455: </a>        delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line456">456: </a>      }
+<a name="line457">457: </a>      <font color="#4169E1">else</font> {
+<a name="line458">458: </a>        delta = 2.0 / (gnorm*gnorm);
+<a name="line459">459: </a>      }
+<a name="line460">460: </a>      info = M-&gt;SetDelta(delta); CHKERRQ(info);
+<a name="line461">461: </a>      info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line462">462: </a>      info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line463">463: </a>      bfgsUpdates = 1;
+<a name="line464">464: </a>    }
+
+<a name="line466">466: </a>    // Check trust-region reduction conditions
+<a name="line467">467: </a>    tr_reject = 0;
+<a name="line468">468: </a>    <font color="#4169E1">if</font> (NTL_UPDATE_REDUCTION == tl-&gt;update_type) {
+<a name="line469">469: </a>      // Get predicted reduction
+<a name="line470">470: </a>      info = pls-&gt;GetObjFcn(&amp;prered); CHKERRQ(info);
+<a name="line471">471: </a>      <font color="#4169E1">if</font> (prered &gt;= 0.0) {
+<a name="line472">472: </a>        // The predicted reduction has the wrong sign.  This cannot
+<a name="line473">473: </a>        // happen in infinite precision arithmetic.  Step should
+<a name="line474">474: </a>        // be rejected!
+<a name="line475">475: </a>        radius = tl-&gt;alpha1 * TaoMin(radius, norm_d);
+<a name="line476">476: </a>        tr_reject = 1;
+<a name="line477">477: </a>      }
+<a name="line478">478: </a>      <font color="#4169E1">else</font> {
+<a name="line479">479: </a>        // Compute trial step and function value
+<a name="line480">480: </a>        info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0, X, 1.0, D); CHKERRQ(info);
+<a name="line481">481: </a>        info = <A href="../../../../docs/manualpages/solver/TaoComputeFunction.html#TaoComputeFunction">TaoComputeFunction</A>(tao, W, &amp;ftrial); CHKERRQ(info);
+<a name="line482">482: </a>        <font color="#4169E1">if</font> (TaoInfOrNaN(ftrial)) {
+<a name="line483">483: </a>          radius = tl-&gt;alpha1 * TaoMin(radius, norm_d);
+<a name="line484">484: </a>          tr_reject = 1;
+<a name="line485">485: </a>        }
+<a name="line486">486: </a>        <font color="#4169E1">else</font> {
+<a name="line487">487: </a>          // Compute and actual reduction
+<a name="line488">488: </a>          actred = f - ftrial;
+<a name="line489">489: </a>          prered = -prered;
+<a name="line490">490: </a>          <font color="#4169E1">if</font> ((fabs(actred) &lt;= tl-&gt;epsilon) &amp;&amp;
+<a name="line491">491: </a>              (fabs(prered) &lt;= tl-&gt;epsilon)) {
+<a name="line492">492: </a>            kappa = 1.0;
+<a name="line493">493: </a>          }
+<a name="line494">494: </a>          <font color="#4169E1">else</font> {
+<a name="line495">495: </a>            kappa = actred / prered;
+<a name="line496">496: </a>          }
+
+<a name="line498">498: </a>          // Accept of reject the step and update radius
+<a name="line499">499: </a>          <font color="#4169E1">if</font> (kappa &lt; tl-&gt;eta1) {
+<a name="line500">500: </a>            // Reject the step
+<a name="line501">501: </a>            radius = tl-&gt;alpha1 * TaoMin(radius, norm_d);
+<a name="line502">502: </a>            tr_reject = 1;
+<a name="line503">503: </a>          }
+<a name="line504">504: </a>          <font color="#4169E1">else</font> {
+<a name="line505">505: </a>            // Accept the step
+<a name="line506">506: </a>            <font color="#4169E1">if</font> (kappa &lt; tl-&gt;eta2) {
+<a name="line507">507: </a>              // Marginal bad step
+<a name="line508">508: </a>              radius = tl-&gt;alpha2 * TaoMin(radius, norm_d);
+<a name="line509">509: </a>            }
+<a name="line510">510: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (kappa &lt; tl-&gt;eta3) {
+<a name="line511">511: </a>              // Reasonable step
+<a name="line512">512: </a>              radius = tl-&gt;alpha3 * radius;
+<a name="line513">513: </a>            }
+<a name="line514">514: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (kappa &lt; tl-&gt;eta4) {
+<a name="line515">515: </a>              // Good step
+<a name="line516">516: </a>              radius = TaoMax(tl-&gt;alpha4 * norm_d, radius);
+<a name="line517">517: </a>            }
+<a name="line518">518: </a>            <font color="#4169E1">else</font> {
+<a name="line519">519: </a>              // Very good step
+<a name="line520">520: </a>              radius = TaoMax(tl-&gt;alpha5 * norm_d, radius);
+<a name="line521">521: </a>            }
+<a name="line522">522: </a>          }
+<a name="line523">523: </a>        }
+<a name="line524">524: </a>      }
+<a name="line525">525: </a>    }
+<a name="line526">526: </a>    <font color="#4169E1">else</font> {
+<a name="line527">527: </a>      // Get predicted reduction
+<a name="line528">528: </a>      info = pls-&gt;GetObjFcn(&amp;prered); CHKERRQ(info);
+
+<a name="line530">530: </a>      <font color="#4169E1">if</font> (prered &gt;= 0.0) {
+<a name="line531">531: </a>        // The predicted reduction has the wrong sign.  This cannot
+<a name="line532">532: </a>        // happen in infinite precision arithmetic.  Step should
+<a name="line533">533: </a>        // be rejected!
+<a name="line534">534: </a>        radius = tl-&gt;gamma1 * TaoMin(radius, norm_d);
+<a name="line535">535: </a>        tr_reject = 1;
+<a name="line536">536: </a>      }
+<a name="line537">537: </a>      <font color="#4169E1">else</font> {
+<a name="line538">538: </a>        info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0, X, 1.0, D); CHKERRQ(info);
+<a name="line539">539: </a>        info = <A href="../../../../docs/manualpages/solver/TaoComputeFunction.html#TaoComputeFunction">TaoComputeFunction</A>(tao, W, &amp;ftrial); CHKERRQ(info);
+<a name="line540">540: </a>        <font color="#4169E1">if</font> (TaoInfOrNaN(ftrial)) {
+<a name="line541">541: </a>          radius = tl-&gt;gamma1 * TaoMin(radius, norm_d);
+<a name="line542">542: </a>          tr_reject = 1;
+<a name="line543">543: </a>        }
+<a name="line544">544: </a>        <font color="#4169E1">else</font> {
+<a name="line545">545: </a>          info = D-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(G, &amp;gdx); CHKERRQ(info);
+
+<a name="line547">547: </a>          actred = f - ftrial;
+<a name="line548">548: </a>          prered = -prered;
+<a name="line549">549: </a>          <font color="#4169E1">if</font> ((fabs(actred) &lt;= tl-&gt;epsilon) &amp;&amp;
+<a name="line550">550: </a>              (fabs(prered) &lt;= tl-&gt;epsilon)) {
+<a name="line551">551: </a>            kappa = 1.0;
+<a name="line552">552: </a>          }
+<a name="line553">553: </a>          <font color="#4169E1">else</font> {
+<a name="line554">554: </a>            kappa = actred / prered;
+<a name="line555">555: </a>          }
+
+<a name="line557">557: </a>          tau_1 = tl-&gt;theta * gdx / (tl-&gt;theta * gdx - (1.0 - tl-&gt;theta) * prered + actred);
+<a name="line558">558: </a>          tau_2 = tl-&gt;theta * gdx / (tl-&gt;theta * gdx + (1.0 + tl-&gt;theta) * prered - actred);
+<a name="line559">559: </a>          tau_min = TaoMin(tau_1, tau_2);
+<a name="line560">560: </a>          tau_max = TaoMax(tau_1, tau_2);
+
+<a name="line562">562: </a>          <font color="#4169E1">if</font> (kappa &gt;= 1.0 - tl-&gt;mu1) {
+<a name="line563">563: </a>            // Great agreement; accept step and update radius
+<a name="line564">564: </a>            <font color="#4169E1">if</font> (tau_max &lt; 1.0) {
+<a name="line565">565: </a>              radius = TaoMax(radius, tl-&gt;gamma3 * norm_d);
+<a name="line566">566: </a>            }
+<a name="line567">567: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_max &gt; tl-&gt;gamma4) {
+<a name="line568">568: </a>              radius = TaoMax(radius, tl-&gt;gamma4 * norm_d);
+<a name="line569">569: </a>            }
+<a name="line570">570: </a>            <font color="#4169E1">else</font> {
+<a name="line571">571: </a>              radius = TaoMax(radius, tau_max * norm_d);
+<a name="line572">572: </a>            }
+<a name="line573">573: </a>          }
+<a name="line574">574: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (kappa &gt;= 1.0 - tl-&gt;mu2) {
+<a name="line575">575: </a>            // Good agreement
+
+<a name="line577">577: </a>            <font color="#4169E1">if</font> (tau_max &lt; tl-&gt;gamma2) {
+<a name="line578">578: </a>              radius = tl-&gt;gamma2 * TaoMin(radius, norm_d);
+<a name="line579">579: </a>            }
+<a name="line580">580: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_max &gt; tl-&gt;gamma3) {
+<a name="line581">581: </a>              radius = TaoMax(radius, tl-&gt;gamma3 * norm_d);
+<a name="line582">582: </a>            }              <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_max &lt; 1.0) {
+<a name="line583">583: </a>              radius = tau_max * TaoMin(radius, norm_d);
+<a name="line584">584: </a>            }
+<a name="line585">585: </a>            <font color="#4169E1">else</font> {
+<a name="line586">586: </a>              radius = TaoMax(radius, tau_max * norm_d);
+<a name="line587">587: </a>            }
+<a name="line588">588: </a>          }
+<a name="line589">589: </a>          <font color="#4169E1">else</font> {
+<a name="line590">590: </a>            // Not good agreement
+<a name="line591">591: </a>            <font color="#4169E1">if</font> (tau_min &gt; 1.0) {
+<a name="line592">592: </a>              radius = tl-&gt;gamma2 * TaoMin(radius, norm_d);
+<a name="line593">593: </a>            }
+<a name="line594">594: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tau_max &lt; tl-&gt;gamma1) {
+<a name="line595">595: </a>              radius = tl-&gt;gamma1 * TaoMin(radius, norm_d);
+<a name="line596">596: </a>            }
+<a name="line597">597: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((tau_min &lt; tl-&gt;gamma1) &amp;&amp; (tau_max &gt;= 1.0)) {
+<a name="line598">598: </a>              radius = tl-&gt;gamma1 * TaoMin(radius, norm_d);
+<a name="line599">599: </a>            }
+<a name="line600">600: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((tau_1 &gt;= tl-&gt;gamma1) &amp;&amp; (tau_1 &lt; 1.0) &amp;&amp;
+<a name="line601">601: </a>                     ((tau_2 &lt; tl-&gt;gamma1) || (tau_2 &gt;= 1.0))) {
+<a name="line602">602: </a>              radius = tau_1 * TaoMin(radius, norm_d);
+<a name="line603">603: </a>            }
+<a name="line604">604: </a>            <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((tau_2 &gt;= tl-&gt;gamma1) &amp;&amp; (tau_2 &lt; 1.0) &amp;&amp;
+<a name="line605">605: </a>                     ((tau_1 &lt; tl-&gt;gamma1) || (tau_2 &gt;= 1.0))) {
+<a name="line606">606: </a>              radius = tau_2 * TaoMin(radius, norm_d);
+<a name="line607">607: </a>            }
+<a name="line608">608: </a>            <font color="#4169E1">else</font> {
+<a name="line609">609: </a>              radius = tau_max * TaoMin(radius, norm_d);
+<a name="line610">610: </a>            }
+<a name="line611">611: </a>            tr_reject = 1;
+<a name="line612">612: </a>          }
+<a name="line613">613: </a>        }
+<a name="line614">614: </a>      }
+<a name="line615">615: </a>    }
+
+<a name="line617">617: </a>    <font color="#4169E1">if</font> (tr_reject) {
+<a name="line618">618: </a>      // The trust-region constraints rejected the step.  Apply a linesearch.
+<a name="line619">619: </a>      // Check <font color="#4169E1">for</font> descent direction.
+<a name="line620">620: </a>      info = D-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(G, &amp;gdx); CHKERRQ(info);
+<a name="line621">621: </a>      <font color="#4169E1">if</font> ((gdx &gt;= 0.0) || TaoInfOrNaN(gdx)) {
+<a name="line622">622: </a>        // Newton step is not descent or direction produced Inf or NaN
+<a name="line623">623: </a>        
+<a name="line624">624: </a>        <font color="#4169E1">if</font> (NTL_PC_BFGS != tl-&gt;pc_type) {
+<a name="line625">625: </a>          // We don't have the bfgs matrix around and updated
+<a name="line626">626: </a>          // Must use gradient direction in this <font color="#4169E1">case</font>
+<a name="line627">627: </a>          info = D-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G); CHKERRQ(info);
+<a name="line628">628: </a>          info = D-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line629">629: </a>          
+<a name="line630">630: </a>          ++tl-&gt;grad;
+<a name="line631">631: </a>          stepType = NTL_GRADIENT;
+<a name="line632">632: </a>        }
+<a name="line633">633: </a>        <font color="#4169E1">else</font> {
+<a name="line634">634: </a>          // Attempt to use the BFGS direction
+<a name="line635">635: </a>          info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+<a name="line636">636: </a>          info = D-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line637">637: </a>          
+<a name="line638">638: </a>          // Check <font color="#4169E1">for</font> success (descent direction)
+<a name="line639">639: </a>          info = D-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(G, &amp;gdx); CHKERRQ(info);
+<a name="line640">640: </a>          <font color="#4169E1">if</font> ((gdx &gt;= 0) || TaoInfOrNaN(gdx)) {
+<a name="line641">641: </a>            // BFGS direction is not descent or direction produced not a number
+<a name="line642">642: </a>            // We can assert bfgsUpdates &gt; 1 in this <font color="#4169E1">case</font> because
+<a name="line643">643: </a>            // the first solve produces the scaled gradient direction,
+<a name="line644">644: </a>            // which is guaranteed to be descent
+<a name="line645">645: </a>            
+<a name="line646">646: </a>            // Use steepest descent direction (scaled)
+<a name="line647">647: </a>            
+<a name="line648">648: </a>            <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line649">649: </a>              delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line650">650: </a>            }
+<a name="line651">651: </a>            <font color="#4169E1">else</font> {
+<a name="line652">652: </a>              delta = 2.0 / (gnorm*gnorm);
+<a name="line653">653: </a>            }
+<a name="line654">654: </a>            info = M-&gt;SetDelta(delta); CHKERRQ(info);
+<a name="line655">655: </a>            info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line656">656: </a>            info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line657">657: </a>            info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+<a name="line658">658: </a>            info = D-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line659">659: </a>            
+<a name="line660">660: </a>            bfgsUpdates = 1;
+<a name="line661">661: </a>            ++tl-&gt;sgrad;
+<a name="line662">662: </a>            stepType = NTL_SCALED_GRADIENT;
+<a name="line663">663: </a>          }
+<a name="line664">664: </a>          <font color="#4169E1">else</font> {
+<a name="line665">665: </a>            <font color="#4169E1">if</font> (1 == bfgsUpdates) {
+<a name="line666">666: </a>              // The first BFGS direction is always the scaled gradient
+<a name="line667">667: </a>              ++tl-&gt;sgrad;
+<a name="line668">668: </a>              stepType = NTL_SCALED_GRADIENT;
+<a name="line669">669: </a>            }
+<a name="line670">670: </a>            <font color="#4169E1">else</font> {
+<a name="line671">671: </a>              ++tl-&gt;bfgs;
+<a name="line672">672: </a>              stepType = NTL_BFGS;
+<a name="line673">673: </a>            }
+<a name="line674">674: </a>          }
+<a name="line675">675: </a>        }
+<a name="line676">676: </a>      }
+<a name="line677">677: </a>      <font color="#4169E1">else</font> {
+<a name="line678">678: </a>        // Computed Newton step is descent
+<a name="line679">679: </a>        ++tl-&gt;newt;
+<a name="line680">680: </a>        stepType = NTL_NEWTON;
+<a name="line681">681: </a>      }
+<a name="line682">682: </a>      
+<a name="line683">683: </a>      // Perform the linesearch
+<a name="line684">684: </a>      fold = f;
+<a name="line685">685: </a>      info = Xold-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X); CHKERRQ(info);
+<a name="line686">686: </a>      info = Gold-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G); CHKERRQ(info);
+
+<a name="line688">688: </a>      step = 1.0;
+<a name="line689">689: </a>      info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao, X, G, D, W, &amp;f, &amp;f_full, &amp;step, &amp;status); CHKERRQ(info);
+
+<a name="line691">691: </a>      <font color="#4169E1">while</font> (status &amp;&amp; stepType != NTL_GRADIENT) {
+<a name="line692">692: </a>        // Linesearch failed
+<a name="line693">693: </a>        f = fold;
+<a name="line694">694: </a>        info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Xold); CHKERRQ(info);
+<a name="line695">695: </a>        info = G-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Gold); CHKERRQ(info);
+<a name="line696">696: </a>        
+<a name="line697">697: </a>        <font color="#4169E1">switch</font>(stepType) {
+<a name="line698">698: </a>        <font color="#4169E1">case</font> NTL_NEWTON:
+<a name="line699">699: </a>          // Failed to obtain acceptable iterate with Newton step
+
+<a name="line701">701: </a>          <font color="#4169E1">if</font> (NTL_PC_BFGS != tl-&gt;pc_type) {
+<a name="line702">702: </a>            // We don't have the bfgs matrix around and being updated
+<a name="line703">703: </a>            // Must use gradient direction in this <font color="#4169E1">case</font>
+<a name="line704">704: </a>            info = D-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G); CHKERRQ(info);
+<a name="line705">705: </a>            
+<a name="line706">706: </a>            ++tl-&gt;grad;
+<a name="line707">707: </a>            stepType = NTL_GRADIENT;
+<a name="line708">708: </a>          }
+<a name="line709">709: </a>          <font color="#4169E1">else</font> {
+<a name="line710">710: </a>            // Attempt to use the BFGS direction
+<a name="line711">711: </a>            info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+<a name="line712">712: </a>            
+<a name="line713">713: </a>            // Check <font color="#4169E1">for</font> success (descent direction)
+<a name="line714">714: </a>            info = D-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(G, &amp;gdx); CHKERRQ(info);
+<a name="line715">715: </a>            <font color="#4169E1">if</font> ((gdx &lt;= 0) || TaoInfOrNaN(gdx)) {
+<a name="line716">716: </a>              // BFGS direction is not descent or direction produced 
+<a name="line717">717: </a>              // not a number.  We can assert bfgsUpdates &gt; 1 in this <font color="#4169E1">case</font>
+<a name="line718">718: </a>              // Use steepest descent direction (scaled)
+<a name="line719">719: </a>    
+<a name="line720">720: </a>              <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line721">721: </a>                delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line722">722: </a>              }
+<a name="line723">723: </a>              <font color="#4169E1">else</font> {
+<a name="line724">724: </a>                delta = 2.0 / (gnorm*gnorm);
+<a name="line725">725: </a>              }
+<a name="line726">726: </a>              info = M-&gt;SetDelta(delta); CHKERRQ(info);
+<a name="line727">727: </a>              info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line728">728: </a>              info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line729">729: </a>              info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+<a name="line730">730: </a>              
+<a name="line731">731: </a>              bfgsUpdates = 1;
+<a name="line732">732: </a>              ++tl-&gt;sgrad;
+<a name="line733">733: </a>              stepType = NTL_SCALED_GRADIENT;
+<a name="line734">734: </a>            }
+<a name="line735">735: </a>            <font color="#4169E1">else</font> {
+<a name="line736">736: </a>              <font color="#4169E1">if</font> (1 == bfgsUpdates) {
+<a name="line737">737: </a>                // The first BFGS direction is always the scaled gradient
+<a name="line738">738: </a>                ++tl-&gt;sgrad;
+<a name="line739">739: </a>                stepType = NTL_SCALED_GRADIENT;
+<a name="line740">740: </a>              }
+<a name="line741">741: </a>              <font color="#4169E1">else</font> {
+<a name="line742">742: </a>                ++tl-&gt;bfgs;
+<a name="line743">743: </a>                stepType = NTL_BFGS;
+<a name="line744">744: </a>              }
+<a name="line745">745: </a>            }
+<a name="line746">746: </a>          }
+<a name="line747">747: </a>          <font color="#4169E1">break</font>;
+
+<a name="line749">749: </a>        <font color="#4169E1">case</font> NTL_BFGS:
+<a name="line750">750: </a>          // Can only enter <font color="#4169E1">if</font> pc_type == NTL_PC_BFGS
+<a name="line751">751: </a>          // Failed to obtain acceptable iterate with BFGS step
+<a name="line752">752: </a>          // Attempt to use the scaled gradient direction
+<a name="line753">753: </a>          
+<a name="line754">754: </a>          <font color="#4169E1">if</font> (f != 0.0) {
+<a name="line755">755: </a>            delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+<a name="line756">756: </a>          }
+<a name="line757">757: </a>          <font color="#4169E1">else</font> {
+<a name="line758">758: </a>            delta = 2.0 / (gnorm*gnorm);
+<a name="line759">759: </a>          }
+<a name="line760">760: </a>          info = M-&gt;SetDelta(delta); CHKERRQ(info);
+<a name="line761">761: </a>          info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line762">762: </a>          info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line763">763: </a>          info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+<a name="line764">764: </a>          
+<a name="line765">765: </a>          bfgsUpdates = 1;
+<a name="line766">766: </a>          ++tl-&gt;sgrad;
+<a name="line767">767: </a>          stepType = NTL_SCALED_GRADIENT;
+<a name="line768">768: </a>          <font color="#4169E1">break</font>;
+<a name="line769">769: </a>          
+<a name="line770">770: </a>        <font color="#4169E1">case</font> NTL_SCALED_GRADIENT:
+<a name="line771">771: </a>          // Can only enter <font color="#4169E1">if</font> pc_type == NTL_PC_BFGS
+<a name="line772">772: </a>          // The scaled gradient step did not produce a new iterate;
+<a name="line773">773: </a>          // attemp to use the gradient direction.
+<a name="line774">774: </a>          // Need to make sure we are not using a different diagonal scaling
+<a name="line775">775: </a>          info = M-&gt;SetScale(0); CHKERRQ(info);
+<a name="line776">776: </a>          info = M-&gt;SetDelta(1.0); CHKERRQ(info);
+<a name="line777">777: </a>          info = M-&gt;Reset(); CHKERRQ(info);
+<a name="line778">778: </a>          info = M-&gt;Update(X, G); CHKERRQ(info);
+<a name="line779">779: </a>          info = M-&gt;<A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(G, D, &amp;success); CHKERRQ(info);
+<a name="line780">780: </a>          
+<a name="line781">781: </a>          bfgsUpdates = 1;
+<a name="line782">782: </a>          ++tl-&gt;grad;
+<a name="line783">783: </a>          stepType = NTL_GRADIENT;
+<a name="line784">784: </a>          <font color="#4169E1">break</font>;
+<a name="line785">785: </a>        }
+<a name="line786">786: </a>        info = D-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+
+<a name="line788">788: </a>        // This may be incorrect; linesearch has values <font color="#4169E1">for</font> stepmax and stepmin
+<a name="line789">789: </a>        // that should be reset.
+<a name="line790">790: </a>        step = 1.0;
+<a name="line791">791: </a>        info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao, X, G, D, W, &amp;f, &amp;f_full, &amp;step, &amp;status); CHKERRQ(info);
+<a name="line792">792: </a>      }
+
+<a name="line794">794: </a>      <font color="#4169E1">if</font> (status) {
+<a name="line795">795: </a>        // Failed to find an improving point
+<a name="line796">796: </a>        f = fold;
+<a name="line797">797: </a>        info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Xold); CHKERRQ(info);
+<a name="line798">798: </a>        info = G-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Gold); CHKERRQ(info);
+<a name="line799">799: </a>        radius = 0.0;
+<a name="line800">800: </a>      }
+<a name="line801">801: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (stepType == NTL_NEWTON) {
+<a name="line802">802: </a>        <font color="#4169E1">if</font> (step &lt; tl-&gt;nu1) {
+<a name="line803">803: </a>          // Very bad step taken; reduce radius
+<a name="line804">804: </a>          radius = tl-&gt;omega1 * TaoMin(norm_d, radius);
+<a name="line805">805: </a>        }
+<a name="line806">806: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (step &lt; tl-&gt;nu2) {
+<a name="line807">807: </a>          // Reasonably bad step taken; reduce radius
+<a name="line808">808: </a>          radius = tl-&gt;omega2 * TaoMin(norm_d, radius);
+<a name="line809">809: </a>        }
+<a name="line810">810: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (step &lt; tl-&gt;nu3) {
+<a name="line811">811: </a>          // Reasonable step was taken; leave radius alone
+<a name="line812">812: </a>          <font color="#4169E1">if</font> (tl-&gt;omega3 &lt; 1.0) {
+<a name="line813">813: </a>            radius = tl-&gt;omega3 * TaoMin(norm_d, radius);
+<a name="line814">814: </a>          }
+<a name="line815">815: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tl-&gt;omega3 &gt; 1.0) {
+<a name="line816">816: </a>            radius = TaoMax(tl-&gt;omega3 * norm_d, radius);
+<a name="line817">817: </a>          }
+<a name="line818">818: </a>        }
+<a name="line819">819: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (step &lt; tl-&gt;nu4) {
+<a name="line820">820: </a>          // Full step taken; increase the radius
+<a name="line821">821: </a>          radius = TaoMax(tl-&gt;omega4 * norm_d, radius);
+<a name="line822">822: </a>        }
+<a name="line823">823: </a>        <font color="#4169E1">else</font> {
+<a name="line824">824: </a>          // More than full step taken; increase the radius
+<a name="line825">825: </a>          radius = TaoMax(tl-&gt;omega5 * norm_d, radius);
+<a name="line826">826: </a>        }
+<a name="line827">827: </a>      }
+<a name="line828">828: </a>      <font color="#4169E1">else</font> {
+<a name="line829">829: </a>        // Newton step was not good; reduce the radius
+<a name="line830">830: </a>        radius = tl-&gt;omega1 * TaoMin(norm_d, radius);
+<a name="line831">831: </a>      }
+<a name="line832">832: </a>    }
+<a name="line833">833: </a>    <font color="#4169E1">else</font> {
+<a name="line834">834: </a>      // Trust-region step is accepted
+
+<a name="line836">836: </a>      info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(W); CHKERRQ(info);
+<a name="line837">837: </a>      f = ftrial;
+<a name="line838">838: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeGradient.html#TaoComputeGradient">TaoComputeGradient</A>(tao, X, G); CHKERRQ(info);
+<a name="line839">839: </a>      ++tl-&gt;trust;
+<a name="line840">840: </a>    }
+
+<a name="line842">842: </a>    // The radius may have been increased; modify <font color="#4169E1">if</font> it is too large
+<a name="line843">843: </a>    radius = TaoMin(radius, tl-&gt;max_radius);
+
+<a name="line845">845: </a>    // Check <font color="#4169E1">for</font> termination
+<a name="line846">846: </a>    info = G-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;gnorm); CHKERRQ(info);
+<a name="line847">847: </a>    <font color="#4169E1">if</font> (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+<a name="line848">848: </a>      SETERRQ(1,<font color="#666666">"User provided compute function generated Not-a-Number"</font>);
+<a name="line849">849: </a>    }
+<a name="line850">850: </a>    needH = 1;
+<a name="line851">851: </a>    
+<a name="line852">852: </a>    info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao, iter, f, gnorm, 0.0, radius, &amp;reason); CHKERRQ(info);
+<a name="line853">853: </a>  }
+<a name="line854">854: </a>  TaoFunctionReturn(0);
+<a name="line855">855: </a>}
+
+<a name="line857">857: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line860">860: </a><strong><font color="#4169E1"><a name="TaoSetUp_NTL"></a>static int TaoSetUp_NTL(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line861">861: </a>{
+<a name="line862">862: </a>  TAO_NTL *tl = (TAO_NTL *)solver;
+<a name="line863">863: </a>  TaoVec *X;
+<a name="line864">864: </a>  TaoMat *H;
+<a name="line865">865: </a>  int info;
+
+<a name="line867">867: </a>  TaoFunctionBegin;
+
+<a name="line869">869: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao, &amp;X); CHKERRQ(info);
+<a name="line870">870: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tl-&gt;G); CHKERRQ(info);
+<a name="line871">871: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tl-&gt;D); CHKERRQ(info);
+<a name="line872">872: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tl-&gt;W); CHKERRQ(info);
+
+<a name="line874">874: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tl-&gt;Xold); CHKERRQ(info);
+<a name="line875">875: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tl-&gt;Gold); CHKERRQ(info);
+
+<a name="line877">877: </a>  tl-&gt;Diag = 0;
+<a name="line878">878: </a>  tl-&gt;M = 0;
+
+<a name="line880">880: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao, tl-&gt;G); CHKERRQ(info);
+<a name="line881">881: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao, tl-&gt;D); CHKERRQ(info);
+
+<a name="line883">883: </a>  // Set linear solver to <font color="#4169E1">default</font> <font color="#4169E1">for</font> symmetric matrices
+<a name="line884">884: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetHessian.html#TaoGetHessian">TaoGetHessian</A>(tao, &amp;H); CHKERRQ(info);
+<a name="line885">885: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateLinearSolver.html#TaoCreateLinearSolver">TaoCreateLinearSolver</A>(tao, H, 200, 0); CHKERRQ(info);
+
+<a name="line887">887: </a>  // Check sizes <font color="#4169E1">for</font> compatability
+<a name="line888">888: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCheckFGH.html#TaoCheckFGH">TaoCheckFGH</A>(tao); CHKERRQ(info);
+<a name="line889">889: </a>  TaoFunctionReturn(0);
+<a name="line890">890: </a>}
+
+<a name="line892">892: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line895">895: </a><strong><font color="#4169E1"><a name="TaoDestroy_NTL"></a>static int TaoDestroy_NTL(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line896">896: </a>{
+<a name="line897">897: </a>  TAO_NTL *tl = (TAO_NTL *)solver;
+<a name="line898">898: </a>  int info;
+
+<a name="line900">900: </a>  TaoFunctionBegin;
+<a name="line901">901: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tl-&gt;G); CHKERRQ(info);
+<a name="line902">902: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tl-&gt;D); CHKERRQ(info);
+<a name="line903">903: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tl-&gt;W); CHKERRQ(info);
+
+<a name="line905">905: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tl-&gt;Xold); CHKERRQ(info);
+<a name="line906">906: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tl-&gt;Gold); CHKERRQ(info);
+
+<a name="line908">908: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao, 0); CHKERRQ(info);
+<a name="line909">909: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao, 0); CHKERRQ(info);
+
+<a name="line911">911: </a>  <font color="#4169E1">if</font> (tl-&gt;Diag) {
+<a name="line912">912: </a>    info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tl-&gt;Diag); CHKERRQ(info);
+<a name="line913">913: </a>    tl-&gt;Diag = 0;
+<a name="line914">914: </a>  }
+
+<a name="line916">916: </a>  <font color="#4169E1">if</font> (tl-&gt;M) {
+<a name="line917">917: </a>    info = <A href="../../../../docs/manualpages/matrix/TaoMatDestroy.html#TaoMatDestroy">TaoMatDestroy</A>(tl-&gt;M); CHKERRQ(info);
+<a name="line918">918: </a>    tl-&gt;M = 0;
+<a name="line919">919: </a>  }
+<a name="line920">920: </a>  TaoFunctionReturn(0);
+<a name="line921">921: </a>}
+
+<a name="line923">923: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line926">926: </a><strong><font color="#4169E1"><a name="TaoSetOptions_NTL"></a>static int TaoSetOptions_NTL(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line927">927: </a>{
+<a name="line928">928: </a>  TAO_NTL *tl = (TAO_NTL *)solver;
+<a name="line929">929: </a>  int info;
+
+<a name="line931">931: </a>  TaoFunctionBegin;
+<a name="line932">932: </a>  info = TaoOptionsHead(<font color="#666666">"Newton line search method for unconstrained optimization"</font>); CHKERRQ(info);
+<a name="line933">933: </a>  info = TaoOptionList(<font color="#666666">"-tao_ntl_ksp_type"</font>, <font color="#666666">"ksp type"</font>, <font color="#666666">""</font>, NTL_KSP, NTL_KSP_TYPES, NTL_KSP[tl-&gt;ksp_type], &amp;tl-&gt;ksp_type, 0); CHKERRQ(info);
+<a name="line934">934: </a>  info = TaoOptionList(<font color="#666666">"-tao_ntl_pc_type"</font>, <font color="#666666">"pc type"</font>, <font color="#666666">""</font>, NTL_PC, NTL_PC_TYPES, NTL_PC[tl-&gt;pc_type], &amp;tl-&gt;pc_type, 0); CHKERRQ(info);
+<a name="line935">935: </a>  info = TaoOptionList(<font color="#666666">"-tao_ntl_bfgs_scale_type"</font>, <font color="#666666">"bfgs scale type"</font>, <font color="#666666">""</font>, BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[tl-&gt;bfgs_scale_type], &amp;tl-&gt;bfgs_scale_type, 0); CHKERRQ(info);
+<a name="line936">936: </a>  info = TaoOptionList(<font color="#666666">"-tao_ntl_init_type"</font>, <font color="#666666">"radius initialization type"</font>, <font color="#666666">""</font>, NTL_INIT, NTL_INIT_TYPES, NTL_INIT[tl-&gt;init_type], &amp;tl-&gt;init_type, 0); CHKERRQ(info);
+<a name="line937">937: </a>  info = TaoOptionList(<font color="#666666">"-tao_ntl_update_type"</font>, <font color="#666666">"radius update type"</font>, <font color="#666666">""</font>, NTL_UPDATE, NTL_UPDATE_TYPES, NTL_UPDATE[tl-&gt;update_type], &amp;tl-&gt;update_type, 0); CHKERRQ(info);
+<a name="line938">938: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_eta1"</font>, <font color="#666666">"poor steplength; reduce radius"</font>, <font color="#666666">""</font>, tl-&gt;eta1, &amp;tl-&gt;eta1, 0); CHKERRQ(info);
+<a name="line939">939: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_eta2"</font>, <font color="#666666">"reasonable steplength; leave radius alone"</font>, <font color="#666666">""</font>, tl-&gt;eta2, &amp;tl-&gt;eta2, 0); CHKERRQ(info);
+<a name="line940">940: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_eta3"</font>, <font color="#666666">"good steplength; increase radius"</font>, <font color="#666666">""</font>, tl-&gt;eta3, &amp;tl-&gt;eta3, 0); CHKERRQ(info);
+<a name="line941">941: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_eta4"</font>, <font color="#666666">"excellent steplength; greatly increase radius"</font>, <font color="#666666">""</font>, tl-&gt;eta4, &amp;tl-&gt;eta4, 0); CHKERRQ(info);
+<a name="line942">942: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_alpha1"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;alpha1, &amp;tl-&gt;alpha1, 0); CHKERRQ(info);
+<a name="line943">943: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_alpha2"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;alpha2, &amp;tl-&gt;alpha2, 0); CHKERRQ(info);
+<a name="line944">944: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_alpha3"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;alpha3, &amp;tl-&gt;alpha3, 0); CHKERRQ(info);
+<a name="line945">945: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_alpha4"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;alpha4, &amp;tl-&gt;alpha4, 0); CHKERRQ(info);
+<a name="line946">946: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_alpha5"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;alpha5, &amp;tl-&gt;alpha5, 0); CHKERRQ(info);
+<a name="line947">947: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_nu1"</font>, <font color="#666666">"poor steplength; reduce radius"</font>, <font color="#666666">""</font>, tl-&gt;nu1, &amp;tl-&gt;nu1, 0); CHKERRQ(info);
+<a name="line948">948: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_nu2"</font>, <font color="#666666">"reasonable steplength; leave radius alone"</font>, <font color="#666666">""</font>, tl-&gt;nu2, &amp;tl-&gt;nu2, 0); CHKERRQ(info);
+<a name="line949">949: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_nu3"</font>, <font color="#666666">"good steplength; increase radius"</font>, <font color="#666666">""</font>, tl-&gt;nu3, &amp;tl-&gt;nu3, 0); CHKERRQ(info);
+<a name="line950">950: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_nu4"</font>, <font color="#666666">"excellent steplength; greatly increase radius"</font>, <font color="#666666">""</font>, tl-&gt;nu4, &amp;tl-&gt;nu4, 0); CHKERRQ(info);
+<a name="line951">951: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_omega1"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;omega1, &amp;tl-&gt;omega1, 0); CHKERRQ(info);
+<a name="line952">952: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_omega2"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;omega2, &amp;tl-&gt;omega2, 0); CHKERRQ(info);
+<a name="line953">953: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_omega3"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;omega3, &amp;tl-&gt;omega3, 0); CHKERRQ(info);
+<a name="line954">954: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_omega4"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;omega4, &amp;tl-&gt;omega4, 0); CHKERRQ(info);
+<a name="line955">955: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_omega5"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;omega5, &amp;tl-&gt;omega5, 0); CHKERRQ(info);
+<a name="line956">956: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_mu1_i"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;mu1_i, &amp;tl-&gt;mu1_i, 0); CHKERRQ(info);
+<a name="line957">957: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_mu2_i"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;mu2_i, &amp;tl-&gt;mu2_i, 0); CHKERRQ(info);
+<a name="line958">958: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma1_i"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma1_i, &amp;tl-&gt;gamma1_i, 0); CHKERRQ(info);
+<a name="line959">959: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma2_i"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma2_i, &amp;tl-&gt;gamma2_i, 0); CHKERRQ(info);
+<a name="line960">960: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma3_i"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma3_i, &amp;tl-&gt;gamma3_i, 0); CHKERRQ(info);
+<a name="line961">961: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma4_i"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma4_i, &amp;tl-&gt;gamma4_i, 0); CHKERRQ(info);
+<a name="line962">962: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_theta_i"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;theta_i, &amp;tl-&gt;theta_i, 0); CHKERRQ(info);
+<a name="line963">963: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_mu1"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;mu1, &amp;tl-&gt;mu1, 0); CHKERRQ(info);
+<a name="line964">964: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_mu2"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;mu2, &amp;tl-&gt;mu2, 0); CHKERRQ(info);
+<a name="line965">965: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma1"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma1, &amp;tl-&gt;gamma1, 0); CHKERRQ(info);
+<a name="line966">966: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma2"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma2, &amp;tl-&gt;gamma2, 0); CHKERRQ(info);
+<a name="line967">967: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma3"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma3, &amp;tl-&gt;gamma3, 0); CHKERRQ(info);
+<a name="line968">968: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_gamma4"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;gamma4, &amp;tl-&gt;gamma4, 0); CHKERRQ(info);
+<a name="line969">969: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_theta"</font>, <font color="#666666">""</font>, <font color="#666666">""</font>, tl-&gt;theta, &amp;tl-&gt;theta, 0); CHKERRQ(info);
+<a name="line970">970: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_min_radius"</font>, <font color="#666666">"lower bound on initial radius"</font>, <font color="#666666">""</font>, tl-&gt;min_radius, &amp;tl-&gt;min_radius, 0); CHKERRQ(info);
+<a name="line971">971: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_max_radius"</font>, <font color="#666666">"upper bound on radius"</font>, <font color="#666666">""</font>, tl-&gt;max_radius, &amp;tl-&gt;max_radius, 0); CHKERRQ(info);
+<a name="line972">972: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ntl_epsilon"</font>, <font color="#666666">"tolerance used when computing actual and predicted reduction"</font>, <font color="#666666">""</font>, tl-&gt;epsilon, &amp;tl-&gt;epsilon, 0); CHKERRQ(info);
+<a name="line973">973: </a>  info = <A href="../../../../docs/manualpages/solver/TaoLineSearchSetFromOptions.html#TaoLineSearchSetFromOptions">TaoLineSearchSetFromOptions</A>(tao); CHKERRQ(info);
+<a name="line974">974: </a>  info = TaoOptionsTail(); CHKERRQ(info);
+<a name="line975">975: </a>  TaoFunctionReturn(0);
+<a name="line976">976: </a>}
+
+
+<a name="line979">979: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line982">982: </a><strong><font color="#4169E1"><a name="TaoView_NTL"></a>static int TaoView_NTL(TAO_SOLVER tao,void* solver)</font></strong>
+<a name="line983">983: </a>{
+<a name="line984">984: </a>  TAO_NTL *tl = (TAO_NTL *)solver;
+<a name="line985">985: </a>  int info;
+
+<a name="line987">987: </a>  TaoFunctionBegin;
+<a name="line988">988: </a>  <font color="#4169E1">if</font> (NTL_PC_BFGS == tl-&gt;pc_type &amp;&amp; tl-&gt;M) {
+<a name="line989">989: </a>    info = TaoPrintInt(tao, <font color="#666666">"  Rejected matrix updates: %d\n"</font>, tl-&gt;M-&gt;GetRejects()); CHKERRQ(info);
+<a name="line990">990: </a>  }
+<a name="line991">991: </a>  info = TaoPrintInt(tao, <font color="#666666">"  Trust-region steps: %d\n"</font>, tl-&gt;trust); CHKERRQ(info);
+<a name="line992">992: </a>  info = TaoPrintInt(tao, <font color="#666666">"  Newton search steps: %d\n"</font>, tl-&gt;newt); CHKERRQ(info);
+<a name="line993">993: </a>  info = TaoPrintInt(tao, <font color="#666666">"  BFGS search steps: %d\n"</font>, tl-&gt;bfgs); CHKERRQ(info);
+<a name="line994">994: </a>  info = TaoPrintInt(tao, <font color="#666666">"  Scaled gradient search steps: %d\n"</font>, tl-&gt;sgrad); CHKERRQ(info);
+<a name="line995">995: </a>  info = TaoPrintInt(tao, <font color="#666666">"  Gradient search steps: %d\n"</font>, tl-&gt;grad); CHKERRQ(info);
+<a name="line996">996: </a>  info = <A href="../../../../docs/manualpages/solver/TaoLineSearchView.html#TaoLineSearchView">TaoLineSearchView</A>(tao); CHKERRQ(info);
+<a name="line997">997: </a>  TaoFunctionReturn(0);
+<a name="line998">998: </a>}
+
+<a name="line1000">1000: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line1004">1004: </a><strong><font color="#4169E1"><a name="TaoCreate_NTL"></a>int TaoCreate_NTL(TAO_SOLVER tao)</font></strong>
+<a name="line1005">1005: </a>{
+<a name="line1006">1006: </a>  TAO_NTL *tl;
+<a name="line1007">1007: </a>  int info;
+
+<a name="line1009">1009: </a>  TaoFunctionBegin;
+
+<a name="line1011">1011: </a>  info = TaoNew(TAO_NTL, &amp;tl); CHKERRQ(info);
+<a name="line1012">1012: </a>  info = PetscLogObjectMemory(tao, <font color="#4169E1">sizeof</font>(TAO_NTL)); CHKERRQ(info);
+
+<a name="line1014">1014: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>(tao, TaoSolve_NTL, (void *)tl); CHKERRQ(info);
+<a name="line1015">1015: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTaoSetUpDownRoutines.html#TaoSetTaoSetUpDownRoutines">TaoSetTaoSetUpDownRoutines</A>(tao, TaoSetUp_NTL, TaoDestroy_NTL); CHKERRQ(info);
+<a name="line1016">1016: </a>  info = TaoSetTaoOptionsRoutine(tao, TaoSetOptions_NTL); CHKERRQ(info);
+<a name="line1017">1017: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTaoViewRoutine.html#TaoSetTaoViewRoutine">TaoSetTaoViewRoutine</A>(tao, TaoView_NTL); CHKERRQ(info);
+
+<a name="line1019">1019: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(tao, 50); CHKERRQ(info);
+<a name="line1020">1020: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao, 1e-10, 1e-10, 0, 0); CHKERRQ(info);
+
+<a name="line1022">1022: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTrustRegionRadius.html#TaoSetTrustRegionRadius">TaoSetTrustRegionRadius</A>(tao, 100.0); CHKERRQ(info);
+<a name="line1023">1023: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTrustRegionTolerance.html#TaoSetTrustRegionTolerance">TaoSetTrustRegionTolerance</A>(tao, 1.0e-12); CHKERRQ(info);
+
+<a name="line1025">1025: </a>  // Default values <font color="#4169E1">for</font> trust-region radius update based on steplength
+<a name="line1026">1026: </a>  tl-&gt;nu1 = 0.25;
+<a name="line1027">1027: </a>  tl-&gt;nu2 = 0.50;
+<a name="line1028">1028: </a>  tl-&gt;nu3 = 1.00;
+<a name="line1029">1029: </a>  tl-&gt;nu4 = 1.25;
+
+<a name="line1031">1031: </a>  tl-&gt;omega1 = 0.25;
+<a name="line1032">1032: </a>  tl-&gt;omega2 = 0.50;
+<a name="line1033">1033: </a>  tl-&gt;omega3 = 1.00;
+<a name="line1034">1034: </a>  tl-&gt;omega4 = 2.00;
+<a name="line1035">1035: </a>  tl-&gt;omega5 = 4.00;
+
+<a name="line1037">1037: </a>  // Default values <font color="#4169E1">for</font> trust-region radius update based on reduction
+<a name="line1038">1038: </a>  tl-&gt;eta1 = 1.0e-4;
+<a name="line1039">1039: </a>  tl-&gt;eta2 = 0.25;
+<a name="line1040">1040: </a>  tl-&gt;eta3 = 0.50;
+<a name="line1041">1041: </a>  tl-&gt;eta4 = 0.90;
+
+<a name="line1043">1043: </a>  tl-&gt;alpha1 = 0.25;
+<a name="line1044">1044: </a>  tl-&gt;alpha2 = 0.50;
+<a name="line1045">1045: </a>  tl-&gt;alpha3 = 1.00;
+<a name="line1046">1046: </a>  tl-&gt;alpha4 = 2.00;
+<a name="line1047">1047: </a>  tl-&gt;alpha5 = 4.00;
+
+<a name="line1049">1049: </a>  // Default values <font color="#4169E1">for</font> trust-region radius update based on interpolation
+<a name="line1050">1050: </a>  tl-&gt;mu1 = 0.10;
+<a name="line1051">1051: </a>  tl-&gt;mu2 = 0.50;
+
+<a name="line1053">1053: </a>  tl-&gt;gamma1 = 0.25;
+<a name="line1054">1054: </a>  tl-&gt;gamma2 = 0.50;
+<a name="line1055">1055: </a>  tl-&gt;gamma3 = 2.00;
+<a name="line1056">1056: </a>  tl-&gt;gamma4 = 4.00;
+
+<a name="line1058">1058: </a>  tl-&gt;theta = 0.05;
+
+<a name="line1060">1060: </a>  // Default values <font color="#4169E1">for</font> trust region initialization based on interpolation
+<a name="line1061">1061: </a>  tl-&gt;mu1_i = 0.35;
+<a name="line1062">1062: </a>  tl-&gt;mu2_i = 0.50;
+
+<a name="line1064">1064: </a>  tl-&gt;gamma1_i = 0.0625;
+<a name="line1065">1065: </a>  tl-&gt;gamma2_i = 0.5;
+<a name="line1066">1066: </a>  tl-&gt;gamma3_i = 2.0;
+<a name="line1067">1067: </a>  tl-&gt;gamma4_i = 5.0;
+<a name="line1068">1068: </a>  
+<a name="line1069">1069: </a>  tl-&gt;theta_i = 0.25;
+
+<a name="line1071">1071: </a>  // Remaining parameters
+<a name="line1072">1072: </a>  tl-&gt;min_radius = 1.0e-10;
+<a name="line1073">1073: </a>  tl-&gt;max_radius = 1.0e10;
+<a name="line1074">1074: </a>  tl-&gt;epsilon = 1.0e-6;
+
+<a name="line1076">1076: </a>  tl-&gt;ksp_type        = NTL_KSP_STCG;
+<a name="line1077">1077: </a>  tl-&gt;pc_type         = NTL_PC_BFGS;
+<a name="line1078">1078: </a>  tl-&gt;bfgs_scale_type = BFGS_SCALE_AHESS;
+<a name="line1079">1079: </a>  tl-&gt;init_type       = NTL_INIT_INTERPOLATION;
+<a name="line1080">1080: </a>  tl-&gt;update_type     = NTL_UPDATE_REDUCTION;
+
+<a name="line1082">1082: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteLineSearch.html#TaoCreateMoreThuenteLineSearch">TaoCreateMoreThuenteLineSearch</A>(tao, 0, 0); CHKERRQ(info);
+<a name="line1083">1083: </a>  TaoFunctionReturn(0);
+<a name="line1084">1084: </a>}
+
+<a name="line1087">1087: </a><font color="#A020F0">#endif</font>
+
+</pre>
+</body>
+
+</html>

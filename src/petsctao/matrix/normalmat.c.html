@@ -1,0 +1,527 @@
+<center><a href="normalmat.c">Actual source code: normalmat.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"normalmat.h"</font><font color="#A020F0">                </font><font color="#B22222">/*I  "mat.h"  I*/</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><font color="#B22222">/*@C</font>
+<a name="line6">  6: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/MatCreateADA.html#MatCreateADA">MatCreateADA</A> - Creates a matrix M=A^T D1 A + D2.</font>
+
+<a name="line8">  8: </a><font color="#B22222">   Collective on matrix</font>
+
+<a name="line10"> 10: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line11"> 11: </a><font color="#B22222">+  mat - matrix of arbitrary type</font>
+<a name="line12"> 12: </a><font color="#B22222">.  D1 - A vector</font>
+<a name="line13"> 13: </a><font color="#B22222">-  D2 - A vector</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line16"> 16: </a><font color="#B22222">.  J - New matrix whose operations are defined in terms of mat, D1, and D2.</font>
+
+<a name="line18"> 18: </a><font color="#B22222">   Notes: </font>
+<a name="line19"> 19: </a><font color="#B22222">   The user provides the input data and is responsible for destroying</font>
+<a name="line20"> 20: </a><font color="#B22222">   this data after matrix J has been destroyed.  </font>
+<a name="line21"> 21: </a><font color="#B22222">   The operation MatMult(A,D2,D1) must be well defined.</font>
+<a name="line22"> 22: </a><font color="#B22222">   Before calling the operation MatGetDiagonal(), the function </font>
+<a name="line23"> 23: </a><font color="#B22222">   MatADAComputeDiagonal() must be called.  The matrices A and D1 must</font>
+<a name="line24"> 24: </a><font color="#B22222">   be the same during calls to MatADAComputeDiagonal() and</font>
+<a name="line25"> 25: </a><font color="#B22222">   MatGetDiagonal().</font>
+
+<a name="line27"> 27: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line29"> 29: </a><font color="#B22222">.seealso: MatCreate()</font>
+<a name="line30"> 30: </a><font color="#B22222">@*/</font>
+<a name="line31"> 31: </a><strong><font color="#4169E1"><a name="MatCreateADA"></a>int <A href="../../../docs/manualpages/ptaopages/MatCreateADA.html#MatCreateADA">MatCreateADA</A>(Mat mat,Vec D1, Vec D2, Mat *J)</font></strong>
+<a name="line32"> 32: </a>{
+<a name="line33"> 33: </a>  MPI_Comm     comm=((PetscObject)mat)-&gt;comm;
+<a name="line34"> 34: </a>  TaoMatADACtx ctx;
+<a name="line35"> 35: </a>  int          info;
+<a name="line36"> 36: </a>  PetscInt       nloc,n;
+
+<a name="line39"> 39: </a>  <font color="#B22222">/*</font>
+<a name="line40"> 40: </a><font color="#B22222">  info=MatCheckVecs(mat,D1,D2,&amp;flg);CHKERRQ(info);</font>
+<a name="line41"> 41: </a><font color="#B22222">  if (flg==PETSC_FALSE){</font>
+<a name="line42"> 42: </a><font color="#B22222">    SETERRQ(PETSC_ERR_SUP,"InCompatible matrix and vector for ADA^T matrix");</font>
+<a name="line43"> 43: </a><font color="#B22222">  }</font>
+<a name="line44"> 44: </a><font color="#B22222">  */</font>
+<a name="line45"> 45: </a>  info = PetscNew(_p_TaoMatADACtx,&amp;ctx);CHKERRQ(info);
+
+<a name="line47"> 47: </a>  ctx-&gt;A=mat;
+<a name="line48"> 48: </a>  ctx-&gt;D1=D1;
+<a name="line49"> 49: </a>  ctx-&gt;D2=D2;
+<a name="line50"> 50: </a>  <font color="#4169E1">if</font> (D1){
+<a name="line51"> 51: </a>    info = VecDuplicate(D1,&amp;ctx-&gt;W);CHKERRQ(info);
+<a name="line52"> 52: </a>    info =  PetscObjectReference((PetscObject)D1);CHKERRQ(info);
+<a name="line53"> 53: </a>  } <font color="#4169E1">else</font> {
+<a name="line54"> 54: </a>    ctx-&gt;W=0;
+<a name="line55"> 55: </a>  }
+<a name="line56"> 56: </a>  <font color="#4169E1">if</font> (D2){
+<a name="line57"> 57: </a>    info = VecDuplicate(D2,&amp;ctx-&gt;W2);CHKERRQ(info);
+<a name="line58"> 58: </a>    info = VecDuplicate(D2,&amp;ctx-&gt;ADADiag);CHKERRQ(info);
+<a name="line59"> 59: </a>    info =  PetscObjectReference((PetscObject)D2);CHKERRQ(info);
+<a name="line60"> 60: </a>  } <font color="#4169E1">else</font> {
+<a name="line61"> 61: </a>    ctx-&gt;W2=0;
+<a name="line62"> 62: </a>    ctx-&gt;ADADiag=0;
+<a name="line63"> 63: </a>  }
+
+<a name="line65"> 65: </a>  ctx-&gt;GotDiag=0;
+<a name="line66"> 66: </a>  info =  PetscObjectReference((PetscObject)mat);CHKERRQ(info);
+
+<a name="line68"> 68: </a>  info=VecGetLocalSize(D2,&amp;nloc);CHKERRQ(info);
+<a name="line69"> 69: </a>  info=VecGetSize(D2,&amp;n);CHKERRQ(info);
+
+<a name="line71"> 71: </a>  info = MatCreateShell(comm,nloc,nloc,n,n,ctx,J);CHKERRQ(info);
+
+<a name="line73"> 73: </a>  info = MatShellSetOperation(*J,MATOP_MULT,(void(*)())MatMult_ADA);CHKERRQ(info);
+<a name="line74"> 74: </a>  info = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatDestroy_ADA);CHKERRQ(info);
+<a name="line75"> 75: </a>  info = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatView_ADA);CHKERRQ(info);
+<a name="line76"> 76: </a>  info = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)())MatMultTranspose_ADA);CHKERRQ(info);
+<a name="line77"> 77: </a>  info = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)())MatDiagonalSet_ADA);CHKERRQ(info);
+<a name="line78"> 78: </a>  info = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)())MatShift_ADA);CHKERRQ(info);
+<a name="line79"> 79: </a>  info = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)())MatEqual_ADA);CHKERRQ(info);
+<a name="line80"> 80: </a>  info = MatShellSetOperation(*J,MATOP_SCALE,(void(*)())MatScale_ADA);CHKERRQ(info);
+<a name="line81"> 81: </a>  info = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)())MatTranspose_ADA);CHKERRQ(info);
+<a name="line82"> 82: </a>  info = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)())MatGetDiagonal_ADA);CHKERRQ(info);
+<a name="line83"> 83: </a>  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)())MatGetSubMatrices_ADA);CHKERRQ(info);
+<a name="line84"> 84: </a>  info = MatShellSetOperation(*J,MATOP_NORM,(void(*)())MatNorm_ADA);CHKERRQ(info);
+<a name="line85"> 85: </a>  info = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)())MatDuplicate_ADA);CHKERRQ(info);
+<a name="line86"> 86: </a>  info = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)())MatGetSubMatrix_ADA);CHKERRQ(info);
+
+<a name="line88"> 88: </a>  info = PetscLogObjectParent(*J,ctx-&gt;W); CHKERRQ(info);
+<a name="line89"> 89: </a>  info = PetscLogObjectParent(mat,*J); CHKERRQ(info);
+
+<a name="line91"> 91: </a>  info = MatSetOption(*J,MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(info);
+
+<a name="line93"> 93: </a>  <font color="#4169E1">return</font>(0);  
+<a name="line94"> 94: </a>}
+
+<a name="line98"> 98: </a><strong><font color="#4169E1"><a name="MatMult_ADA"></a>int MatMult_ADA(Mat mat,Vec a,Vec y)</font></strong>
+<a name="line99"> 99: </a>{
+<a name="line100">100: </a>  TaoMatADACtx ctx;
+<a name="line101">101: </a>  PetscScalar        one = 1.0;
+<a name="line102">102: </a>  int           info;
+
+<a name="line105">105: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+
+<a name="line107">107: </a>  info = MatMult(ctx-&gt;A,a,ctx-&gt;W);CHKERRQ(info);
+<a name="line108">108: </a>  <font color="#4169E1">if</font> (ctx-&gt;D1){
+<a name="line109">109: </a>    info = VecPointwiseMult(ctx-&gt;W,ctx-&gt;D1,ctx-&gt;W);CHKERRQ(info);
+<a name="line110">110: </a>  }
+<a name="line111">111: </a>  info = MatMultTranspose(ctx-&gt;A,ctx-&gt;W,y);CHKERRQ(info);
+<a name="line112">112: </a>  <font color="#4169E1">if</font> (ctx-&gt;D2){
+<a name="line113">113: </a>    info = VecPointwiseMult(ctx-&gt;W2, ctx-&gt;D2, a);CHKERRQ(info);
+<a name="line114">114: </a>    info = VecAXPY(y, one, ctx-&gt;W2);CHKERRQ(info);
+<a name="line115">115: </a>  }
+<a name="line116">116: </a>  <font color="#4169E1">return</font>(0);
+<a name="line117">117: </a>} 
+
+<a name="line121">121: </a><strong><font color="#4169E1"><a name="MatMultTranspose_ADA"></a>int MatMultTranspose_ADA(Mat mat,Vec a,Vec y)</font></strong>
+<a name="line122">122: </a>{
+<a name="line123">123: </a>  int info;
+
+<a name="line126">126: </a>  info = MatMult_ADA(mat,a,y);CHKERRQ(info);
+<a name="line127">127: </a>  <font color="#4169E1">return</font>(0);
+<a name="line128">128: </a>} 
+
+<a name="line132">132: </a><strong><font color="#4169E1"><a name="MatDiagonalSet_ADA"></a>int MatDiagonalSet_ADA(Vec D, Mat M)</font></strong>
+<a name="line133">133: </a>{
+<a name="line134">134: </a>  TaoMatADACtx ctx;
+<a name="line135">135: </a>  PetscScalar        zero=0.0,one = 1.0;
+<a name="line136">136: </a>  int           info;
+
+<a name="line139">139: </a>  info = MatShellGetContext(M,(void **)&amp;ctx);CHKERRQ(info);
+
+<a name="line141">141: </a>  <font color="#4169E1">if</font> (ctx-&gt;D2==PETSC_NULL){
+<a name="line142">142: </a>    info = VecDuplicate(D,&amp;ctx-&gt;D2);CHKERRQ(info);
+<a name="line143">143: </a>    info = VecSet(ctx-&gt;D2, zero);CHKERRQ(info);
+<a name="line144">144: </a>  }
+<a name="line145">145: </a>  info = VecAXPY(ctx-&gt;D2, one, D);CHKERRQ(info);
+
+<a name="line147">147: </a>  <font color="#4169E1">return</font>(0);
+<a name="line148">148: </a>} 
+
+<a name="line152">152: </a><strong><font color="#4169E1"><a name="MatDestroy_ADA"></a>int MatDestroy_ADA(Mat mat)</font></strong>
+<a name="line153">153: </a>{
+<a name="line154">154: </a>  int          info;
+<a name="line155">155: </a>  TaoMatADACtx ctx;
+
+<a name="line158">158: </a>  info=MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line159">159: </a>  info=VecDestroy(ctx-&gt;W);CHKERRQ(info);
+<a name="line160">160: </a>  info=VecDestroy(ctx-&gt;W2);CHKERRQ(info);
+<a name="line161">161: </a>  info=VecDestroy(ctx-&gt;ADADiag);CHKERRQ(info);
+<a name="line162">162: </a>  info=MatDestroy(ctx-&gt;A);CHKERRQ(info);
+<a name="line163">163: </a>  info=VecDestroy(ctx-&gt;D1);CHKERRQ(info);
+<a name="line164">164: </a>  info=VecDestroy(ctx-&gt;D2);CHKERRQ(info);
+<a name="line165">165: </a>  info = PetscFree(ctx); CHKERRQ(info);
+<a name="line166">166: </a>  <font color="#4169E1">return</font>(0);
+<a name="line167">167: </a>}
+
+<a name="line171">171: </a><strong><font color="#4169E1"><a name="MatView_ADA"></a>int MatView_ADA(Mat mat,PetscViewer viewer)</font></strong>
+<a name="line172">172: </a>{
+
+<a name="line175">175: </a>  <font color="#B22222">/*</font>
+<a name="line176">176: </a><font color="#B22222">  info = ViewerGetFormat(viewer,&amp;format);CHKERRQ(info);</font>
+<a name="line177">177: </a><font color="#B22222">  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {</font>
+<a name="line178">178: </a><font color="#B22222">    return(0);  / * do nothing for now * /</font>
+<a name="line179">179: </a><font color="#B22222">  }</font>
+<a name="line180">180: </a><font color="#B22222">  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);</font>
+<a name="line181">181: </a><font color="#B22222">  info = MatView(ctx-&gt;A,viewer);CHKERRQ(info);</font>
+<a name="line182">182: </a><font color="#B22222">  if (ctx-&gt;D1){</font>
+<a name="line183">183: </a><font color="#B22222">    info = VecView(ctx-&gt;D1,viewer);CHKERRQ(info);</font>
+<a name="line184">184: </a><font color="#B22222">  }</font>
+<a name="line185">185: </a><font color="#B22222">  if (ctx-&gt;D2){</font>
+<a name="line186">186: </a><font color="#B22222">    info = VecView(ctx-&gt;D2,viewer);CHKERRQ(info);</font>
+<a name="line187">187: </a><font color="#B22222">  }</font>
+<a name="line188">188: </a><font color="#B22222">  */</font>
+<a name="line189">189: </a>  <font color="#4169E1">return</font>(0);
+<a name="line190">190: </a>}
+
+<a name="line194">194: </a><strong><font color="#4169E1"><a name="MatShift_ADA"></a>int MatShift_ADA(Mat Y, PetscScalar a)</font></strong>
+<a name="line195">195: </a>{
+<a name="line196">196: </a>  int          info;
+<a name="line197">197: </a>  TaoMatADACtx ctx;
+
+<a name="line200">200: </a>  info = MatShellGetContext(Y,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line201">201: </a>  info = VecShift(ctx-&gt;D2,a);CHKERRQ(info);
+<a name="line202">202: </a>  <font color="#4169E1">return</font>(0);
+<a name="line203">203: </a>}
+
+<a name="line207">207: </a><strong><font color="#4169E1"><a name="MatDuplicate_ADA"></a>int MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)</font></strong>
+<a name="line208">208: </a>{
+<a name="line209">209: </a>  int          info;
+<a name="line210">210: </a>  TaoMatADACtx ctx;
+<a name="line211">211: </a>  Mat          A2;
+<a name="line212">212: </a>  Vec          D1b=NULL,D2b;
+
+<a name="line215">215: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line216">216: </a>  info = MatDuplicate(ctx-&gt;A,op,&amp;A2);CHKERRQ(info);
+<a name="line217">217: </a>  <font color="#4169E1">if</font> (ctx-&gt;D1){
+<a name="line218">218: </a>    info = VecDuplicate(ctx-&gt;D1,&amp;D1b);CHKERRQ(info);
+<a name="line219">219: </a>    info = VecCopy(ctx-&gt;D1,D1b);CHKERRQ(info);
+<a name="line220">220: </a>  }
+<a name="line221">221: </a>  info = VecDuplicate(ctx-&gt;D2,&amp;D2b);CHKERRQ(info);
+<a name="line222">222: </a>  info = VecCopy(ctx-&gt;D2,D2b);CHKERRQ(info);
+<a name="line223">223: </a>  info = <A href="../../../docs/manualpages/ptaopages/MatCreateADA.html#MatCreateADA">MatCreateADA</A>(A2,D1b,D2b,M);CHKERRQ(info);
+<a name="line224">224: </a>  <font color="#4169E1">if</font> (ctx-&gt;D1){
+<a name="line225">225: </a>  info = PetscObjectDereference((PetscObject)D1b);CHKERRQ(info);
+<a name="line226">226: </a>  }
+<a name="line227">227: </a>  info = PetscObjectDereference((PetscObject)D2b);CHKERRQ(info);
+<a name="line228">228: </a>  info = PetscObjectDereference((PetscObject)A2);CHKERRQ(info);
+
+<a name="line230">230: </a>  <font color="#4169E1">return</font>(0);
+<a name="line231">231: </a>}
+
+<a name="line235">235: </a><strong><font color="#4169E1"><a name="MatEqual_ADA"></a>int MatEqual_ADA(Mat A,Mat B,PetscTruth *flg)</font></strong>
+<a name="line236">236: </a>{
+<a name="line237">237: </a>  int          info;
+<a name="line238">238: </a>  TaoMatADACtx  ctx1,ctx2;
+
+<a name="line241">241: </a>  info = MatShellGetContext(A,(void **)&amp;ctx1);CHKERRQ(info);
+<a name="line242">242: </a>  info = MatShellGetContext(B,(void **)&amp;ctx2);CHKERRQ(info);
+<a name="line243">243: </a>  info = VecEqual(ctx1-&gt;D2,ctx2-&gt;D2,flg);CHKERRQ(info);
+<a name="line244">244: </a>  <font color="#4169E1">if</font> (*flg==PETSC_TRUE){
+<a name="line245">245: </a>    info = VecEqual(ctx1-&gt;D1,ctx2-&gt;D1,flg);CHKERRQ(info);
+<a name="line246">246: </a>  }
+<a name="line247">247: </a>  <font color="#4169E1">if</font> (*flg==PETSC_TRUE){
+<a name="line248">248: </a>    info = MatEqual(ctx1-&gt;A,ctx2-&gt;A,flg);CHKERRQ(info);
+<a name="line249">249: </a>  }
+<a name="line250">250: </a>  <font color="#4169E1">return</font>(0);
+<a name="line251">251: </a>}
+
+<a name="line255">255: </a><strong><font color="#4169E1"><a name="MatScale_ADA"></a>int MatScale_ADA(Mat mat, PetscScalar a)</font></strong>
+<a name="line256">256: </a>{
+<a name="line257">257: </a>  int          info;
+<a name="line258">258: </a>  TaoMatADACtx ctx;
+
+<a name="line261">261: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line262">262: </a>  info = VecScale(ctx-&gt;D1,a);CHKERRQ(info);
+<a name="line263">263: </a>  <font color="#4169E1">if</font> (ctx-&gt;D2){
+<a name="line264">264: </a>    info = VecScale(ctx-&gt;D2,a);CHKERRQ(info);
+<a name="line265">265: </a>  }
+<a name="line266">266: </a>  <font color="#4169E1">return</font>(0);
+<a name="line267">267: </a>}
+
+<a name="line271">271: </a><strong><font color="#4169E1"><a name="MatTranspose_ADA"></a>int MatTranspose_ADA(Mat mat,Mat *B)</font></strong>
+<a name="line272">272: </a>{
+<a name="line273">273: </a>  int          info;
+<a name="line274">274: </a>  TaoMatADACtx ctx;
+
+<a name="line277">277: </a>  <font color="#4169E1">if</font> (*B){
+<a name="line278">278: </a>    info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line279">279: </a>    info = MatDuplicate(mat,MAT_COPY_VALUES,B);CHKERRQ(info);
+<a name="line280">280: </a>  }
+<a name="line281">281: </a>  <font color="#4169E1">return</font>(0);
+<a name="line282">282: </a>}
+
+<a name="line286">286: </a><strong><font color="#4169E1"><a name="MatADAComputeDiagonal"></a>int MatADAComputeDiagonal(Mat mat)</font></strong>
+<a name="line287">287: </a>{
+<a name="line288">288: </a>  int          info;
+<a name="line289">289: </a>  PetscInt i,m,n,low,high;
+<a name="line290">290: </a>  PetscScalar       *dtemp,*dptr;
+<a name="line291">291: </a>  TaoMatADACtx ctx;
+
+<a name="line294">294: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+
+<a name="line296">296: </a>  info = MatGetOwnershipRange(mat, &amp;low, &amp;high);CHKERRQ(info);
+<a name="line297">297: </a>  info = MatGetSize(mat,&amp;m,&amp;n);CHKERRQ(info);
+<a name="line298">298: </a>  
+<a name="line299">299: </a>  info = PetscMalloc( n*<font color="#4169E1">sizeof</font>(PetscScalar),&amp;dtemp ); CHKERRQ(info);
+
+<a name="line301">301: </a>  <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line302">302: </a>    info = MatGetColumnVector(ctx-&gt;A, ctx-&gt;W, i);CHKERRQ(info);
+<a name="line303">303: </a>    info = VecPointwiseMult(ctx-&gt;W,ctx-&gt;W,ctx-&gt;W);CHKERRQ(info);
+<a name="line304">304: </a>    info = VecDotBegin(ctx-&gt;D1, ctx-&gt;W,dtemp+i);CHKERRQ(info);
+<a name="line305">305: </a>  }
+<a name="line306">306: </a>  <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line307">307: </a>    info = VecDotEnd(ctx-&gt;D1, ctx-&gt;W,dtemp+i);CHKERRQ(info);
+<a name="line308">308: </a>  } 
+
+<a name="line310">310: </a>  info = VecGetArray(ctx-&gt;ADADiag,&amp;dptr);CHKERRQ(info);
+<a name="line311">311: </a>  <font color="#4169E1">for</font> (i=low; i&lt;high; i++){
+<a name="line312">312: </a>    dptr[i-low]= dtemp[i];
+<a name="line313">313: </a>  }
+<a name="line314">314: </a>  info = VecRestoreArray(ctx-&gt;ADADiag,&amp;dptr);CHKERRQ(info);
+<a name="line315">315: </a>  <font color="#4169E1">if</font> (dtemp) {
+<a name="line316">316: </a>    info = PetscFree(dtemp); CHKERRQ(info);
+<a name="line317">317: </a>  }
+<a name="line318">318: </a>  <font color="#4169E1">return</font>(0);
+<a name="line319">319: </a>}
+
+<a name="line323">323: </a><strong><font color="#4169E1"><a name="MatGetDiagonal_ADA"></a>int MatGetDiagonal_ADA(Mat mat,Vec v)</font></strong>
+<a name="line324">324: </a>{
+<a name="line325">325: </a>  int          info;
+<a name="line326">326: </a>  PetscScalar       one=1.0;
+<a name="line327">327: </a>  TaoMatADACtx ctx;
+
+<a name="line330">330: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line331">331: </a>  info = MatADAComputeDiagonal(mat);
+<a name="line332">332: </a>  info=VecCopy(ctx-&gt;ADADiag,v);CHKERRQ(info);
+<a name="line333">333: </a>  <font color="#4169E1">if</font> (ctx-&gt;D2){
+<a name="line334">334: </a>    info=VecAXPY(v, one, ctx-&gt;D2);CHKERRQ(info);
+<a name="line335">335: </a>  }
+
+<a name="line337">337: </a>  <font color="#4169E1">return</font>(0);
+<a name="line338">338: </a>}
+
+<a name="line342">342: </a><strong><font color="#4169E1"><a name="MatGetSubMatrices_ADA"></a>int MatGetSubMatrices_ADA(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat **B)</font></strong>
+<a name="line343">343: </a>{
+<a name="line344">344: </a>  int info,i;
+
+<a name="line347">347: </a>  <font color="#4169E1">if</font> (scall == MAT_INITIAL_MATRIX) {
+<a name="line348">348: </a>    info = PetscMalloc( (n+1)*<font color="#4169E1">sizeof</font>(Mat),B );CHKERRQ(info);
+<a name="line349">349: </a>  }
+
+<a name="line351">351: </a>  <font color="#4169E1">for</font> ( i=0; i&lt;n; i++ ) {
+<a name="line352">352: </a>    info = MatGetSubMatrix_ADA(A,irow[i],icol[i],scall,&amp;(*B)[i]);CHKERRQ(info);
+<a name="line353">353: </a>  }
+<a name="line354">354: </a>  <font color="#4169E1">return</font>(0);
+<a name="line355">355: </a>}
+
+<a name="line359">359: </a><strong><font color="#4169E1"><a name="MatGetSubMatrix_ADA"></a>int MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,</font></strong>
+<a name="line360">360: </a><strong><font color="#4169E1">                        Mat *newmat)</font></strong>
+<a name="line361">361: </a>{
+<a name="line362">362: </a>  int          info;
+<a name="line363">363: </a>  PetscInt       i,low,high;
+<a name="line364">364: </a>  PetscInt       n,nlocal;
+<a name="line365">365: </a>  const PetscInt       *iptr;
+<a name="line366">366: </a>  PetscScalar       *dptr,*ddptr,zero=0.0;
+<a name="line367">367: </a>  const VecType type_name;
+<a name="line368">368: </a>  IS           ISrow;
+<a name="line369">369: </a>  Vec          D1,D2;
+<a name="line370">370: </a>  Mat          Atemp;
+<a name="line371">371: </a>  TaoMatADACtx ctx;
+
+
+<a name="line375">375: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+
+<a name="line377">377: </a>  info = MatGetOwnershipRange(ctx-&gt;A,&amp;low,&amp;high);CHKERRQ(info);
+<a name="line378">378: </a>  info = ISCreateStride(((PetscObject)mat)-&gt;comm,high-low,low,1,&amp;ISrow);CHKERRQ(info);
+<a name="line379">379: </a>  info = MatGetSubMatrix(ctx-&gt;A,ISrow,iscol,cll,&amp;Atemp);CHKERRQ(info);
+<a name="line380">380: </a>  info = ISDestroy(ISrow);CHKERRQ(info);
+
+<a name="line382">382: </a>  <font color="#4169E1">if</font> (ctx-&gt;D1){
+<a name="line383">383: </a>    info=VecDuplicate(ctx-&gt;D1,&amp;D1);CHKERRQ(info);
+<a name="line384">384: </a>    info=VecCopy(ctx-&gt;D1,D1);CHKERRQ(info);
+<a name="line385">385: </a>  } <font color="#4169E1">else</font> {
+<a name="line386">386: </a>    D1=PETSC_NULL;
+<a name="line387">387: </a>  }
+
+<a name="line389">389: </a>  <font color="#4169E1">if</font> (ctx-&gt;D2){
+<a name="line390">390: </a>    info=ISGetSize(isrow,&amp;n);CHKERRQ(info);
+<a name="line391">391: </a>    info=ISGetLocalSize(isrow,&amp;nlocal);CHKERRQ(info);
+<a name="line392">392: </a>    info=VecCreate(((PetscObject)ctx-&gt;D2)-&gt;comm,&amp;D2);CHKERRQ(info);
+<a name="line393">393: </a>    info=VecGetType(ctx-&gt;D2,&amp;type_name);CHKERRQ(info);
+<a name="line394">394: </a>    info=VecSetSizes(D2,nlocal,n);CHKERRQ(info);
+<a name="line395">395: </a>    info=VecSetType(D2,type_name);CHKERRQ(info);
+<a name="line396">396: </a>    info=VecSet(D2, zero);CHKERRQ(info);
+<a name="line397">397: </a>    info=VecGetArray(ctx-&gt;D2, &amp;dptr); CHKERRQ(info);
+<a name="line398">398: </a>    info=VecGetArray(D2, &amp;ddptr); CHKERRQ(info);
+<a name="line399">399: </a>    info=ISGetIndices(isrow,&amp;iptr); CHKERRQ(info);
+<a name="line400">400: </a>    <font color="#4169E1">for</font> (i=0;i&lt;nlocal;i++){
+<a name="line401">401: </a>      ddptr[i] = dptr[iptr[i]-low];
+<a name="line402">402: </a>    }
+<a name="line403">403: </a>    info=ISRestoreIndices(isrow,&amp;iptr); CHKERRQ(info);
+<a name="line404">404: </a>    info=VecRestoreArray(D2, &amp;ddptr); CHKERRQ(info);
+<a name="line405">405: </a>    info=VecRestoreArray(ctx-&gt;D2, &amp;dptr); CHKERRQ(info);
+<a name="line406">406: </a>   
+<a name="line407">407: </a>  } <font color="#4169E1">else</font> {
+<a name="line408">408: </a>    D2=PETSC_NULL;
+<a name="line409">409: </a>  }
+
+<a name="line411">411: </a>  info = <A href="../../../docs/manualpages/ptaopages/MatCreateADA.html#MatCreateADA">MatCreateADA</A>(Atemp,D1,D2,newmat);CHKERRQ(info);
+<a name="line412">412: </a>  info = MatShellGetContext(*newmat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line413">413: </a>  info = PetscObjectDereference((PetscObject)Atemp);CHKERRQ(info);
+<a name="line414">414: </a>  <font color="#4169E1">if</font> (ctx-&gt;D1){
+<a name="line415">415: </a>    info = PetscObjectDereference((PetscObject)D1);CHKERRQ(info);
+<a name="line416">416: </a>  }
+<a name="line417">417: </a>  <font color="#4169E1">if</font> (ctx-&gt;D2){
+<a name="line418">418: </a>    info = PetscObjectDereference((PetscObject)D2);CHKERRQ(info);
+<a name="line419">419: </a>  }
+<a name="line420">420: </a>  <font color="#4169E1">return</font>(0);
+<a name="line421">421: </a>}
+
+<a name="line425">425: </a><strong><font color="#4169E1"><a name="MatGetRowADA"></a>int MatGetRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **vals)</font></strong>
+<a name="line426">426: </a>{
+<a name="line427">427: </a>  int info;
+<a name="line428">428: </a>  PetscInt m,n;
+
+<a name="line431">431: </a>  info = MatGetSize(mat,&amp;m,&amp;n);CHKERRQ(info);
+
+<a name="line433">433: </a>  <font color="#4169E1">if</font> (*ncols&gt;0){
+<a name="line434">434: </a>    info = PetscMalloc( (*ncols)*<font color="#4169E1">sizeof</font>(int),cols );CHKERRQ(info);
+<a name="line435">435: </a>    info = PetscMalloc( (*ncols)*<font color="#4169E1">sizeof</font>(PetscScalar),vals );CHKERRQ(info);
+<a name="line436">436: </a>  } <font color="#4169E1">else</font> {
+<a name="line437">437: </a>    *cols=PETSC_NULL;
+<a name="line438">438: </a>    *vals=PETSC_NULL;
+<a name="line439">439: </a>  }
+<a name="line440">440: </a>  
+<a name="line441">441: </a>  <font color="#4169E1">return</font>(0);
+<a name="line442">442: </a>}
+
+<a name="line446">446: </a><strong><font color="#4169E1"><a name="MatRestoreRowADA"></a>int MatRestoreRowADA(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)</font></strong>
+<a name="line447">447: </a>{
+<a name="line448">448: </a>  int info;
+<a name="line450">450: </a>  <font color="#4169E1">if</font> (*ncols&gt;0){
+<a name="line451">451: </a>    info = PetscFree(*cols);  CHKERRQ(info);
+<a name="line452">452: </a>    info = PetscFree(*vals);  CHKERRQ(info);
+<a name="line453">453: </a>  }
+<a name="line454">454: </a>  *cols=PETSC_NULL;
+<a name="line455">455: </a>  *vals=PETSC_NULL;
+<a name="line456">456: </a>  <font color="#4169E1">return</font>(0);
+<a name="line457">457: </a>}
+
+<a name="line461">461: </a><strong><font color="#4169E1"><a name="MatGetColumnVector_ADA"></a>int MatGetColumnVector_ADA(Mat mat,Vec Y, PetscInt col)</font></strong>
+<a name="line462">462: </a>{
+<a name="line463">463: </a>  int    info;
+<a name="line464">464: </a>  PetscInt low,high;
+<a name="line465">465: </a>  PetscScalar zero=0.0,one=1.0;
+
+<a name="line468">468: </a>  info=VecSet(Y, zero);CHKERRQ(info);
+<a name="line469">469: </a>  info=VecGetOwnershipRange(Y,&amp;low,&amp;high);CHKERRQ(info);
+<a name="line470">470: </a>  <font color="#4169E1">if</font> (col&gt;=low &amp;&amp; col&lt;high){
+<a name="line471">471: </a>    info=VecSetValue(Y,col,one,INSERT_VALUES);CHKERRQ(info);
+<a name="line472">472: </a>  }
+<a name="line473">473: </a>  info=VecAssemblyBegin(Y);CHKERRQ(info);
+<a name="line474">474: </a>  info=VecAssemblyEnd(Y);CHKERRQ(info);
+<a name="line475">475: </a>  info=MatMult_ADA(mat,Y,Y);CHKERRQ(info);
+
+<a name="line477">477: </a>  <font color="#4169E1">return</font>(0);
+<a name="line478">478: </a>}
+
+<a name="line480">480: </a><strong><font color="#4169E1"><a name="MatConvert_ADA"></a>int MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)</font></strong>
+<a name="line481">481: </a>{
+<a name="line482">482: </a>  int info,size;
+<a name="line483">483: </a>  TaoMatADACtx  ctx;
+<a name="line484">484: </a>  PetscTruth sametype, issame, ismpidense, isseqdense;
+<a name="line486">486: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+<a name="line487">487: </a>  MPI_Comm_size(((PetscObject)mat)-&gt;comm,&amp;size);
+
+<a name="line489">489: </a>  info = PetscTypeCompare((PetscObject)mat,newtype,&amp;sametype);CHKERRQ(info);
+<a name="line490">490: </a>  info = PetscTypeCompare((PetscObject)mat,MATSAME,&amp;issame); CHKERRQ(info);
+<a name="line491">491: </a>  info = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&amp;ismpidense); CHKERRQ(info);
+<a name="line492">492: </a>  info = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&amp;isseqdense); CHKERRQ(info);
+
+
+<a name="line495">495: </a>  <font color="#4169E1">if</font> (sametype || issame) {
+
+<a name="line497">497: </a>    info=MatDuplicate(mat,MAT_COPY_VALUES,NewMat);CHKERRQ(info);
+
+<a name="line499">499: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ismpidense) {
+
+<a name="line501">501: </a>    PetscInt i,j,low,high,m,n,M,N;
+<a name="line502">502: </a>    PetscScalar *dptr;
+<a name="line503">503: </a>    Vec X;
+
+<a name="line505">505: </a>    info = VecDuplicate(ctx-&gt;D2,&amp;X);CHKERRQ(info);
+<a name="line506">506: </a>    info=MatGetSize(mat,&amp;M,&amp;N);CHKERRQ(info);
+<a name="line507">507: </a>    info=MatGetLocalSize(mat,&amp;m,&amp;n);CHKERRQ(info);
+<a name="line508">508: </a>    info = MatCreateMPIDense(((PetscObject)mat)-&gt;comm,m,m,N,N,PETSC_NULL,NewMat);
+<a name="line509">509: </a>    CHKERRQ(info);
+<a name="line510">510: </a>    info = MatGetOwnershipRange(*NewMat,&amp;low,&amp;high);CHKERRQ(info);
+<a name="line511">511: </a>    <font color="#4169E1">for</font> (i=0;i&lt;M;i++){
+<a name="line512">512: </a>      info = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(info);
+<a name="line513">513: </a>      info = VecGetArray(X,&amp;dptr);CHKERRQ(info);
+<a name="line514">514: </a>      <font color="#4169E1">for</font> (j=0; j&lt;high-low; j++){
+<a name="line515">515: </a>        info = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(info);
+<a name="line516">516: </a>      }
+<a name="line517">517: </a>      info=VecRestoreArray(X,&amp;dptr);CHKERRQ(info);
+<a name="line518">518: </a>    }
+<a name="line519">519: </a>    info=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
+<a name="line520">520: </a>    info=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
+<a name="line521">521: </a>    info = VecDestroy(X);CHKERRQ(info);
+
+<a name="line523">523: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (isseqdense &amp;&amp; size==1){
+
+<a name="line525">525: </a>    PetscInt i,j,low,high,m,n,M,N;
+<a name="line526">526: </a>    PetscScalar *dptr;
+<a name="line527">527: </a>    Vec X;
+
+<a name="line529">529: </a>    info = VecDuplicate(ctx-&gt;D2,&amp;X);CHKERRQ(info);
+<a name="line530">530: </a>    info = MatGetSize(mat,&amp;M,&amp;N);CHKERRQ(info);
+<a name="line531">531: </a>    info = MatGetLocalSize(mat,&amp;m,&amp;n);CHKERRQ(info);
+<a name="line532">532: </a>    info = MatCreateSeqDense(((PetscObject)mat)-&gt;comm,N,N,PETSC_NULL,NewMat);
+<a name="line533">533: </a>    CHKERRQ(info);
+<a name="line534">534: </a>    info = MatGetOwnershipRange(*NewMat,&amp;low,&amp;high);CHKERRQ(info);
+<a name="line535">535: </a>    <font color="#4169E1">for</font> (i=0;i&lt;M;i++){
+<a name="line536">536: </a>      info = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(info);
+<a name="line537">537: </a>      info = VecGetArray(X,&amp;dptr);CHKERRQ(info);
+<a name="line538">538: </a>      <font color="#4169E1">for</font> (j=0; j&lt;high-low; j++){
+<a name="line539">539: </a>        info = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(info);
+<a name="line540">540: </a>      }
+<a name="line541">541: </a>      info=VecRestoreArray(X,&amp;dptr);CHKERRQ(info);
+<a name="line542">542: </a>    }
+<a name="line543">543: </a>    info=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
+<a name="line544">544: </a>    info=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
+<a name="line545">545: </a>    info=VecDestroy(X);CHKERRQ(info);
+
+<a name="line547">547: </a>  } <font color="#4169E1">else</font> {
+<a name="line548">548: </a>    SETERRQ(1,<font color="#666666">"No support to convert objects to that type"</font>);
+<a name="line549">549: </a>  }
+<a name="line550">550: </a>  <font color="#4169E1">return</font>(0);
+<a name="line551">551: </a>}
+
+<a name="line555">555: </a><strong><font color="#4169E1"><a name="MatNorm_ADA"></a>int MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)</font></strong>
+<a name="line556">556: </a>{
+<a name="line557">557: </a>  int info;
+<a name="line558">558: </a>  TaoMatADACtx  ctx;
+
+<a name="line561">561: </a>  info = MatShellGetContext(mat,(void **)&amp;ctx);CHKERRQ(info);
+
+<a name="line563">563: </a>  <font color="#4169E1">if</font> (type == NORM_FROBENIUS) {
+<a name="line564">564: </a>    *norm = 1.0;
+<a name="line565">565: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (type == NORM_1 || type == NORM_INFINITY) {
+<a name="line566">566: </a>    *norm = 1.0;
+<a name="line567">567: </a>  } <font color="#4169E1">else</font> {
+<a name="line568">568: </a>    SETERRQ(PETSC_ERR_SUP,<font color="#666666">"No two norm"</font>);
+<a name="line569">569: </a>  }
+<a name="line570">570: </a>  <font color="#4169E1">return</font>(0);
+<a name="line571">571: </a>}
+</pre>
+</body>
+
+</html>

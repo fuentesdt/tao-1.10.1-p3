@@ -1,0 +1,60 @@
+#
+#
+
+#site-specific information.  
+#================ Required PETSc package information ==========================
+#  TAO currently uses the PETSc makefile system, so many variables required for
+#  other packages are not required here.
+TAOPETSCDIR = petsctao
+TAO_CCPPFLAGS	= ${PETSC_CCPPFLAGS}
+TAO_FCPPFLAGS	= ${PETSC_FCPPFLAGS}
+TAO_C_SH_LIB_PATH	= ${PETSC_C_SH_LIB_PATH}
+TAO_F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
+
+# If necessary, set architecture specific variables in packages.${PETSC_ARCH}
+# See ${TAO_DIR}/bmake/packages.arch for example 
+#include ${TAO_DIR}/bmake/packages.${PETSC_ARCH}
+
+
+#=============  OTHER PACKAGES COMMON TO ALL ARCHITECTURES ===================
+TAO_ADIC_LIB	= -L${TAO_LIB_DIR} -ltaoadic -ltaopetsc -ltao ${ADIC_LIB}
+TAO_GA_LIB	= -L${TAO_LIB_DIR} -ltaoga -ltao -ltaopetsc ${PETSC_SNES_LIB}
+TAO_ESI_LIB 	= -L${TAO_LIB_DIR} -lesitao -ltao ${PETSC_SNES_LIB}
+TAO_OOQP_LIB 	= -L${TAO_LIB_DIR} -looqptao -ltaopetsc  -ltao ${OOQP_LIB}  ${PETSC_SNES_LIB}
+TAO_APPSPACK_LIB 	= -L${TAO_LIB_DIR} -lappspacktao  -ltao ${APPSPACK_OBJ}
+
+### CCA libraries
+SIDL_LD_FLAGS = ${CC_LINKER_SLFLAG}${BABEL_HOME}/lib -L${BABEL_HOME}/lib 
+SIDL_LIB = ${SIDL_LD_FLAGS} -lsidl
+TAO_SIDL_SERVER_LIB = -ltaosidl
+TAO_SIDLCLIENT_C_LIB = -ltaosidl -lLAFactory-client-C -lOptimize-client-C -lSolver-client-C ${TAO_SIDL_SERVER_LIB} ${TAO_LIB} ${SIDL_LIB}
+
+TAO_SIDLCLIENT_CXX_LIB= -lLAFactory-client-C++ -lOptimize-client-C++ -lSolver-client-C++  ${SIDL_LD_FLAGS} -lsidlstub_cxx -lsidl 
+
+TAO_SIDLCLIENT_F77_LIB=-ltaosidl -lLAFactory-client-F77 -lOptimize-client-F77 -lSolver-client-F77 ${TAO_SIDL_SERVER_LIB} ${TAO_LIB} ${SIDL_LIB} 
+
+TAO_SIDL_FLAGS_F77 = -I${TAO_DIR}/src/sidl/clients/Optimize/Optimize-client-F77 \
+        -I${TAO_DIR}/src/sidl/clients/LAFactory/LAFactory-client-F77 \
+        -I${TAO_DIR}/src/sidl/clients/Solver/Solver-client-F77 \
+        -I${TAO_DIR}/src/sidl/components/OptimizationPorts-F77 \
+        -I${BABEL_HOME}/include/f77 -I${BABEL_HOME}/include \
+	-I${CCA_SPEC_BABEL_INCLUDE}/f77
+
+TAO_SIDL_FLAGS_C = -I${TAO_DIR}/src/sidl/clients/Optimize/Optimize-client-C \
+        -I${TAO_DIR}/src/sidl/clients/LAFactory/LAFactory-client-C \
+        -I${TAO_DIR}/src/sidl/clients/Solver/Solver-client-C \
+        -I${TAO_DIR}/src/sidl/components/OptimizationPorts-C \
+        -I${BABEL_HOME}/include/c -I${CCA_SPEC_BABEL_INCLUDE}/c
+
+TAO_SIDL_FLAGS_CXX = -I${TAO_DIR}/src/sidl/clients/Optimize/Optimize-client-C++ \
+        -I${TAO_DIR}/src/sidl/clients/LAFactory/LAFactory-client-C++ \
+        -I${TAO_DIR}/src/sidl/clients/Solver/Solver-client-C++ \
+        -I${TAO_DIR}/src/sidl/components/OptimizationPorts-C++ \
+	-I${BABEL_HOME}/include/cxx  -I${BABEL_HOME}/include \
+	-I${CCA_SPEC_BABEL_INCLUDE}/cxx
+
+
+TAO_OPTIMIZATION_PORTS_LIB = -lOptimizationPorts-client-C++
+
+
+

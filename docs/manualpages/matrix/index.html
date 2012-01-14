@@ -1,0 +1,60 @@
+<HTML>
+<HEAD>
+<TITLE>TaoMat Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> TaoMat Methods and Manual Pages
+</H2>
+
+TAO uses an abstract class called TaoMat to represent linear operators.  
+Examples of 
+linear operators are a Hessian matrix, Jacobian matrix, 
+and projection matrices.  These
+operators act on vectors and have methods
+which can be used within an optimization solver or application code.
+These methods are virtual functions whose implementation depends upon
+upon the internal representation of the data.  
+
+<P>
+
+
+
+<P>
+<TABLE>
+</TR><TD WIDTH=250 COLSPAN="3"><B>Beginner - Basic usage</B></TD></TR>
+ <TD WIDTH=250><A HREF="./TaoMatDestroy.html">TaoMatDestroy</A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+</TR><TD WIDTH=250 COLSPAN="3"><B>Intermediate - Setting options for algorithms and data structures</B></TD></TR>
+ <TD WIDTH=250><A HREF="./AddDiagonal.html">AddDiagonal</A></TD>
+ <TD WIDTH=250><A HREF="./GetDiagonal.html">GetDiagonal</A></TD>
+ <TD WIDTH=250><A HREF="./RowScale.html">RowScale</A></TD>
+<TR>
+ <TD WIDTH=250><A HREF="./ColScale.html">ColScale</A></TD>
+ <TD WIDTH=250><A HREF="./GetDimensions.html">GetDimensions</A></TD>
+ <TD WIDTH=250><A HREF="./SetDiagonal.html">SetDiagonal</A></TD>
+<TR>
+ <TD WIDTH=250><A HREF="./CreateReducedMatrix.html">CreateReducedMatrix</A></TD>
+ <TD WIDTH=250><A HREF="./Multiply.html">Multiply</A></TD>
+ <TD WIDTH=250><A HREF="./SetReducedMatrix.html">SetReducedMatrix</A></TD>
+<TR>
+ <TD WIDTH=250><A HREF="./D_Fischer.html">D_Fischer</A></TD>
+ <TD WIDTH=250><A HREF="./MultiplyTranspose.html">MultiplyTranspose</A></TD>
+ <TD WIDTH=250><A HREF="./ShiftDiagonal.html">ShiftDiagonal</A></TD>
+<TR>
+ <TD WIDTH=250><A HREF="./D_SFischer.html">D_SFischer</A></TD>
+ <TD WIDTH=250><A HREF="./Norm1.html">Norm1</A></TD>
+ <TD WIDTH=250><A HREF="./View.html">View</A></TD>
+<TR>
+</TR><TD WIDTH=250 COLSPAN="3"><B>Advanced - Setting more advanced options and customization</B></TD></TR>
+ <TD WIDTH=250><A HREF="./Presolve.html">Presolve</A></TD>
+ <TD WIDTH=250><A HREF="./Solve.html">Solve</A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+<TR>
+</TR><TD WIDTH=250 COLSPAN="3"><B>Developer - Interfaces intended primarily for library developers, not for typical applications programmers</B></TD></TR>
+ <TD WIDTH=250><A HREF="./Compatible.html">Compatible</A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+ <TD WIDTH=250><A HREF="./"></A></TD>
+</TABLE>
+<BR><A HREF="../index.html"><IMG SRC="../up.gif">Table of Contents</A>

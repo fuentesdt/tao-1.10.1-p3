@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>HessianSolve</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="HessianSolve"><H1>HessianSolve</H1></A>
+<A HREF="../lsolver/Solve.html#Solve">Solve</A> a linear system involving the Hessian matrix, or apply an inverse Hessian operator to a vector. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoApplication::HessianSolve(TaoVec *rhs, TaoVec*vv, TaoTruth *success)</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>rhs </B> -the right-hand side
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>vv </B></TD><TD>- the solution
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>success </B></TD><TD>- flag states whether solution was found.
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+<A HREF="../solver/TaoSetMethod.html#TaoSetMethod">TaoSetMethod</A>(), TaoLMVMSetSize(), <A HREF="../taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A>()
+<BR>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ application, Hessian, LMVM
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/appobject/interface/taoappobject.c.html#HessianSolve">src/appobject/interface/taoappobject.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetBeforeMonitor</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetBeforeMonitor"><H1>DAAppSetBeforeMonitor</H1></A>
+Set a routine that will be called before the optimization on each grid. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taodaapplication.h" 
+int DAAppSetBeforeMonitor(TAO_APPLICATION daapplication, int (*beforemonitor)(TAO_APPLICATION,DA,PetscInt, void*), void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the DA Application object
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>beforemonitor </B></TD><TD>- a monitor routine called before solving the application on each DA 
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- the monitor context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of monitor</FONT></H2>
+<pre>
+    beforemonitor(TAO_APPLICATION daapplication, DA da,int level, void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- this TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>da </B></TD><TD>- the Distributed Array
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>level </B></TD><TD>- the grid level that will be solved next (level 0 is coarsest)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user-defined function context set from <A HREF="../daapp/DAAppSetBeforeMonitor.html#DAAppSetBeforeMonitor">DAAppSetBeforeMonitor</A>()
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+These monitors are different from the monitors that can be called after
+each iteration of the optimization algorithm.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+The beforemonitor and aftermonitor are good for setting up and destroying the application data.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+  DA, monitor
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../daapp/DAAppSetAfterMonitor.html#DAAppSetAfterMonitor">DAAppSetAfterMonitor</A>(), <A HREF="../solver/TaoSetMonitor.html#TaoSetMonitor">TaoSetMonitor</A>(), <A HREF="../ptaopages/TaoAppSetMonitor.html#TaoAppSetMonitor">TaoAppSetMonitor</A>();
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/interface/daapp.c.html#DAAppSetBeforeMonitor">src/petsctao/gridapplication/interface/daapp.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c.html">src/petsctao/gridapplication/examples/eptorsion3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c.html">src/petsctao/gridapplication/examples/jbearing3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c.html">src/petsctao/gridapplication/examples/minsurf3.c.html</A><BR>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c.html">src/petsctao/gridapplication/examples/combustion3.c.html</A><BR>
+</BODY></HTML>

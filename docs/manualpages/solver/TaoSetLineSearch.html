@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetLineSearch</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetLineSearch"><H1>TaoSetLineSearch</H1></A>
+Set the line search routine for algorithms that  require one. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetLineSearch(TAO_SOLVER tao, 
+                    int (*setup)(TAO_SOLVER,void*),
+                    int (*options)(TAO_SOLVER,void*),
+                    int (*line)(TAO_SOLVER,TaoVec*,TaoVec*,TaoVec*,TaoVec*,
+                              double*,double*,double*,TaoInt*,void*),
+                    int (*viewit)(TAO_SOLVER,void*),
+                    int (*destroy)(TAO_SOLVER,void*),
+                    void *ctx)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>setup </B></TD><TD>- setup routine (or TAO_NULL)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>options </B></TD><TD>- set line search options (or TAO_NULL)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>line </B></TD><TD>- the line search routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>viewit </B></TD><TD>- routine that views the linesearch (or TAO_NULL)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>destroy </B></TD><TD>- destroys the user defined routine when the solver is destroyed (or TAO_NULL)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- linesearch structure (or TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of line</FONT></H2>
+<pre>
+    line(TAO_SOLVER tao, TaoVec* X, TaoVec* G, TaoVec* DX, TaoVec* Work, double *f,double *step, int *flag, void *ctx)
+</pre>
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameter for line search</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xx </B></TD><TD>- current solution
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gg </B></TD><TD>- current gradient
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>dxdx </B></TD><TD>- step direction
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>Work </B></TD><TD>- work vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>step </B></TD><TD>- initial stepsize
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user-defined line search context 
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter for line search</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>X </B></TD><TD>- new solution
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>G </B></TD><TD>- new gradient
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- new function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>step </B></TD><TD>- multiple of DX added to the previous solution
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>flag </B></TD><TD>- indicator of success or failure (flag=0 is a success, flag=7 means DX is not a descent direction)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+The input parameter gdx should be negative and is used to test the Armijo
+condition.
+<P>
+To ensure descent in a projected line search, the input parameter gdx
+should be the inner product of the gradient and the first linear manifold
+being searched.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, destroy
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/line.c.html#TaoSetLineSearch">src/interface/line.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

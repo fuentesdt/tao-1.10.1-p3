@@ -1,0 +1,171 @@
+<center><a href="adelement.c">Actual source code: adelement.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifdef ad_GRAD_MAX</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#undef ad_GRAD_MAX</font></strong>
+<a name="line3">  3: </a><font color="#A020F0">#endif</font>
+<a name="line4">  4: </a><strong><font color="#228B22">#define ad_GRAD_MAX 4</font></strong>
+
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"taodaapplication.h"</font><font color="#A020F0">   </font><font color="#B22222">/* taodaapplication.h */</font><font color="#A020F0"></font>
+<a name="line7">  7: </a><font color="#A020F0">#include </font><font color="#666666">"taoapp.h"</font><font color="#A020F0"></font>
+
+<a name="line9">  9: </a>//#include <font color="#666666">"ad_deriv.h"</font>
+
+<a name="line11"> 11: </a><font color="#B22222">/* Function Gradient Evaluation over single element  */</font>
+<a name="line12"> 12: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line13"> 13: </a>  int (*computeadicfunctiongradient)(int[2],DERIV_TYPE[4],DERIV_TYPE*,void*);
+<a name="line14"> 14: </a>  void *elementfgctx;
+<a name="line15"> 15: </a>  int elementfgflops;
+<a name="line16"> 16: </a>  DERIV_TYPE adX[4];
+<a name="line17"> 17: </a>} TaoDA2D1DOFADICFGCtx;
+
+
+<a name="line22"> 22: </a><strong><font color="#4169E1"><a name="TaoDA2dLoopADFunctionGradient"></a>static int TaoDA2dLoopADFunctionGradient(TAO_APPLICATION tao, DA da, Vec X, double *f, Vec G, void * ctx)</font></strong> {
+
+<a name="line24"> 24: </a>  TaoDA2D1DOFADICFGCtx *myapp = (TaoDA2D1DOFADICFGCtx*) ctx;
+<a name="line25"> 25: </a>  MPI_Comm comm;
+<a name="line26"> 26: </a>  Vec localX, localG;
+<a name="line27"> 27: </a>  int info, i, j, coor[2];
+<a name="line28"> 28: </a>  int xs, xm, gxs, gxm, xe, ys, ym, gys, gym, ye;
+<a name="line29"> 29: </a>  PetscScalar **x, **g;
+<a name="line30"> 30: </a>  PetscScalar floc = 0.0;
+<a name="line31"> 31: </a>  PetscScalar zero = 0.0;
+<a name="line32"> 32: </a>  DERIV_TYPE adF,*adX=myapp-&gt;adX;
+
+<a name="line34"> 34: </a>  info = DAGetLocalVector(da, &amp;localX); CHKERRQ(info);
+<a name="line35"> 35: </a>  info = DAGetLocalVector(da, &amp;localG); CHKERRQ(info);
+<a name="line36"> 36: </a>  info = VecSet(G, zero); CHKERRQ(info);
+<a name="line37"> 37: </a>  info = VecSet(localG, zero); CHKERRQ(info);
+
+<a name="line39"> 39: </a>  info = DAGlobalToLocalBegin(da, X, INSERT_VALUES, localX); CHKERRQ(info);
+<a name="line40"> 40: </a>  info = DAGlobalToLocalEnd(da, X, INSERT_VALUES, localX); CHKERRQ(info);
+
+<a name="line42"> 42: </a>  info = DAVecGetArray(da, localX, (void**)&amp;x); CHKERRQ(info);
+<a name="line43"> 43: </a>  info = DAVecGetArray(da, localG, (void**)&amp;g); CHKERRQ(info);
+
+<a name="line45"> 45: </a>  info = DAGetCorners(da, &amp;xs, &amp;ys, PETSC_NULL, &amp;xm, &amp;ym, PETSC_NULL); CHKERRQ(info);
+<a name="line46"> 46: </a>  info = DAGetGhostCorners(da, &amp;gxs, &amp;gys, PETSC_NULL, &amp;gxm, &amp;gym, PETSC_NULL); CHKERRQ(info);
+
+<a name="line48"> 48: </a>  xe = gxs + gxm - 1;
+<a name="line49"> 49: </a>  ye = gys + gym - 1;
+
+<a name="line51"> 51: </a>  <font color="#4169E1">for</font> (j = ys; j &lt; ye; j++) {
+<a name="line52"> 52: </a>    <font color="#4169E1">for</font> (i = xs; i &lt; xe; i++) {
+
+<a name="line54"> 54: </a>        DERIV_val(adX[0]) = x[j][i];
+<a name="line55"> 55: </a>        DERIV_val(adX[1]) = x[j][i+1];
+<a name="line56"> 56: </a>        DERIV_val(adX[2]) = x[j+1][i];
+<a name="line57"> 57: </a>        DERIV_val(adX[3]) = x[j+1][i+1];
+<a name="line58"> 58: </a>        coor[0] = i; coor[1] = j;
+
+<a name="line60"> 60: </a>        info = myapp-&gt;computeadicfunctiongradient(coor,adX,&amp;adF,myapp-&gt;elementfgctx);
+<a name="line61"> 61: </a>        CHKERRQ(info);
+
+<a name="line63"> 63: </a>        floc += DERIV_val(adF);
+
+<a name="line65"> 65: </a>        g[j][i] += DERIV_grad(adF)[0];
+<a name="line66"> 66: </a>        g[j][i+1] += DERIV_grad(adF)[1];
+<a name="line67"> 67: </a>        g[j+1][i] += DERIV_grad(adF)[2];
+<a name="line68"> 68: </a>        g[j+1][i+1] += DERIV_grad(adF)[3];
+<a name="line69"> 69: </a>    }
+<a name="line70"> 70: </a>  }
+
+<a name="line72"> 72: </a>  PetscLogFlops((ye-ys)*(xe-xs)*(myapp-&gt;elementfgflops + 5));
+
+<a name="line74"> 74: </a>  PetscObjectGetComm((PetscObject)da,&amp;comm); CHKERRQ(info);
+<a name="line75"> 75: </a>  info = MPI_Allreduce(&amp;floc, f, 1, MPI_DOUBLE, MPI_SUM, comm); CHKERRQ(info);
+
+<a name="line77"> 77: </a>  info = DAVecRestoreArray(da, localX, (void**)&amp;x); CHKERRQ(info);
+<a name="line78"> 78: </a>  info = DAVecRestoreArray(da, localG, (void**)&amp;g); CHKERRQ(info);
+
+<a name="line80"> 80: </a>  info = DALocalToGlobalBegin(da, localG, G); CHKERRQ(info);
+<a name="line81"> 81: </a>  info = DALocalToGlobalEnd(da, localG, G); CHKERRQ(info);
+
+<a name="line83"> 83: </a>  info = DARestoreLocalVector(da, &amp;localX); CHKERRQ(info);
+<a name="line84"> 84: </a>  info = DARestoreLocalVector(da, &amp;localG); CHKERRQ(info);
+
+<a name="line86"> 86: </a>  <font color="#4169E1">return</font>(0);
+<a name="line87"> 87: </a>} <font color="#B22222">/* TaoDA2dLoopADFunctionGradient */</font>
+
+<a name="line91"> 91: </a><strong><font color="#4169E1"><a name="TaoShutDownADICQQQQ"></a>static int TaoShutDownADICQQQQ(void* ctx)</font></strong>{
+<a name="line93"> 93: </a>  ad_AD_Final();
+<a name="line94"> 94: </a>  <font color="#4169E1">return</font>(0);
+<a name="line95"> 95: </a>}
+
+<a name="line99"> 99: </a><font color="#B22222">/*@</font>
+<a name="line100">100: </a><font color="#B22222">   <A href="../../../../docs/manualpages/daapp/DAAppSetADElementFunctionGradient.html#DAAppSetADElementFunctionGradient">DAAppSetADElementFunctionGradient</A> - Set routine that evaluates the</font>
+<a name="line101">101: </a><font color="#B22222">   local part of a function on a 2-dimensional DA with 1 degree of freedom. </font>
+
+<a name="line103">103: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line105">105: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line106">106: </a><font color="#B22222">+  daapp - the TAO_DA_APPLICATION solver context</font>
+<a name="line107">107: </a><font color="#B22222">.  funcgrad - local function gradient routine</font>
+<a name="line108">108: </a><font color="#B22222">.  flops - the number of flops done performed in the funcgrad routine</font>
+<a name="line109">109: </a><font color="#B22222">-  fgctx - [optional] user-defined context for private data for the evaluation.</font>
+
+<a name="line111">111: </a><font color="#B22222">   Calling sequence of funcgrad:</font>
+<a name="line112">112: </a><font color="#B22222">$     int funcgrad(int coordinates[2], PetscScalar x[4], double *f, PetscScalar g[4], void* ctx)</font>
+
+<a name="line114">114: </a><font color="#B22222">+    coord - the global coordinates [i j] in each direction of the DA</font>
+<a name="line115">115: </a><font color="#B22222">.    x - the variables on the DA ( da[j][i], da[j][j+1], da[j+1][i], da[j+1][i+1] ) (bottom left, bottom right, top left, top right)</font>
+<a name="line116">116: </a><font color="#B22222">.    g - the ADIC differentiated objective function with respect to each variable</font>
+<a name="line117">117: </a><font color="#B22222">-    ctx - user defined context</font>
+<a name="line118">118: </a><font color="#B22222">   </font>
+<a name="line119">119: </a><font color="#B22222">   Note: This function requires ADIC to be installed and the ADIC-specific variables to be set in</font>
+<a name="line120">120: </a><font color="#B22222">         $TAO_DIR/bmake/packages.$PETSC_ARCH</font>
+
+<a name="line122">122: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line124">124: </a><font color="#B22222">.keywords: DA, gradient, ADIC</font>
+
+<a name="line126">126: </a><font color="#B22222">.seealso:  <A href="../../../../docs/manualpages/daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>(), <A href="../../../../docs/manualpages/daapp/DAAppSetElementObjectiveAndGradientRoutine.html#DAAppSetElementObjectiveAndGradientRoutine">DAAppSetElementObjectiveAndGradientRoutine</A>()</font>
+<a name="line127">127: </a><font color="#B22222">@*/</font>
+<a name="line128">128: </a><strong><font color="#4169E1"><a name="DAAppSetADElementFunctionGradient"></a>int <A href="../../../../docs/manualpages/daapp/DAAppSetADElementFunctionGradient.html#DAAppSetADElementFunctionGradient">DAAppSetADElementFunctionGradient</A>(TAO_APPLICATION daapplication, </font></strong>
+<a name="line129">129: </a><strong><font color="#4169E1">                                         int (*funcgrad)</font></strong>(int[2],DERIV_TYPE[4],DERIV_TYPE*,void*), 
+<a name="line130">130: </a>                                         int flops, void *ctx){
+<a name="line131">131: </a>  int i,n,info;
+<a name="line132">132: </a>  int dim,dof,s;
+<a name="line133">133: </a>  DAStencilType st;
+<a name="line134">134: </a>  TaoDA2D1DOFADICFGCtx *fgctx;
+<a name="line135">135: </a>  DA da;
+
+<a name="line138">138: </a>  info=<A href="../../../../docs/manualpages/daapp/DAAppGetNumberOfDAGrids.html#DAAppGetNumberOfDAGrids">DAAppGetNumberOfDAGrids</A>(daapplication,&amp;n); CHKERRQ(info);
+<a name="line139">139: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++){
+<a name="line140">140: </a>    info = <A href="../../../../docs/manualpages/daapp/DAAppGetDA.html#DAAppGetDA">DAAppGetDA</A>(daapplication, i, &amp;da); CHKERRQ(info);
+<a name="line141">141: </a>    info = DAGetInfo(da,&amp;dim,0,0,0,0,0,0,&amp;dof,&amp;s,0,&amp;st); CHKERRQ(info);
+<a name="line142">142: </a>    <font color="#4169E1">if</font> (dim!=2){
+<a name="line143">143: </a>      SETERRQ(1,<font color="#666666">"TAO DA ERROR: DA must have dimension of 2"</font>);}
+<a name="line144">144: </a>    <font color="#4169E1">if</font> (dof!=1){
+<a name="line145">145: </a>      SETERRQ(1,<font color="#666666">"TAO DA ERROR: DA must have exactly 1 degree of freedom per node"</font>);}
+<a name="line146">146: </a>    <font color="#4169E1">if</font> (s!=1){
+<a name="line147">147: </a>      SETERRQ(1,<font color="#666666">"TAO DA ERROR: DA stencil width must equal 1"</font>); }
+<a name="line148">148: </a>    <font color="#4169E1">if</font> (st!=DA_STENCIL_BOX){
+<a name="line149">149: </a>      SETERRQ(1,<font color="#666666">"TAO DA ERROR: DA stencil must be DA_STENCIL_BOX"</font>);}
+<a name="line150">150: </a>  }
+<a name="line151">151: </a>  PetscNew(TaoDA2D1DOFADICFGCtx,&amp;fgctx);
+<a name="line152">152: </a>  //  ad_AD_Init(4);
+<a name="line153">153: </a>  ad_AD_Init(ad_GRAD_MAX);
+<a name="line154">154: </a>  ad_AD_SetIndepArray(fgctx-&gt;adX,4);
+<a name="line155">155: </a>  ad_AD_SetIndepDone();
+<a name="line156">156: </a>  fgctx-&gt;computeadicfunctiongradient=funcgrad;
+<a name="line157">157: </a>  fgctx-&gt;elementfgctx=ctx;
+<a name="line158">158: </a>  fgctx-&gt;elementfgflops=flops;
+<a name="line159">159: </a>  info = <A href="../../../../docs/manualpages/daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>(daapplication, TaoDA2dLoopADFunctionGradient, (void*)fgctx); 
+<a name="line160">160: </a>  CHKERRQ(info);
+<a name="line161">161: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(daapplication,<A href="../../../../docs/manualpages/ptaopages/TaoApplicationFreeMemory.html#TaoApplicationFreeMemory">TaoApplicationFreeMemory</A>, (void*)fgctx); CHKERRQ(info);
+<a name="line162">162: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(daapplication, TaoShutDownADICQQQQ, 0); CHKERRQ(info);
+<a name="line163">163: </a>  info = PetscInfo(daapplication,<font color="#666666">"Set objective function pointer for TAO_DA_APPLICATION object.\n"</font>); CHKERRQ(info);
+<a name="line164">164: </a>  <font color="#4169E1">return</font>(0);
+<a name="line165">165: </a>}
+</pre>
+</body>
+
+</html>

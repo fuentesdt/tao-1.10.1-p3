@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoComputeConstraints</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoComputeConstraints"><H1>TaoComputeConstraints</H1></A>
+Computes the constraint vector that has been set in the application. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoComputeConstraints(TAO_SOLVER solver,TaoVec* xx,TaoVec* rr)
+</PRE>
+Collective on TAO_SOLVER and Mat
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>solver </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xx </B></TD><TD>- input vector
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<DT><B>rr </B> -Constraint values
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+<A HREF="../solver/TaoComputeConstraints.html#TaoComputeConstraints">TaoComputeConstraints</A>() is typically used within minimization
+implementations, so most users would not generally call this routine
+themselves.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, compute, constraint
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../ptaopages/TaoAppSetConstraintRoutine.html#TaoAppSetConstraintRoutine">TaoAppSetConstraintRoutine</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao_fghj.c.html#TaoComputeConstraints">src/interface/tao_fghj.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

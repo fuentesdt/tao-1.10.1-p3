@@ -1,0 +1,26 @@
+# Makefile template for client-C++ libraries
+#
+all: lib
+
+#get source and header filenames for this sidl package
+-include babel.make
+
+# Replace with the actual package name and necessary flags/libs
+NAME = @SIDL_PACKAGE_NAME@
+
+LIBBASE=lib$(NAME)-client-C++
+SOURCEC=$(STUBSRCS)
+SOURCEH = $(STUBHDRS)
+CLEANFILES=$(STUBSRCS) $(STUBHDRS) babel.make
+
+
+
+OBJSC = $(STUBSRCS:.cxx=.o) 
+CFLAGS = ${TAO_SIDL_FLAGS_CXX}
+
+# force C (not C++) compiler because babel doesn't use "extern C" 
+PCC=${CC}
+
+include $(TAO_DIR)/bmake/tao_common
+
+

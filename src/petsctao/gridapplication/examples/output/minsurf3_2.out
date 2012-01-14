@@ -1,0 +1,32 @@
+
+---- Minimal Surface Problem (simple boundary) -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value 1.59022, Residual: 0.489090 
+iter = 1, Function value 1.44922, Residual: 0.199982 
+iter = 2, Function value 1.43008, Residual: 0.018868 
+iter = 3, Function value 1.42995, Residual: 0.000236 
+iter = 4, Function value 1.42995, Residual: < 1.0e-6 
+
+---- Minimal Surface Problem (simple boundary) -----
+
+Grid: 0,    mx: 14     my: 11   
+iter = 0, Function value 1.61227, Residual: 0.479881 
+iter = 1, Function value 1.44312, Residual: 0.143964 
+iter = 2, Function value 1.43092, Residual: 0.013304 
+iter = 3, Function value 1.43084, Residual: 0.000123 
+iter = 4, Function value 1.43084, Residual: < 1.0e-6 
+Grid: 1,    mx: 27     my: 21   
+iter = 0, Function value 1.43468, Residual: 0.113481 
+iter = 1, Function value 1.42748, Residual: 0.068918 
+iter = 2, Function value 1.42579, Residual: 0.002128 
+iter = 3, Function value 1.42579, Residual: 0.000011 
+Grid: 2,    mx: 53     my: 41   
+iter = 0, Function value 1.42681, Residual: 0.047102 
+iter = 1, Function value 1.42624, Residual: 0.000191 
+iter = 2, Function value 1.42624, Residual: < 1.0e-6 
+Grid: 3,    mx: 105     my: 81   
+iter = 0, Function value 1.4265, Residual: 0.023819 
+iter = 1, Function value 1.42635, Residual: 0.001232 
+iter = 2, Function value 1.42635, Residual: 0.000395 
+iter = 3, Function value 1.42635, Residual: < 1.0e-6 

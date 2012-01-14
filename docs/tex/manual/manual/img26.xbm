@@ -1,0 +1,4 @@
+#define 29885_img26_width 6
+#define 29885_img26_height 5
+static char 29885_img26_bits[] = {
+ 0x3c,0x12,0x11,0x19,0x0e};

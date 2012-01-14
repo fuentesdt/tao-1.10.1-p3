@@ -1,0 +1,11 @@
+<?xml version="1.0"?> 
+<libInfo>
+<scl>
+  <library uri="@TAO_DIR@/lib/@PETSC_ARCH@/libTaoapi-server-C++.so" 
+	scope="global" 
+	resolution="now" > 
+    <class name="TAO.Environment" desc="ior/impl" />
+    <class name="TAO.Solver" desc="ior/impl" />
+  </library>
+</scl>
+</libInfo>

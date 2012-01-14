@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGetSolutionStatus</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGetSolutionStatus"><H1>TaoGetSolutionStatus</H1></A>
+Get the current iterate, objective value, residual,  infeasibility, and termination  
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoGetSolutionStatus(TAO_SOLVER tao, TaoInt* iterate, double* f, double* gnorm, double *cnorm, double *xdiff, TaoTerminateReason *reason)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>tao </B> -the TAO_SOLVER context
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>iterate </B></TD><TD>- the current iterate number (&gt;=0)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- the current function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gnorm </B></TD><TD>- the square of the gradient norm, duality gap, or other measure
+indicating distance from optimality.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>cnorm </B></TD><TD>- the infeasibility of the current solution with regard to the constraints.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xdiff </B></TD><TD>- the step length or trust region radius of the most recent iterate.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>reason </B></TD><TD>- The termination reason, which can equal TAO_CONTINUE_ITERATING
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+TAO returns the values set by the solvers in the routine <A HREF="../solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>().
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+If any of the output arguments are set to TAO_NULL, no value will be
+returned.
+<P>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(), <A HREF="../solver/TaoGetTerminationReason.html#TaoGetTerminationReason">TaoGetTerminationReason</A>()
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ convergence, monitor
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao.c.html#TaoGetSolutionStatus">src/interface/tao.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/bound/examples/tutorials/plate2.c.html">src/bound/examples/tutorials/plate2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion1.c.html">src/unconstrained/examples/tutorials/eptorsion1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2.c.html">src/unconstrained/examples/tutorials/eptorsion2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2f.F.html">src/unconstrained/examples/tutorials/eptorsion2f.F.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c.html">src/petsctao/gridapplication/examples/eptorsion3.c.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c.html">src/petsctao/gridapplication/examples/jbearing3.c.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c.html">src/petsctao/gridapplication/examples/minsurf3.c.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c.html">src/petsctao/gridapplication/examples/combustion3.c.html</A><BR>
+</BODY></HTML>

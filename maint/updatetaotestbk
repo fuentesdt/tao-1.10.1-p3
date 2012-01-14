@@ -1,0 +1,23 @@
+#!/bin/sh
+
+#
+# This script updates the taobk repository to rockies:/sandbox/aotools/tao-test
+# This repository is used for nightly builds using rsync command
+# rsync -C -r terra:/sandbox/aottols/tao-test /sandbox/petsc
+#
+export BK=/nfs/software-linux-2/apps/packages/bitkeeper-2.1.3/bin/bk
+
+export PETSC_ARCH=linux
+export PETSC_DIR=/home/petsc/petsc-2.1.3
+export TAO_DIR=/sandbox/aotools/tao-test 
+cd /sandbox/aotools/tao-test
+echo "*************************************************************************************"
+${BK} pull
+echo "*************************************************************************************"
+${BK} -r co -q
+echo "*************************************************************************************"
+make tao_allfortranstubs
+echo "*************************************************************************************"
+# Just in case something goes wrong
+${BK} abort -f
+

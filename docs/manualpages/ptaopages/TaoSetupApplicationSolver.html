@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetupApplicationSolver</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetupApplicationSolver"><H1>TaoSetupApplicationSolver</H1></A>
+This routine creates the vectors, matrices, linear solvers, and other data structures used in the during the optimization process.  The application provides the solver with an objective function, constraints, derivative  information, and application data structures.  These structures include a vector of variables, and Hessian matrix. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoSetupApplicationSolver(TAO_APPLICATION myapp, TAO_SOLVER tao )</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>myapp </B></TD><TD>- user application context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine should be called before <A HREF="../ptaopages/TaoGetKSP.html#TaoGetKSP">TaoGetKSP</A>(), but after
+<A HREF="../ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>() and after <A HREF="../ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>() (when Newton solvers are used).
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This method is called during  <A HREF="../ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>() and <A HREF="../ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>()
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ application, context
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/taoapp/taoapp_util.c.html#TaoSetupApplicationSolver">src/petsctao/application/taoapp/taoapp_util.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/complementarity/examples/tutorials/minsurf1.c.html">src/complementarity/examples/tutorials/minsurf1.c.html</A><BR>
+</BODY></HTML>

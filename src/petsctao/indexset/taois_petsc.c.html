@@ -1,0 +1,928 @@
+<center><a href="taois_petsc.c">Actual source code: taois_petsc.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0">            </font><font color="#B22222">/*I "tao.h" I*/</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#ifdef TAO_USE_PETSC</font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"taois_petsc.h"</font><font color="#A020F0"></font>
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"../vector/taovec_petsc.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><strong><font color="#4169E1">int VecWhichBetween(Vec, Vec, Vec, IS *)</font></strong>;
+<a name="line7">  7: </a><strong><font color="#4169E1">int VecWhichBetweenOrEqual(Vec, Vec, Vec, IS *)</font></strong>;
+<a name="line8">  8: </a><strong><font color="#4169E1">int VecWhichGreaterThan(Vec, Vec, IS * )</font></strong>;
+<a name="line9">  9: </a><strong><font color="#4169E1">int VecWhichLessThan(Vec, Vec, IS *)</font></strong>;
+<a name="line10"> 10: </a><strong><font color="#4169E1">int VecWhichEqual(Vec, Vec, IS *)</font></strong>;
+
+<a name="line12"> 12: </a>static PetscLogEvent petscisevents=0;
+<a name="line13"> 13: </a>static PetscLogEvent tredistribute=0;
+<a name="line14"> 14: </a>//static TaoPetscISType defaultistype=TaoRedistributeSubset;
+<a name="line15"> 15: </a>//static TaoPetscISType defaultistype=TaoNoRedistributeSubset;
+<a name="line16"> 16: </a>static TaoPetscISType defaultistype=TaoMaskFullSpace;
+
+<a name="line20"> 20: </a><font color="#B22222">/* @C</font>
+<a name="line21"> 21: </a><font color="#B22222">   TaoWrapPetscIS - Create a new TaoIndexSet object using PETSc.</font>
+
+<a name="line23"> 23: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line24"> 24: </a><font color="#B22222">+  S -  a PETSc IS</font>
+<a name="line25"> 25: </a><font color="#B22222">-  imax - the maximum local length of the index set (Should be equal to or greater than the local length of the vector)</font>
+
+<a name="line27"> 27: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line28"> 28: </a><font color="#B22222">.  SS - address of a new TaoIndexSet</font>
+
+<a name="line30"> 30: </a><font color="#B22222">   Note:  </font>
+<a name="line31"> 31: </a><font color="#B22222">   A TaoIndexSetPetsc is an object with the methods of an abstract</font>
+<a name="line32"> 32: </a><font color="#B22222">   TaoIndexSet object.  A TaoIndexSetPetsc contains an implementation of the </font>
+<a name="line33"> 33: </a><font color="#B22222">   TaoIndexSet methods.  Routines using these vectors should declare a </font>
+<a name="line34"> 34: </a><font color="#B22222">   pointer to a TaoIndexSet, assign this pointer to the address of a </font>
+<a name="line35"> 35: </a><font color="#B22222">   TaoIndexSet object,use the pointer to invoke methods on the object, and use</font>
+<a name="line36"> 36: </a><font color="#B22222">   this pointer as an argument when calling other routines.  This usage is </font>
+<a name="line37"> 37: </a><font color="#B22222">   different from the usage of a PETSc IS.  In PETSc, applications will </font>
+<a name="line38"> 38: </a><font color="#B22222">   typically declare a IS, and pass it as an argument into routines.  That is,</font>
+<a name="line39"> 39: </a><font color="#B22222">   applications will typically declare a pointer to a TaoIndexSet and use the</font>
+<a name="line40"> 40: </a><font color="#B22222">   pointer, or declare a IS and use it directly.</font>
+
+<a name="line42"> 42: </a><font color="#B22222">.seealso TaoIndexSetGetPetscIS(), <A href="../../../docs/manualpages/indexset/TaoIndexSetDestroy.html#TaoIndexSetDestroy">TaoIndexSetDestroy</A>()</font>
+
+<a name="line44"> 44: </a><font color="#B22222">   Level: developer</font>
+<a name="line45"> 45: </a><font color="#B22222">@ */</font>
+<a name="line46"> 46: </a><strong><font color="#4169E1"><a name="TaoWrapPetscIS"></a>int TaoWrapPetscIS( IS S, PetscInt imax, TaoIndexSetPetsc ** SS)</font></strong>{
+<a name="line49"> 49: </a>  //  <font color="#4169E1">if</font> (0==0) <font color="#4169E1">return</font> 1;
+<a name="line50"> 50: </a>  //  *SS = new  TaoIndexSetPetsc(imax, S);
+<a name="line51"> 51: </a>  PetscFunctionReturn(1);
+<a name="line52"> 52: </a>}
+
+<a name="line56"> 56: </a><font color="#B22222">/* @C</font>
+<a name="line57"> 57: </a><font color="#B22222">   TaoIndexSetPetsc - Create a new TaoIndexSet object using PETSc.</font>
+
+<a name="line59"> 59: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line60"> 60: </a><font color="#B22222">-  V = A vector from the space that this indexset will describe.</font>
+<a name="line61"> 61: </a><font color="#B22222">+  SS - an Index Set</font>
+
+<a name="line63"> 63: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line65"> 65: </a><font color="#B22222">   Note: </font>
+<a name="line66"> 66: </a><font color="#B22222">   This index set will be deleted when the TaoIndexSet is deleted</font>
+
+<a name="line68"> 68: </a><font color="#B22222">   Note: </font>
+<a name="line69"> 69: </a><font color="#B22222">   The constuctor can also be called without the IndexSet</font>
+<a name="line70"> 70: </a><font color="#B22222">   </font>
+<a name="line71"> 71: </a><font color="#B22222">   Note:</font>
+<a name="line72"> 72: </a><font color="#B22222">   The method TaoIndexSetPetsc::GetIS() returns a pointer to the current PETSc Index Set.</font>
+<a name="line73"> 73: </a><font color="#B22222">@ */</font>
+<a name="line74"> 74: </a><strong><font color="#FF0000">TaoIndexSetPetsc:</font></strong>:TaoIndexSetPetsc(Vec V, IS SS):TaoIndexSet(){
+<a name="line75"> 75: </a>  Vec V2;
+<a name="line76"> 76: </a>  isp=0;isp2=0;ISGathered=0;ispComplement=0;scatter=0;
+<a name="line77"> 77: </a>  VecDuplicate(V,&amp;V2);
+<a name="line78"> 78: </a>  this-&gt;SetUp(V2,SS);
+<a name="line79"> 79: </a>  <font color="#4169E1">return</font>;
+<a name="line80"> 80: </a>}
+
+<a name="line84"> 84: </a><font color="#B22222">/* @C</font>
+<a name="line85"> 85: </a><font color="#B22222">   TaoIndexSetPetsc - Create a new TaoIndexSet object using PETSc.</font>
+
+<a name="line87"> 87: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line88"> 88: </a><font color="#B22222">.  V = A vector from the space that this indexset will describe.</font>
+
+<a name="line90"> 90: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line92"> 92: </a><font color="#B22222">   Note:</font>
+<a name="line93"> 93: </a><font color="#B22222">   The method TaoIndexSetPetsc::GetIS() returns a pointer to the current PETSc Index Set.</font>
+<a name="line94"> 94: </a><font color="#B22222">@ */</font>
+<a name="line95"> 95: </a><strong><font color="#FF0000">TaoIndexSetPetsc:</font></strong>:TaoIndexSetPetsc(Vec V):TaoIndexSet(){
+<a name="line96"> 96: </a>  int info;
+<a name="line97"> 97: </a>  PetscInt low,high;
+<a name="line98"> 98: </a>  IS is;
+<a name="line99"> 99: </a>  Vec V2;
+<a name="line100">100: </a>  isp=0;isp2=0;ISGathered=0;ispComplement=0;scatter=0;
+<a name="line101">101: </a>  VecDuplicate(V,&amp;V2);
+<a name="line102">102: </a>  info=VecGetOwnershipRange(V,&amp;low,&amp;high);
+<a name="line103">103: </a>  info=ISCreateStride(PETSC_COMM_WORLD,1,low,1,&amp;is);
+<a name="line104">104: </a>  this-&gt;SetUp(V2,is);
+<a name="line105">105: </a>  info = PetscObjectDereference((PetscObject)is);
+<a name="line106">106: </a>  <font color="#4169E1">return</font>;
+<a name="line107">107: </a>}
+
+<a name="line111">111: </a><strong><font color="#FF0000">TaoIndexSetPetsc:</font></strong>:~TaoIndexSetPetsc(){
+<a name="line112">112: </a>  clearit();
+<a name="line113">113: </a>  delete[] iptr; 
+<a name="line114">114: </a>  <font color="#4169E1">if</font> (this-&gt;VSpace){
+<a name="line115">115: </a>    VecDestroy(this-&gt;VSpace);
+<a name="line116">116: </a>  }
+<a name="line117">117: </a>};
+
+<a name="line121">121: </a>int TaoIndexSetPetsc::SetUp(Vec V2, IS SS){
+
+<a name="line123">123: </a>  int info;
+<a name="line124">124: </a>  int size;
+<a name="line125">125: </a>  PetscInt imax;
+<a name="line126">126: </a>  PetscTruth flg,ivalue;
+<a name="line127">127: </a>  MPI_Comm comm;
+
+
+<a name="line132">132: </a>  info=VecGetLocalSize(V2,&amp;imax); CHKERRQ(info);
+<a name="line133">133: </a>  VSpace=V2;
+
+<a name="line135">135: </a>  iptr = new PetscInt[imax];
+
+<a name="line137">137: </a>  isp=0;isp2=0;ISGathered=0;ispComplement=0;scatter=0;
+<a name="line138">138: </a>  this-&gt;ispviewer=PETSC_VIEWER_STDOUT_WORLD;
+<a name="line139">139: </a>  reducedtype=defaultistype;
+
+<a name="line141">141: </a>  info=this-&gt;SetIS(SS); CHKERRQ(info);
+<a name="line142">142: </a>  nlocal=imax;
+
+<a name="line144">144: </a>  info = PetscObjectGetComm((PetscObject)V2,&amp;comm);CHKERRQ(info);
+<a name="line145">145: </a>  MPI_Comm_size(comm,&amp;size);
+<a name="line146">146: </a>  <font color="#4169E1">if</font> (size==1 &amp;&amp; defaultistype!=TaoMaskFullSpace &amp;&amp;defaultistype!=TaoMatrixFree ){ 
+<a name="line147">147: </a>    reducedtype=TaoSingleProcessor;
+<a name="line148">148: </a>  } <font color="#4169E1">else</font> {
+<a name="line149">149: </a>    PetscOptionsGetTruth(0,<font color="#666666">"-redistribute"</font>,&amp;ivalue,&amp;flg);
+<a name="line150">150: </a>    <font color="#4169E1">if</font> (flg &amp;&amp; ivalue==PETSC_FALSE) reducedtype=TaoNoRedistributeSubset;
+<a name="line151">151: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (flg &amp;&amp; ivalue==PETSC_TRUE)reducedtype=TaoRedistributeSubset;
+<a name="line152">152: </a>    <font color="#4169E1">else</font> reducedtype=defaultistype;
+<a name="line153">153: </a>  }
+<a name="line154">154: </a>  PetscOptionsHasName(0,<font color="#666666">"-taomask"</font>,&amp;flg);
+<a name="line155">155: </a>  <font color="#4169E1">if</font> (flg) { reducedtype= TaoMaskFullSpace; }
+<a name="line156">156: </a>  PetscOptionsHasName(0,<font color="#666666">"-taosubmatrixfree"</font>,&amp;flg);
+<a name="line157">157: </a>  <font color="#4169E1">if</font> (flg) { reducedtype= TaoMatrixFree; }
+
+<a name="line159">159: </a>  <font color="#4169E1">if</font> (petscisevents==0){
+<a name="line160">160: </a>    PetscLogEventRegister(<font color="#666666">"Identify Indices"</font>,IS_COOKIE,&amp;petscisevents);
+<a name="line161">161: </a>  }
+<a name="line162">162: </a>  <font color="#4169E1">if</font> (tredistribute==0){
+<a name="line163">163: </a>    PetscLogEventRegister(<font color="#666666">"IS Redistribute "</font>,IS_COOKIE,&amp;tredistribute);
+<a name="line164">164: </a>  }
+
+<a name="line166">166: </a>  <font color="#4169E1">return</font>(0);
+<a name="line167">167: </a>}
+
+<a name="line171">171: </a>int TaoIndexSetPetsc::SetIS(IS SS){
+
+<a name="line173">173: </a>  int info;
+<a name="line175">175: </a>  <font color="#4169E1">if</font> (SS){
+<a name="line177">177: </a>    PetscObjectReference((PetscObject)SS); 
+<a name="line178">178: </a>  }
+<a name="line179">179: </a>  info=this-&gt;clearit(); CHKERRQ(info);
+<a name="line180">180: </a>  this-&gt;isp=SS;
+<a name="line181">181: </a>  <font color="#4169E1">return</font>(0);
+<a name="line182">182: </a>}
+
+<a name="line186">186: </a><font color="#B22222">/*@C</font>
+<a name="line187">187: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/TaoSelectSubset.html#TaoSelectSubset">TaoSelectSubset</A> - Select the manner in which subsets of variables in a matrix are selected</font>
+
+<a name="line189">189: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line190">190: </a><font color="#B22222">.  type - the manner is which subsets are chosen.  </font>
+
+<a name="line192">192: </a><font color="#B22222">   Choice of types:</font>
+<a name="line193">193: </a><font color="#B22222">+  TaoRedistributeSubset - When using multiple processors, redistribute the subset of variables</font>
+<a name="line194">194: </a><font color="#B22222">over the processors.</font>
+<a name="line195">195: </a><font color="#B22222">.  TaoNoRedistributeSubset - When using multiple processors, keep variables on current processors</font>
+<a name="line196">196: </a><font color="#B22222">.  TaoMaskFullSpace - Use the full set of variables, and mask the unneeded ones.</font>
+<a name="line197">197: </a><font color="#B22222">-  TaoMatrixFree - Use the full set of variables, and mask the unneeded ones.</font>
+
+<a name="line199">199: </a><font color="#B22222">   Note:  </font>
+<a name="line200">200: </a><font color="#B22222">   For use with active set methods in bound constrained optimization such as TRON and GPCG</font>
+
+<a name="line202">202: </a><font color="#B22222">   Level: advanced</font>
+<a name="line203">203: </a><font color="#B22222">@*/</font>
+<a name="line204">204: </a><strong><font color="#4169E1"><a name="TaoSelectSubset"></a>int <A href="../../../docs/manualpages/ptaopages/TaoSelectSubset.html#TaoSelectSubset">TaoSelectSubset</A>( TaoPetscISType type)</font></strong>{
+<a name="line206">206: </a>  defaultistype=type;
+<a name="line207">207: </a>  <font color="#4169E1">return</font>(0);
+<a name="line208">208: </a>}
+
+<a name="line212">212: </a>int TaoIndexSetPetsc::GetMask(Vec *VMask){
+<a name="line213">213: </a>  int info;
+<a name="line214">214: </a>  PetscScalar zero=0.0;
+
+<a name="line217">217: </a>  info=VecSet(this-&gt;VSpace, zero); CHKERRQ(info);
+<a name="line218">218: </a>  info=<A href="../../../docs/manualpages/ptaopages/VecISSetToConstant.html#VecISSetToConstant">VecISSetToConstant</A>(this-&gt;isp,1.0,this-&gt;VSpace); CHKERRQ(info);
+<a name="line219">219: </a>  *VMask=this-&gt;VSpace;
+<a name="line220">220: </a>  <font color="#4169E1">return</font>(0);
+<a name="line221">221: </a>}
+
+<a name="line225">225: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/UnionOf.html#UnionOf">UnionOf</A>(TaoIndexSet* S1, TaoIndexSet* S2){
+<a name="line226">226: </a>  IS SS1=((TaoIndexSetPetsc*)S1)-&gt;GetIS();
+<a name="line227">227: </a>  IS SS2=((TaoIndexSetPetsc*)S2)-&gt;GetIS();
+<a name="line228">228: </a>  int info;
+<a name="line230">230: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line231">231: </a>  info=ISSum(SS1,SS2,&amp;SS1); CHKERRQ(info);
+<a name="line232">232: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line233">233: </a>  <font color="#4169E1">return</font>(0);
+<a name="line234">234: </a>}
+
+<a name="line238">238: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/IntersectionOf.html#IntersectionOf">IntersectionOf</A>(TaoIndexSet* S1, TaoIndexSet* S2){
+<a name="line239">239: </a>  IS SS1=((TaoIndexSetPetsc*)S1)-&gt;GetIS();
+<a name="line240">240: </a>  IS SS2=((TaoIndexSetPetsc*)S2)-&gt;GetIS();
+<a name="line241">241: </a>  IS SS3;
+<a name="line242">242: </a>  int info;
+<a name="line244">244: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line245">245: </a>  info=ISDifference(SS1,SS2,&amp;SS3); CHKERRQ(info);
+<a name="line246">246: </a>  info=this-&gt;SetIS(SS3); CHKERRQ(info);
+<a name="line247">247: </a>  info=ISDestroy(SS3); CHKERRQ(info);
+<a name="line248">248: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line249">249: </a>  <font color="#4169E1">return</font>(0);
+<a name="line250">250: </a>}
+
+<a name="line254">254: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/ComplementOf.html#ComplementOf">ComplementOf</A>(TaoIndexSet* SS){
+<a name="line255">255: </a>  IS SS1=((TaoIndexSetPetsc*)SS)-&gt;GetIS();
+<a name="line256">256: </a>  IS SS2;
+<a name="line257">257: </a>  int info;
+<a name="line259">259: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line260">260: </a>  info=<A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(SS1,this-&gt;VSpace,&amp;SS2); CHKERRQ(info);
+<a name="line261">261: </a>  info=this-&gt;SetIS(SS2); CHKERRQ(info);
+<a name="line262">262: </a>  info=ISDestroy(SS2); CHKERRQ(info);
+<a name="line263">263: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line264">264: </a>  <font color="#4169E1">return</font>(0);
+<a name="line265">265: </a>}
+
+<a name="line269">269: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/Duplicate.html#Duplicate">Duplicate</A>(TaoIndexSet**SS){
+<a name="line270">270: </a>  int info;
+<a name="line271">271: </a>  TaoIndexSetPetsc *S;
+<a name="line272">272: </a>  IS is;
+
+<a name="line275">275: </a>  <font color="#4169E1">if</font> (isp){
+<a name="line276">276: </a>    info = ISDuplicate(isp,&amp;is); CHKERRQ(info);
+<a name="line277">277: </a>    S = new TaoIndexSetPetsc(this-&gt;VSpace, is);
+<a name="line278">278: </a>    info=ISDestroy(is); CHKERRQ(info);
+<a name="line279">279: </a>  } <font color="#4169E1">else</font> {
+<a name="line280">280: </a>    S = new TaoIndexSetPetsc(this-&gt;VSpace);
+<a name="line281">281: </a>  }
+<a name="line282">282: </a>  *SS=S;
+
+<a name="line284">284: </a>  <font color="#4169E1">return</font>(0);
+<a name="line285">285: </a>}
+
+<a name="line289">289: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/IsSame.html#IsSame">IsSame</A>(TaoIndexSet*SS, TaoTruth*flg){
+<a name="line290">290: </a>  int info;
+<a name="line291">291: </a>  PetscTruth pflg;
+<a name="line292">292: </a>  IS SS2=((TaoIndexSetPetsc*)SS)-&gt;GetIS();
+<a name="line294">294: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line295">295: </a>  info=ISEqual(isp,SS2,&amp;pflg); CHKERRQ(info);
+<a name="line296">296: </a>  <font color="#4169E1">if</font> (pflg==PETSC_TRUE) *flg=TAO_TRUE; <font color="#4169E1">else</font> *flg=TAO_FALSE;
+<a name="line297">297: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line298">298: </a>  <font color="#4169E1">return</font>(0);
+<a name="line299">299: </a>}
+
+<a name="line303">303: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/lsolver/View.html#View">View</A>(){
+<a name="line304">304: </a>  int info;
+<a name="line306">306: </a>  info=ISView(this-&gt;isp,this-&gt;ispviewer);CHKERRQ(info); CHKERRQ(info);
+<a name="line307">307: </a>  <font color="#4169E1">return</font>(0);
+<a name="line308">308: </a>}
+
+
+<a name="line313">313: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/WhichEqual.html#WhichEqual">WhichEqual</A>(TaoVec*v1,TaoVec*v2){
+<a name="line314">314: </a>  int info;
+<a name="line315">315: </a>  TaoVecPetsc *tv1, *tv2;
+<a name="line316">316: </a>  IS ISnew;
+<a name="line318">318: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line319">319: </a>  tv1 = dynamic_cast&lt;TaoVecPetsc*&gt;(v1);
+<a name="line320">320: </a>  tv2 = dynamic_cast&lt;TaoVecPetsc*&gt;(v2);
+<a name="line321">321: </a>  <font color="#4169E1">if</font> (tv1 == NULL) {
+<a name="line322">322: </a>    SETERRQ(1,<font color="#666666">"Could not cast argument 1 to TaoVecPetsc*"</font>);
+<a name="line323">323: </a>  }
+<a name="line324">324: </a>  <font color="#4169E1">if</font> (tv2 == NULL) {
+<a name="line325">325: </a>    SETERRQ(1,<font color="#666666">"Could not cast argument 2 to TaoVecPetsc*"</font>);
+<a name="line326">326: </a>  }
+<a name="line327">327: </a>  info=VecWhichEqual(tv1-&gt;GetVec(),tv2-&gt;GetVec(),&amp;ISnew); CHKERRQ(info);
+<a name="line328">328: </a>  info=this-&gt;SetIS(ISnew); CHKERRQ(info);
+<a name="line329">329: </a>  info=ISDestroy(ISnew); CHKERRQ(info);
+<a name="line330">330: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line331">331: </a>  <font color="#4169E1">return</font>(0);
+<a name="line332">332: </a>}
+
+<a name="line336">336: </a>int TaoIndexSetPetsc::WhichLessThan(TaoVec*v1,TaoVec*v2){
+<a name="line337">337: </a>  int info;
+<a name="line338">338: </a>  Vec V1=((TaoVecPetsc *)v1)-&gt;GetVec();
+<a name="line339">339: </a>  Vec V2=((TaoVecPetsc *)v2)-&gt;GetVec();
+<a name="line340">340: </a>  IS ISnew;
+<a name="line342">342: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line343">343: </a>  info=VecWhichLessThan(V1,V2,&amp;ISnew); CHKERRQ(info);
+<a name="line344">344: </a>  info=this-&gt;SetIS(ISnew); CHKERRQ(info);
+<a name="line345">345: </a>  info=ISDestroy(ISnew); CHKERRQ(info);
+<a name="line346">346: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line347">347: </a>  <font color="#4169E1">return</font>(0);
+<a name="line348">348: </a>}
+
+<a name="line352">352: </a>int TaoIndexSetPetsc::WhichGreaterThan(TaoVec*v1,TaoVec*v2){
+<a name="line353">353: </a>  int info;
+<a name="line354">354: </a>  Vec V1=((TaoVecPetsc *)v1)-&gt;GetVec();
+<a name="line355">355: </a>  Vec V2=((TaoVecPetsc *)v2)-&gt;GetVec();
+<a name="line356">356: </a>  IS ISnew;
+<a name="line358">358: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line359">359: </a>  info=VecWhichGreaterThan(V1,V2,&amp;ISnew); CHKERRQ(info);
+<a name="line360">360: </a>  info=this-&gt;SetIS(ISnew); CHKERRQ(info);
+<a name="line361">361: </a>  info=ISDestroy(ISnew); CHKERRQ(info);
+<a name="line362">362: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line363">363: </a>  <font color="#4169E1">return</font>(0);
+<a name="line364">364: </a>}
+
+<a name="line368">368: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(TaoVec*V1,TaoVec*V2,TaoVec*V3){
+<a name="line369">369: </a>  int info;
+<a name="line370">370: </a>  Vec VecLow=((TaoVecPetsc *)V1)-&gt;GetVec();
+<a name="line371">371: </a>  Vec VecHigh=((TaoVecPetsc *)V3)-&gt;GetVec();
+<a name="line372">372: </a>  Vec V=((TaoVecPetsc *)V2)-&gt;GetVec();
+<a name="line373">373: </a>  IS ISnew;
+
+<a name="line376">376: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line377">377: </a>  info=VecWhichBetween(VecLow,V,VecHigh,&amp;ISnew); CHKERRQ(info);
+<a name="line378">378: </a>  info=this-&gt;SetIS(ISnew); CHKERRQ(info);
+<a name="line379">379: </a>  info=ISDestroy(ISnew); CHKERRQ(info);
+<a name="line380">380: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0);CHKERRQ(info);          
+
+<a name="line382">382: </a>  <font color="#4169E1">return</font>(0);
+<a name="line383">383: </a>}
+
+<a name="line387">387: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/WhichBetweenOrEqual.html#WhichBetweenOrEqual">WhichBetweenOrEqual</A>(TaoVec *V1, TaoVec *V2, TaoVec *V3)
+<a name="line388">388: </a>{
+<a name="line389">389: </a>  int info;
+<a name="line390">390: </a>  Vec VecLow  = ((TaoVecPetsc *)V1)-&gt;GetVec();
+<a name="line391">391: </a>  Vec VecHigh = ((TaoVecPetsc *)V3)-&gt;GetVec();
+<a name="line392">392: </a>  Vec V       = ((TaoVecPetsc *)V2)-&gt;GetVec();
+<a name="line393">393: </a>  IS ISnew;
+
+<a name="line396">396: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0); CHKERRQ(info);
+<a name="line397">397: </a>  info=VecWhichBetweenOrEqual(VecLow,V,VecHigh,&amp;ISnew); CHKERRQ(info);
+<a name="line398">398: </a>  info=this-&gt;SetIS(ISnew); CHKERRQ(info);
+<a name="line399">399: </a>  info=ISDestroy(ISnew); CHKERRQ(info);
+<a name="line400">400: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0);CHKERRQ(info);
+<a name="line401">401: </a>  <font color="#4169E1">return</font>(0);
+<a name="line402">402: </a>}
+
+<a name="line406">406: </a>int TaoIndexSetPetsc::<A href="../../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(TaoInt *nn){
+<a name="line408">408: </a>  int info=ISGetSize(isp,nn); CHKERRQ(info);
+<a name="line409">409: </a>  <font color="#4169E1">return</font>(0);
+<a name="line410">410: </a>}
+
+<a name="line414">414: </a>int TaoIndexSetPetsc::clearit(){
+<a name="line415">415: </a>  int info;
+<a name="line417">417: </a>  <font color="#4169E1">if</font> (scatter){
+<a name="line418">418: </a>    info=VecScatterDestroy(scatter); CHKERRQ(info);
+<a name="line419">419: </a>    scatter=0;
+<a name="line420">420: </a>  }
+<a name="line421">421: </a>  <font color="#4169E1">if</font> (ISGathered){
+<a name="line422">422: </a>    info=ISDestroy(ISGathered); CHKERRQ(info);
+<a name="line423">423: </a>    ISGathered=0;
+<a name="line424">424: </a>  }
+<a name="line425">425: </a>  <font color="#4169E1">if</font> (isp){
+<a name="line426">426: </a>    info=ISDestroy(isp); CHKERRQ(info);
+<a name="line427">427: </a>    isp=0;
+<a name="line428">428: </a>  }
+<a name="line429">429: </a>  <font color="#4169E1">if</font> (isp2){
+<a name="line430">430: </a>    info=ISDestroy(isp2); CHKERRQ(info);
+<a name="line431">431: </a>    isp2=0;
+<a name="line432">432: </a>  }
+<a name="line433">433: </a>  <font color="#4169E1">if</font> (ispComplement){
+<a name="line434">434: </a>    info=ISDestroy(ispComplement); CHKERRQ(info);
+<a name="line435">435: </a>    ispComplement=0;
+<a name="line436">436: </a>  }
+<a name="line437">437: </a>  isp=0;isp2=0;ISGathered=0;ispComplement=0;scatter=0;
+
+<a name="line439">439: </a>  <font color="#4169E1">return</font>(0);
+<a name="line440">440: </a>}
+
+
+<a name="line445">445: </a>int TaoIndexSetPetsc::RedistributeIS(IS*ISNew){
+<a name="line446">446: </a>  int info;
+<a name="line447">447: </a>  PetscInt n,nn,low,high,i;
+<a name="line448">448: </a>  const PetscInt *is;
+<a name="line449">449: </a>  PetscInt *gl;
+<a name="line450">450: </a>  Vec R;
+<a name="line451">451: </a>  IS ISAll;
+<a name="line452">452: </a>  MPI_Comm comm;
+
+
+<a name="line456">456: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0);CHKERRQ(info);
+<a name="line457">457: </a>  info = VecGetSize(VSpace,&amp;n); CHKERRQ(info);
+<a name="line458">458: </a>  info = this-&gt;<A href="../../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(&amp;nn); CHKERRQ(info);
+<a name="line459">459: </a>  <font color="#4169E1">if</font> (reducedtype==TaoMaskFullSpace){
+<a name="line460">460: </a>    *ISNew = isp;
+<a name="line461">461: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (reducedtype==TaoSingleProcessor){
+<a name="line462">462: </a>    *ISNew = isp;
+<a name="line463">463: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (reducedtype==TaoNoRedistributeSubset || n==nn){
+<a name="line464">464: </a>    *ISNew = isp;
+<a name="line465">465: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (reducedtype==TaoRedistributeSubset){
+
+<a name="line467">467: </a>    info=PetscLogEventBegin(tredistribute,0,0,0,0);CHKERRQ(info);
+
+<a name="line469">469: </a>    <font color="#4169E1">if</font> (isp2==0){
+<a name="line470">470: </a>      info = this-&gt;GetWholeIS(&amp;ISAll); CHKERRQ(info);
+<a name="line471">471: </a>      
+<a name="line472">472: </a>      info = PetscObjectGetComm((PetscObject)isp,&amp;comm);CHKERRQ(info);
+<a name="line473">473: </a>      info = VecCreateMPI(comm,PETSC_DECIDE,nn,&amp;R);CHKERRQ(info);
+<a name="line474">474: </a>      info = VecGetLocalSize(R,&amp;n); CHKERRQ(info);
+<a name="line475">475: </a>      info = VecGetOwnershipRange(R, &amp;low, &amp;high); CHKERRQ(info);
+<a name="line476">476: </a>      info = ISGetIndices(ISAll, &amp;is); CHKERRQ(info);
+<a name="line477">477: </a>      <font color="#4169E1">if</font> (n&gt;0){
+<a name="line478">478: </a>        info = PetscMalloc( n*<font color="#4169E1">sizeof</font>(PetscInt),&amp;gl ); CHKERRQ(info);
+<a name="line479">479: </a>        <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line480">480: </a>          gl[i]= is[low+i];
+<a name="line481">481: </a>        } 
+<a name="line482">482: </a>      } <font color="#4169E1">else</font> gl=NULL;
+<a name="line483">483: </a>      
+<a name="line484">484: </a>      info = PetscObjectGetComm((PetscObject)isp,&amp;comm);CHKERRQ(info);
+<a name="line485">485: </a>      info = ISCreateGeneral(comm,n,gl,ISNew); CHKERRQ(info);
+<a name="line486">486: </a>      info = ISRestoreIndices(ISGathered, &amp;is); CHKERRQ(info);
+<a name="line487">487: </a>      <font color="#4169E1">if</font> (n&gt;0) {
+<a name="line488">488: </a>        info = PetscFree(gl); CHKERRQ(info);
+<a name="line489">489: </a>      }
+
+<a name="line491">491: </a>      isp2=*ISNew;
+<a name="line492">492: </a>      info = VecDestroy(R); CHKERRQ(info);
+
+<a name="line494">494: </a>    }
+<a name="line495">495: </a>    info=PetscLogEventEnd(tredistribute,0,0,0,0);CHKERRQ(info);
+<a name="line496">496: </a>    *ISNew = isp2;
+<a name="line497">497: </a>    
+<a name="line498">498: </a>  }
+
+<a name="line500">500: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0);CHKERRQ(info);
+<a name="line501">501: </a>  <font color="#4169E1">return</font>(0);
+<a name="line502">502: </a>}
+
+
+<a name="line507">507: </a>int TaoIndexSetPetsc::GetWholeIS(IS*ISAll){
+<a name="line508">508: </a>  int info;
+<a name="line510">510: </a>  info=PetscLogEventBegin(petscisevents,0,0,0,0);CHKERRQ(info);
+<a name="line511">511: </a>  <font color="#4169E1">if</font> (reducedtype==TaoSingleProcessor){
+<a name="line512">512: </a>    *ISAll = isp;
+<a name="line513">513: </a>  } <font color="#4169E1">else</font> {
+<a name="line514">514: </a>    info=PetscLogEventBegin(tredistribute,0,0,0,0);CHKERRQ(info);
+<a name="line515">515: </a>    <font color="#4169E1">if</font> (ISGathered==0){
+<a name="line516">516: </a>      info = ISAllGather(isp,&amp;ISGathered); CHKERRQ(info);
+<a name="line517">517: </a>      info = ISSort(ISGathered); CHKERRQ(info);
+<a name="line518">518: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ISGathered==0){
+<a name="line519">519: </a>      PetscInt  N;
+<a name="line520">520: </a>      PetscMPIInt *sizes,*offsets,size,mpin;
+<a name="line521">521: </a>      const PetscInt *lindices;
+<a name="line522">522: </a>      PetscInt *indices;
+<a name="line523">523: </a>      PetscInt i,n;
+<a name="line524">524: </a>      MPI_Comm comm;
+
+<a name="line526">526: </a>      info=PetscObjectGetComm((PetscObject)isp,&amp;comm);CHKERRQ(info);
+<a name="line527">527: </a>      MPI_Comm_size(comm,&amp;size);
+<a name="line528">528: </a>      PetscMalloc(2*size*<font color="#4169E1">sizeof</font>(PetscInt),&amp;sizes);
+<a name="line529">529: </a>      offsets = sizes + size;
+
+<a name="line531">531: </a>      info=ISGetLocalSize(isp,&amp;n);CHKERRQ(info);
+<a name="line532">532: </a>      mpin = (PetscMPIInt) n;
+<a name="line533">533: </a>      <font color="#4169E1">if</font> ((PetscInt)mpin != n) {
+<a name="line534">534: </a>        SETERRQ(1,<font color="#666666">"Did not handle 64-bit-index correctly"</font>);
+<a name="line535">535: </a>      }
+<a name="line536">536: </a>      MPI_Allgather(&amp;mpin,1,MPI_INT,sizes,1,MPI_INT,comm);
+<a name="line537">537: </a>      offsets[0] = 0;
+<a name="line538">538: </a>      <font color="#4169E1">for</font> (i=1;i&lt;size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+<a name="line539">539: </a>      N = offsets[size-1] + sizes[size-1];
+
+<a name="line541">541: </a>      PetscMalloc((N+1)*<font color="#4169E1">sizeof</font>(PetscInt),&amp;indices);
+<a name="line542">542: </a>      info=ISGetIndices(isp,&amp;lindices);CHKERRQ(info);
+<a name="line543">543: </a>      MPI_Allgatherv((void*)lindices,n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);
+<a name="line544">544: </a>      info=ISRestoreIndices(isp,&amp;lindices);CHKERRQ(info);
+
+<a name="line546">546: </a>      info=ISCreateGeneral(comm,N,indices,&amp;ISGathered);CHKERRQ(info);
+<a name="line547">547: </a>      info = PetscFree(indices); CHKERRQ(info);
+<a name="line548">548: </a>      info = PetscFree(sizes);  CHKERRQ(info);
+<a name="line549">549: </a>    }
+<a name="line550">550: </a>    *ISAll = ISGathered;
+<a name="line551">551: </a>    info=PetscLogEventEnd(tredistribute,0,0,0,0);CHKERRQ(info);
+<a name="line552">552: </a>  }
+
+<a name="line554">554: </a>  info=PetscLogEventEnd(petscisevents,0,0,0,0);CHKERRQ(info);
+<a name="line555">555: </a>  <font color="#4169E1">return</font>(0);
+<a name="line556">556: </a>}
+
+
+<a name="line561">561: </a>int TaoIndexSetPetsc::GetReducedVecScatter(Vec VFull, Vec VSub, VecScatter*scatterit){
+<a name="line562">562: </a>  int info;
+<a name="line563">563: </a>  PetscInt n,nlow,nhigh;
+<a name="line564">564: </a>  IS S1, Ident;
+<a name="line565">565: </a>  MPI_Comm comm;
+
+
+<a name="line569">569: </a>  <font color="#4169E1">if</font> (scatter==0){
+<a name="line570">570: </a>    info = VecGetSize(VFull,&amp;n); CHKERRQ(info);
+<a name="line571">571: </a>    info = VecGetSize(VSub,&amp;nlow); CHKERRQ(info);
+<a name="line572">572: </a>    <font color="#4169E1">if</font> (reducedtype==TaoMaskFullSpace || n==nlow){
+
+<a name="line574">574: </a>      info = VecScatterCreate(VFull,isp,VSub,isp,&amp;scatter); CHKERRQ(info);
+
+<a name="line576">576: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (reducedtype==TaoSingleProcessor || reducedtype==TaoNoRedistributeSubset){
+
+<a name="line578">578: </a>      S1=isp;
+<a name="line579">579: </a>      info = VecGetOwnershipRange(VSub,&amp;nlow,&amp;nhigh); CHKERRQ(info);
+<a name="line580">580: </a>      n=nhigh-nlow;
+
+<a name="line582">582: </a>      info = PetscObjectGetComm((PetscObject)VFull,&amp;comm);CHKERRQ(info);
+<a name="line583">583: </a>      info = ISCreateStride(comm,n,nlow,1,&amp;Ident); CHKERRQ(info);
+<a name="line584">584: </a>      info = VecScatterCreate(VFull,S1,VSub,Ident,&amp;scatter); CHKERRQ(info);
+<a name="line585">585: </a>      info = ISDestroy(Ident); CHKERRQ(info);
+
+<a name="line587">587: </a>    } <font color="#4169E1">else</font> {
+
+<a name="line589">589: </a>      info = this-&gt;GetWholeIS(&amp;S1); CHKERRQ(info);
+<a name="line590">590: </a>      nlow = 0;
+<a name="line591">591: </a>      info = VecGetSize(VSub,&amp;n);CHKERRQ(info);
+
+<a name="line593">593: </a>      info = PetscObjectGetComm((PetscObject)VFull,&amp;comm);CHKERRQ(info);
+<a name="line594">594: </a>      info = ISCreateStride(comm,n,nlow,1,&amp;Ident); CHKERRQ(info);  
+<a name="line595">595: </a>      info = VecScatterCreate(VFull,S1,VSub,Ident,&amp;scatter); CHKERRQ(info);
+<a name="line596">596: </a>      info = ISDestroy(Ident); CHKERRQ(info);
+
+<a name="line598">598: </a>    }
+<a name="line599">599: </a>  }
+<a name="line600">600: </a>  
+<a name="line601">601: </a>  *scatterit=scatter;
+
+<a name="line603">603: </a>  <font color="#4169E1">return</font>(0);
+<a name="line604">604: </a>}
+
+<a name="line608">608: </a>int TaoIndexSetPetsc::GetReducedType(TaoPetscISType* rtype){
+<a name="line610">610: </a>  *rtype=this-&gt;reducedtype;
+<a name="line611">611: </a>  <font color="#4169E1">return</font>(0);
+<a name="line612">612: </a>}
+
+<a name="line616">616: </a>int TaoIndexSetPetsc::GetComplementIS(IS*isppp){
+<a name="line617">617: </a>  int info;
+<a name="line619">619: </a>  <font color="#4169E1">if</font> (this-&gt;ispComplement==0){
+<a name="line620">620: </a>    info=PetscLogEventBegin(petscisevents,0,0,0,0);CHKERRQ(info);
+<a name="line621">621: </a>    info = <A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(this-&gt;isp, this-&gt;VSpace, &amp;this-&gt;ispComplement);CHKERRQ(info);
+<a name="line622">622: </a>    info=PetscLogEventEnd(petscisevents,0,0,0,0);CHKERRQ(info);
+<a name="line623">623: </a>  }
+<a name="line624">624: </a>  *isppp = this-&gt;ispComplement;
+<a name="line625">625: </a>  <font color="#4169E1">return</font>(0);
+<a name="line626">626: </a>}
+
+<a name="line630">630: </a><strong><font color="#4169E1"><a name="VecWhichEqual"></a>int VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)</font></strong>
+<a name="line631">631: </a>{
+<a name="line632">632: </a>  <font color="#B22222">/* </font>
+<a name="line633">633: </a><font color="#B22222">     Create an index set containing the indices of</font>
+<a name="line634">634: </a><font color="#B22222">     the vectors Vec1 and Vec2 with identical elements.</font>
+<a name="line635">635: </a><font color="#B22222">  */</font>
+<a name="line636">636: </a>  int    info;
+<a name="line637">637: </a>  PetscInt i,n_same=0;
+<a name="line638">638: </a>  PetscInt n,low,high,low2,high2;
+<a name="line639">639: </a>  PetscInt    *same;
+<a name="line640">640: </a>  PetscScalar *v1,*v2;
+<a name="line641">641: </a>  MPI_Comm comm;
+
+
+
+<a name="line649">649: </a>  info = VecGetOwnershipRange(Vec1, &amp;low, &amp;high); CHKERRQ(info);
+<a name="line650">650: </a>  info = VecGetOwnershipRange(Vec2, &amp;low2, &amp;high2); CHKERRQ(info);
+
+<a name="line652">652: </a>  <font color="#4169E1">if</font> ( low != low2 || high != high2 )
+<a name="line653">653: </a>    SETERRQ(1,<font color="#666666">"Vectors must be identically loaded over processors"</font>);
+
+<a name="line655">655: </a>  info = VecGetLocalSize(Vec1,&amp;n); CHKERRQ(info);
+
+<a name="line657">657: </a>  <font color="#4169E1">if</font> (n&gt;0){
+<a name="line658">658: </a>    
+<a name="line659">659: </a>    <font color="#4169E1">if</font> (Vec1 == Vec2){
+<a name="line660">660: </a>      info = VecGetArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line661">661: </a>      v2=v1;
+<a name="line662">662: </a>    } <font color="#4169E1">else</font> {
+<a name="line663">663: </a>      info = VecGetArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line664">664: </a>      info = VecGetArray(Vec2,&amp;v2); CHKERRQ(info);
+<a name="line665">665: </a>    }
+
+<a name="line667">667: </a>    info = PetscMalloc( n*<font color="#4169E1">sizeof</font>(PetscInt),&amp;same ); CHKERRQ(info);
+<a name="line668">668: </a>    
+<a name="line669">669: </a>    <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line670">670: </a>      <font color="#4169E1">if</font> (v1[i] == v2[i]) {same[n_same]=low+i; n_same++;}
+<a name="line671">671: </a>    }
+<a name="line672">672: </a>    
+<a name="line673">673: </a>    <font color="#4169E1">if</font> (Vec1 == Vec2){
+<a name="line674">674: </a>      info = VecRestoreArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line675">675: </a>    } <font color="#4169E1">else</font> {
+<a name="line676">676: </a>      info = VecRestoreArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line677">677: </a>      info = VecRestoreArray(Vec2,&amp;v2); CHKERRQ(info);
+<a name="line678">678: </a>    }
+
+<a name="line680">680: </a>  } <font color="#4169E1">else</font> {
+
+<a name="line682">682: </a>    n_same = 0; same=NULL;
+
+<a name="line684">684: </a>  }
+
+<a name="line686">686: </a>  info = PetscObjectGetComm((PetscObject)Vec1,&amp;comm);CHKERRQ(info);
+<a name="line687">687: </a>  info = ISCreateGeneral(comm,n_same,same,S);CHKERRQ(info);
+
+<a name="line689">689: </a>  <font color="#4169E1">if</font> (same) {
+<a name="line690">690: </a>    info = PetscFree(same); CHKERRQ(info);
+<a name="line691">691: </a>  }
+
+<a name="line693">693: </a>  <font color="#4169E1">return</font>(0);
+<a name="line694">694: </a>}
+
+<a name="line698">698: </a><strong><font color="#4169E1"><a name="VecWhichLessThan"></a>int VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)</font></strong>
+<a name="line699">699: </a>{
+<a name="line700">700: </a>  int info;
+<a name="line701">701: </a>  PetscInt i;
+<a name="line702">702: </a>  PetscInt n,low,high,low2,high2,n_lt=0;
+<a name="line703">703: </a>  PetscInt *lt;
+<a name="line704">704: </a>  PetscScalar *v1,*v2;
+<a name="line705">705: </a>  MPI_Comm comm;
+
+
+<a name="line712">712: </a>  info = VecGetOwnershipRange(Vec1, &amp;low, &amp;high); CHKERRQ(info);
+<a name="line713">713: </a>  info = VecGetOwnershipRange(Vec2, &amp;low2, &amp;high2); CHKERRQ(info);
+
+<a name="line715">715: </a>  <font color="#4169E1">if</font> ( low != low2 || high != high2 )
+<a name="line716">716: </a>    SETERRQ(1,<font color="#666666">"Vectors must be identically loaded over processors"</font>);
+
+<a name="line718">718: </a>  info = VecGetLocalSize(Vec1,&amp;n); CHKERRQ(info);
+
+<a name="line720">720: </a>  <font color="#4169E1">if</font> (n&gt;0){
+
+<a name="line722">722: </a>    <font color="#4169E1">if</font> (Vec1 == Vec2){
+<a name="line723">723: </a>      info = VecGetArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line724">724: </a>      v2=v1;
+<a name="line725">725: </a>    } <font color="#4169E1">else</font> {
+<a name="line726">726: </a>      info = VecGetArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line727">727: </a>      info = VecGetArray(Vec2,&amp;v2); CHKERRQ(info);
+<a name="line728">728: </a>    }
+<a name="line729">729: </a>    info = PetscMalloc( n*<font color="#4169E1">sizeof</font>(PetscInt),&amp;lt ); CHKERRQ(info);
+<a name="line730">730: </a>    
+<a name="line731">731: </a>    <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line732">732: </a>      <font color="#4169E1">if</font> (v1[i] &lt; v2[i]) {lt[n_lt]=high+i; n_lt++;}
+<a name="line733">733: </a>    }
+
+<a name="line735">735: </a>    <font color="#4169E1">if</font> (Vec1 == Vec2){
+<a name="line736">736: </a>      info = VecRestoreArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line737">737: </a>    } <font color="#4169E1">else</font> {
+<a name="line738">738: </a>      info = VecRestoreArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line739">739: </a>      info = VecRestoreArray(Vec2,&amp;v2); CHKERRQ(info);
+<a name="line740">740: </a>    }
+<a name="line741">741: </a>      
+<a name="line742">742: </a>  } <font color="#4169E1">else</font> {
+<a name="line743">743: </a>    n_lt=0; lt=NULL;
+<a name="line744">744: </a>  }
+
+<a name="line746">746: </a>  info = PetscObjectGetComm((PetscObject)Vec1,&amp;comm);CHKERRQ(info);
+<a name="line747">747: </a>  info = ISCreateGeneral(comm,n_lt,lt,S);CHKERRQ(info);
+
+<a name="line749">749: </a>  <font color="#4169E1">if</font> (lt) {
+<a name="line750">750: </a>    info = PetscFree(lt); CHKERRQ(info);
+<a name="line751">751: </a>  }
+
+<a name="line753">753: </a>  <font color="#4169E1">return</font>(0);
+<a name="line754">754: </a>}
+
+<a name="line758">758: </a><strong><font color="#4169E1"><a name="VecWhichGreaterThan"></a>int VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)</font></strong>
+<a name="line759">759: </a>{
+<a name="line760">760: </a>  int    info;
+<a name="line761">761: </a>  PetscInt n,low,high,low2,high2,n_gt=0,i;
+<a name="line762">762: </a>  PetscInt    *gt=NULL;
+<a name="line763">763: </a>  PetscScalar *v1,*v2;
+<a name="line764">764: </a>  MPI_Comm comm;
+
+
+<a name="line771">771: </a>  info = VecGetOwnershipRange(Vec1, &amp;low, &amp;high); CHKERRQ(info);
+<a name="line772">772: </a>  info = VecGetOwnershipRange(Vec2, &amp;low2, &amp;high2); CHKERRQ(info);
+
+<a name="line774">774: </a>  <font color="#4169E1">if</font> ( low != low2 || high != high2 )
+<a name="line775">775: </a>    SETERRQ(1,<font color="#666666">"Vectors must be identically loaded over processors"</font>);
+
+<a name="line777">777: </a>  info = VecGetLocalSize(Vec1,&amp;n); CHKERRQ(info);
+
+<a name="line779">779: </a>  <font color="#4169E1">if</font> (n&gt;0){
+
+<a name="line781">781: </a>    <font color="#4169E1">if</font> (Vec1 == Vec2){
+<a name="line782">782: </a>      info = VecGetArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line783">783: </a>      v2=v1;
+<a name="line784">784: </a>    } <font color="#4169E1">else</font> {
+<a name="line785">785: </a>      info = VecGetArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line786">786: </a>      info = VecGetArray(Vec2,&amp;v2); CHKERRQ(info);
+<a name="line787">787: </a>    }    
+
+<a name="line789">789: </a>    info = PetscMalloc( n*<font color="#4169E1">sizeof</font>(PetscInt), &amp;gt ); CHKERRQ(info);
+<a name="line790">790: </a>    
+<a name="line791">791: </a>    <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line792">792: </a>      <font color="#4169E1">if</font> (v1[i] &gt; v2[i]) {gt[n_gt]=low+i; n_gt++;}
+<a name="line793">793: </a>    }
+
+<a name="line795">795: </a>    <font color="#4169E1">if</font> (Vec1 == Vec2){
+<a name="line796">796: </a>      info = VecRestoreArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line797">797: </a>    } <font color="#4169E1">else</font> {
+<a name="line798">798: </a>      info = VecRestoreArray(Vec1,&amp;v1); CHKERRQ(info);
+<a name="line799">799: </a>      info = VecRestoreArray(Vec2,&amp;v2); CHKERRQ(info);
+<a name="line800">800: </a>    }
+<a name="line801">801: </a>    
+<a name="line802">802: </a>  } <font color="#4169E1">else</font>{
+<a name="line803">803: </a>    
+<a name="line804">804: </a>    n_gt=0; gt=NULL;
+
+<a name="line806">806: </a>  }
+
+<a name="line808">808: </a>  info = PetscObjectGetComm((PetscObject)Vec1,&amp;comm);CHKERRQ(info);
+<a name="line809">809: </a>  info = ISCreateGeneral(comm,n_gt,gt,S);CHKERRQ(info);
+
+<a name="line811">811: </a>  <font color="#4169E1">if</font> (gt) {
+<a name="line812">812: </a>    info = PetscFree(gt); CHKERRQ(info);
+<a name="line813">813: </a>  }
+<a name="line814">814: </a>  <font color="#4169E1">return</font>(0);
+<a name="line815">815: </a>}
+
+<a name="line819">819: </a><strong><font color="#4169E1"><a name="VecWhichBetween"></a>int VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS * S)</font></strong>
+<a name="line820">820: </a>{
+<a name="line821">821: </a>  <font color="#B22222">/* </font>
+<a name="line822">822: </a><font color="#B22222">     Creates an index set with the indices of V whose </font>
+<a name="line823">823: </a><font color="#B22222">     elements are stictly between the corresponding elements </font>
+<a name="line824">824: </a><font color="#B22222">     of the vector VecLow and the Vector VecHigh</font>
+<a name="line825">825: </a><font color="#B22222">  */</font>
+<a name="line826">826: </a>  int info;
+<a name="line827">827: </a>  PetscInt n,low,high,low2,high2,low3,high3,n_vm=0;
+<a name="line828">828: </a>  PetscInt *vm,i;
+<a name="line829">829: </a>  PetscScalar *v1,*v2,*vmiddle;
+<a name="line830">830: </a>  MPI_Comm comm;
+
+
+<a name="line835">835: </a>  info = VecGetOwnershipRange(VecLow, &amp;low, &amp;high); CHKERRQ(info);
+<a name="line836">836: </a>  info = VecGetOwnershipRange(VecHigh, &amp;low2, &amp;high2); CHKERRQ(info);
+<a name="line837">837: </a>  info = VecGetOwnershipRange(V, &amp;low3, &amp;high3); CHKERRQ(info);
+
+<a name="line839">839: </a>  <font color="#4169E1">if</font> ( low!=low2 || high!=high2 || low!=low3 || high!=high3 )
+<a name="line840">840: </a>    SETERRQ(1,<font color="#666666">"Vectors must be identically loaded over processors"</font>);
+
+<a name="line842">842: </a>  info = VecGetLocalSize(VecLow,&amp;n); CHKERRQ(info);
+
+<a name="line844">844: </a>  <font color="#4169E1">if</font> (n&gt;0){
+
+<a name="line846">846: </a>    info = VecGetArray(VecLow,&amp;v1); CHKERRQ(info);
+<a name="line847">847: </a>    <font color="#4169E1">if</font> (VecLow != VecHigh){
+<a name="line848">848: </a>      info = VecGetArray(VecHigh,&amp;v2); CHKERRQ(info);
+<a name="line849">849: </a>    } <font color="#4169E1">else</font> {
+<a name="line850">850: </a>      v2=v1;
+<a name="line851">851: </a>    }
+<a name="line852">852: </a>    <font color="#4169E1">if</font> ( V != VecLow &amp;&amp; V != VecHigh){
+<a name="line853">853: </a>      info = VecGetArray(V,&amp;vmiddle); CHKERRQ(info);
+<a name="line854">854: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ( V==VecLow ){
+<a name="line855">855: </a>      vmiddle=v1;
+<a name="line856">856: </a>    } <font color="#4169E1">else</font> {
+<a name="line857">857: </a>      vmiddle =v2;
+<a name="line858">858: </a>    }
+
+<a name="line860">860: </a>    info = PetscMalloc( n*<font color="#4169E1">sizeof</font>(PetscInt), &amp;vm ); CHKERRQ(info);
+<a name="line861">861: </a>    
+<a name="line862">862: </a>    <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line863">863: </a>      <font color="#4169E1">if</font> (v1[i] &lt; vmiddle[i] &amp;&amp; vmiddle[i] &lt; v2[i]) {vm[n_vm]=low+i; n_vm++;}
+<a name="line864">864: </a>    }
+
+<a name="line866">866: </a>    info = VecRestoreArray(VecLow,&amp;v1); CHKERRQ(info);
+<a name="line867">867: </a>    <font color="#4169E1">if</font> (VecLow != VecHigh){
+<a name="line868">868: </a>      info = VecRestoreArray(VecHigh,&amp;v2); CHKERRQ(info);
+<a name="line869">869: </a>    }
+<a name="line870">870: </a>    <font color="#4169E1">if</font> ( V != VecLow &amp;&amp; V != VecHigh){
+<a name="line871">871: </a>      info = VecRestoreArray(V,&amp;vmiddle); CHKERRQ(info);
+<a name="line872">872: </a>    }
+
+<a name="line874">874: </a>  } <font color="#4169E1">else</font> {
+
+<a name="line876">876: </a>    n_vm=0; vm=NULL;
+
+<a name="line878">878: </a>  }
+
+<a name="line880">880: </a>  info = PetscObjectGetComm((PetscObject)V,&amp;comm);CHKERRQ(info);
+<a name="line881">881: </a>  info = ISCreateGeneral(comm,n_vm,vm,S);CHKERRQ(info);
+
+<a name="line883">883: </a>  <font color="#4169E1">if</font> (vm) {
+<a name="line884">884: </a>    info = PetscFree(vm); CHKERRQ(info);
+<a name="line885">885: </a>  }
+
+<a name="line887">887: </a>  <font color="#4169E1">return</font>(0);
+<a name="line888">888: </a>}
+
+
+<a name="line893">893: </a><strong><font color="#4169E1"><a name="VecWhichBetweenOrEqual"></a>int VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)</font></strong>
+<a name="line894">894: </a>{
+<a name="line895">895: </a>  <font color="#B22222">/* </font>
+<a name="line896">896: </a><font color="#B22222">     Creates an index set with the indices of V whose </font>
+<a name="line897">897: </a><font color="#B22222">     elements are stictly between the corresponding elements </font>
+<a name="line898">898: </a><font color="#B22222">     of the vector VecLow and the Vector VecHigh</font>
+<a name="line899">899: </a><font color="#B22222">  */</font>
+<a name="line900">900: </a>  int info;
+<a name="line901">901: </a>  PetscInt n,low,high,low2,high2,low3,high3,n_vm=0,i;
+<a name="line902">902: </a>  PetscInt *vm;
+<a name="line903">903: </a>  PetscScalar *v1,*v2,*vmiddle;
+<a name="line904">904: </a>  MPI_Comm comm;
+
+
+<a name="line909">909: </a>  info = VecGetOwnershipRange(VecLow, &amp;low, &amp;high); CHKERRQ(info);
+<a name="line910">910: </a>  info = VecGetOwnershipRange(VecHigh, &amp;low2, &amp;high2); CHKERRQ(info);
+<a name="line911">911: </a>  info = VecGetOwnershipRange(V, &amp;low3, &amp;high3); CHKERRQ(info);
+
+<a name="line913">913: </a>  <font color="#4169E1">if</font> ( low!=low2 || high!=high2 || low!=low3 || high!=high3 )
+<a name="line914">914: </a>    SETERRQ(1,<font color="#666666">"Vectors must be identically loaded over processors"</font>);
+
+<a name="line916">916: </a>  info = VecGetLocalSize(VecLow,&amp;n); CHKERRQ(info);
+
+<a name="line918">918: </a>  <font color="#4169E1">if</font> (n&gt;0){
+
+<a name="line920">920: </a>    info = VecGetArray(VecLow,&amp;v1); CHKERRQ(info);
+<a name="line921">921: </a>    <font color="#4169E1">if</font> (VecLow != VecHigh){
+<a name="line922">922: </a>      info = VecGetArray(VecHigh,&amp;v2); CHKERRQ(info);
+<a name="line923">923: </a>    } <font color="#4169E1">else</font> {
+<a name="line924">924: </a>      v2=v1;
+<a name="line925">925: </a>    }
+<a name="line926">926: </a>    <font color="#4169E1">if</font> ( V != VecLow &amp;&amp; V != VecHigh){
+<a name="line927">927: </a>      info = VecGetArray(V,&amp;vmiddle); CHKERRQ(info);
+<a name="line928">928: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ( V==VecLow ){
+<a name="line929">929: </a>      vmiddle=v1;
+<a name="line930">930: </a>    } <font color="#4169E1">else</font> {
+<a name="line931">931: </a>      vmiddle =v2;
+<a name="line932">932: </a>    }
+
+<a name="line934">934: </a>    info = PetscMalloc( n*<font color="#4169E1">sizeof</font>(PetscInt), &amp;vm ); CHKERRQ(info);
+<a name="line935">935: </a>    
+<a name="line936">936: </a>    <font color="#4169E1">for</font> (i=0; i&lt;n; i++){
+<a name="line937">937: </a>      <font color="#4169E1">if</font> (v1[i] &lt;= vmiddle[i] &amp;&amp; vmiddle[i] &lt;= v2[i]) {vm[n_vm]=low+i; n_vm++;}
+<a name="line938">938: </a>    }
+
+<a name="line940">940: </a>    info = VecRestoreArray(VecLow,&amp;v1); CHKERRQ(info);
+<a name="line941">941: </a>    <font color="#4169E1">if</font> (VecLow != VecHigh){
+<a name="line942">942: </a>      info = VecRestoreArray(VecHigh,&amp;v2); CHKERRQ(info);
+<a name="line943">943: </a>    }
+<a name="line944">944: </a>    <font color="#4169E1">if</font> ( V != VecLow &amp;&amp; V != VecHigh){
+<a name="line945">945: </a>      info = VecRestoreArray(V,&amp;vmiddle); CHKERRQ(info);
+<a name="line946">946: </a>    }
+
+<a name="line948">948: </a>  } <font color="#4169E1">else</font> {
+
+<a name="line950">950: </a>    n_vm=0; vm=NULL;
+
+<a name="line952">952: </a>  }
+
+<a name="line954">954: </a>  info = PetscObjectGetComm((PetscObject)V,&amp;comm);CHKERRQ(info);
+<a name="line955">955: </a>  info = ISCreateGeneral(comm,n_vm,vm,S);CHKERRQ(info);
+
+<a name="line957">957: </a>  <font color="#4169E1">if</font> (vm) {
+<a name="line958">958: </a>    info = PetscFree(vm); CHKERRQ(info);
+<a name="line959">959: </a>  }
+
+<a name="line961">961: </a>  <font color="#4169E1">return</font>(0);
+<a name="line962">962: </a>}
+
+
+<a name="line967">967: </a><font color="#B22222">/*@C</font>
+<a name="line968">968: </a><font color="#B22222">   <A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A> - Creates the complement of the the index set</font>
+
+<a name="line970">970: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line971">971: </a><font color="#B22222">+  S -  a PETSc IS</font>
+<a name="line972">972: </a><font color="#B22222">-  V - the reference vector space</font>
+
+<a name="line974">974: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line975">975: </a><font color="#B22222">.  T -  the complement of S</font>
+
+
+<a name="line978">978: </a><font color="#B22222">.seealso ISCreateGeneral()</font>
+
+<a name="line980">980: </a><font color="#B22222">   Level: advanced</font>
+<a name="line981">981: </a><font color="#B22222">@*/</font>
+<a name="line982">982: </a><strong><font color="#4169E1"><a name="ISCreateComplement"></a>int <A href="../../../docs/manualpages/ptaopages/ISCreateComplement.html#ISCreateComplement">ISCreateComplement</A>(IS S, Vec V, IS *T)</font></strong>{
+<a name="line983">983: </a>  int info;
+<a name="line984">984: </a>  PetscInt i,nis,nloc,high,low,n=0;
+<a name="line985">985: </a>  const PetscInt *s;
+<a name="line986">986: </a>  PetscInt *tt,*ss;
+<a name="line987">987: </a>  MPI_Comm comm;
+
+
+<a name="line993">993: </a>  info = VecGetOwnershipRange(V,&amp;low,&amp;high); CHKERRQ(info);
+<a name="line994">994: </a>  info = VecGetLocalSize(V,&amp;nloc); CHKERRQ(info);
+<a name="line995">995: </a>  info = ISGetLocalSize(S,&amp;nis); CHKERRQ(info);
+<a name="line996">996: </a>  info = ISGetIndices(S, &amp;s); CHKERRQ(info);
+<a name="line997">997: </a>  info = PetscMalloc( nloc*<font color="#4169E1">sizeof</font>(PetscInt),&amp;tt ); CHKERRQ(info);
+<a name="line998">998: </a>  info = PetscMalloc( nloc*<font color="#4169E1">sizeof</font>(PetscInt),&amp;ss ); CHKERRQ(info);
+
+<a name="line1000">1000: </a>  <font color="#4169E1">for</font> (i=low; i&lt;high; i++){ tt[i-low]=i; }
+
+<a name="line1002">1002: </a>  <font color="#4169E1">for</font> (i=0; i&lt;nis; i++){ tt[s[i]-low] = -2; }
+<a name="line1003">1003: </a>  
+<a name="line1004">1004: </a>  <font color="#4169E1">for</font> (i=0; i&lt;nloc; i++){
+<a name="line1005">1005: </a>    <font color="#4169E1">if</font> (tt[i]&gt;-1){ ss[n]=tt[i]; n++; }
+<a name="line1006">1006: </a>  }
+
+<a name="line1008">1008: </a>  info = ISRestoreIndices(S, &amp;s); CHKERRQ(info);
+<a name="line1009">1009: </a>  
+<a name="line1010">1010: </a>  info = PetscObjectGetComm((PetscObject)S,&amp;comm);CHKERRQ(info);
+<a name="line1011">1011: </a>  info = ISCreateGeneral(comm,n,ss,T);CHKERRQ(info);
+<a name="line1012">1012: </a>  
+<a name="line1013">1013: </a>  <font color="#4169E1">if</font> (tt) {
+<a name="line1014">1014: </a>    info = PetscFree(tt); CHKERRQ(info);
+<a name="line1015">1015: </a>  }
+<a name="line1016">1016: </a>  <font color="#4169E1">if</font> (ss) {
+<a name="line1017">1017: </a>    info = PetscFree(ss); CHKERRQ(info);
+<a name="line1018">1018: </a>  }
+
+<a name="line1020">1020: </a>  <font color="#4169E1">return</font>(0);
+<a name="line1021">1021: </a>}
+<a name="line1022">1022: </a><font color="#A020F0">#endif</font>
+
+</pre>
+</body>
+
+</html>

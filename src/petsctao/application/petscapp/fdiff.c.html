@@ -1,0 +1,409 @@
+<center><a href="fdiff.c">Actual source code: fdiff.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"taoapp.h"</font><font color="#A020F0">         </font><font color="#B22222">/*I  "taoapp.h"  I*/</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"src/tao_impl.h"</font><font color="#A020F0">      </font><font color="#B22222">/*I "src/tao_impl.h"  I*/</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/include/taopetsc.h"</font><font color="#A020F0">          </font><font color="#B22222">/*I "src/petsctao/include/taopetsc.h" I*/</font><font color="#A020F0"></font>
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"petscsnes.h"</font><font color="#A020F0"></font>
+
+
+
+<a name="line12"> 12: </a><strong><font color="#4169E1"><a name="Ftemp"></a>static int Ftemp(SNES snes ,Vec X,Vec G,void*ctx)</font></strong>{
+<a name="line13"> 13: </a>  int info;
+<a name="line14"> 14: </a>  TAO_APPLICATION taoapp = (TAO_APPLICATION)ctx;
+<a name="line15"> 15: </a>  TAO_SOLVER tao;
+<a name="line18"> 18: </a>  info = TaoAppGetTaoSolver(taoapp,&amp;tao);
+<a name="line19"> 19: </a>  info=<A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(taoapp,X,G); CHKERRQ(info);
+<a name="line20"> 20: </a>  tao-&gt;ngrads++;
+<a name="line21"> 21: </a>  <font color="#4169E1">return</font>(0);
+<a name="line22"> 22: </a>}
+
+<a name="line27"> 27: </a><font color="#B22222">/*@C</font>
+<a name="line28"> 28: </a><font color="#B22222">  <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A> - computes the gradient using finite differences.</font>
+<a name="line29"> 29: </a><font color="#B22222"> </font>
+<a name="line30"> 30: </a><font color="#B22222">  Collective on TAO_APPLICATION</font>
+
+<a name="line32"> 32: </a><font color="#B22222">  Input Parameters:</font>
+<a name="line33"> 33: </a><font color="#B22222">+ taoapp - the TAO_APPLICATION context</font>
+<a name="line34"> 34: </a><font color="#B22222">. X - compute gradient at this point</font>
+<a name="line35"> 35: </a><font color="#B22222">- ctx - the TAO_APPLICATION structure, cast to (void*)</font>
+
+<a name="line37"> 37: </a><font color="#B22222">  Output Parameters:</font>
+<a name="line38"> 38: </a><font color="#B22222">. G - Gradient Vector</font>
+
+<a name="line40"> 40: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line41"> 41: </a><font color="#B22222">+  -tao_fd_gradient - Activates TaoAppDefaultComputeGradient()</font>
+<a name="line42"> 42: </a><font color="#B22222">-  -tao_fd_delta &lt;delta&gt; - change in x used to calculate finite differences</font>
+
+
+
+
+<a name="line47"> 47: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line49"> 49: </a><font color="#B22222">   Note:</font>
+<a name="line50"> 50: </a><font color="#B22222">   This routine is slow and expensive, and is not currently optimized</font>
+<a name="line51"> 51: </a><font color="#B22222">   to take advantage of sparsity in the problem.  Although</font>
+<a name="line52"> 52: </a><font color="#B22222">   TaoAppDefaultComputeGradient is not recommended for general use</font>
+<a name="line53"> 53: </a><font color="#B22222">   in large-scale applications, It can be useful in checking the</font>
+<a name="line54"> 54: </a><font color="#B22222">   correctness of a user-provided gradient.  Use the tao method "tao_fd_test"</font>
+<a name="line55"> 55: </a><font color="#B22222">   to get an indication of whether your gradient is correct.</font>
+
+
+<a name="line58"> 58: </a><font color="#B22222">   Note:</font>
+<a name="line59"> 59: </a><font color="#B22222">   The gradient evaluation must be set using the routine <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>().</font>
+
+<a name="line61"> 61: </a><font color="#B22222">.keywords: TAO_APPLICATION, finite differences, Hessian</font>
+
+<a name="line63"> 63: </a><font color="#B22222">.seealso: TaoAppDefaultComputeGradient(),  <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>()</font>
+
+<a name="line65"> 65: </a><font color="#B22222">@*/</font>
+<a name="line66"> 66: </a><strong><font color="#4169E1"><a name="TaoAppDefaultComputeGradient"></a>int TaoAppDefaultComputeGradient(TAO_APPLICATION taoapp,Vec X,Vec G,void*)</font></strong> 
+<a name="line67"> 67: </a>{
+<a name="line68"> 68: </a>  Vec TempX;
+<a name="line69"> 69: </a>  double *g;
+<a name="line70"> 70: </a>  double f, f2;
+<a name="line71"> 71: </a>  int info;
+<a name="line72"> 72: </a>  PetscInt low,high,N,i;
+<a name="line73"> 73: </a>  PetscTruth flg;
+<a name="line74"> 74: </a>  double h=1.0e-6;
+<a name="line75"> 75: </a>  TAO_SOLVER tao;
+<a name="line77"> 77: </a>  info = TaoAppGetTaoSolver(taoapp, &amp;tao);
+<a name="line78"> 78: </a>  //PetscStackPush(<font color="#666666">"TAO Finite Difference gradient"</font>);
+<a name="line79"> 79: </a>  //info = PetscLogEventBegin(Tao_FiniteDifferenceGradient,taoapp,X,0,0);
+<a name="line80"> 80: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjective.html#TaoAppComputeObjective">TaoAppComputeObjective</A>(taoapp, X,&amp;f); CHKERRQ(info);
+<a name="line81"> 81: </a>  tao-&gt;nfuncs++;
+<a name="line82"> 82: </a>  info = PetscOptionsGetReal(PETSC_NULL,<font color="#666666">"-tao_fd_delta"</font>,&amp;h,&amp;flg);
+<a name="line83"> 83: </a>  info = VecDuplicate(X,&amp;TempX); CHKERRQ(info);
+<a name="line84"> 84: </a>  info = VecCopy(X,TempX); CHKERRQ(info);
+<a name="line85"> 85: </a>  info = VecGetSize(X,&amp;N); CHKERRQ(info);
+<a name="line86"> 86: </a>  info = VecGetOwnershipRange(TempX,&amp;low,&amp;high); CHKERRQ(info);
+<a name="line87"> 87: </a>  info = VecGetArray(G,&amp;g); CHKERRQ(info);
+<a name="line88"> 88: </a>  <font color="#4169E1">for</font> (i=0;i&lt;N;i++) {
+<a name="line89"> 89: </a>    info = VecSetValue(TempX,i,h,ADD_VALUES);
+<a name="line90"> 90: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjective.html#TaoAppComputeObjective">TaoAppComputeObjective</A>(taoapp,TempX,&amp;f2); CHKERRQ(info);
+<a name="line91"> 91: </a>    tao-&gt;nfuncs++;
+<a name="line92"> 92: </a>    info = VecSetValue(TempX,i,-h,ADD_VALUES);
+<a name="line93"> 93: </a>    <font color="#4169E1">if</font> (i&gt;=low &amp;&amp; i&lt;high) {
+<a name="line94"> 94: </a>      g[i-low]=(f2-f)/h;
+<a name="line95"> 95: </a>    }
+
+<a name="line97"> 97: </a>  }
+<a name="line98"> 98: </a>  info = VecRestoreArray(G,&amp;g); CHKERRQ(info);
+<a name="line99"> 99: </a>  
+<a name="line100">100: </a>  //info = PetscLogEventEnd(Tao_FiniteDifferenceGradient, taoapp, X, 0,0); CHKERRQ(info);
+<a name="line101">101: </a>  //PetscStackPop;
+<a name="line102">102: </a>  
+<a name="line103">103: </a>  <font color="#4169E1">return</font>(0);
+<a name="line104">104: </a>}
+
+<a name="line108">108: </a><font color="#B22222">/*@C</font>
+<a name="line109">109: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A> - Computes the Hessian using finite differences. </font>
+
+<a name="line111">111: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line113">113: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line114">114: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context </font>
+<a name="line115">115: </a><font color="#B22222">.  V - compute Hessian at this point</font>
+<a name="line116">116: </a><font color="#B22222">-  ctx - the TAO_APPLICATION structure, cast to (void*)</font>
+
+<a name="line118">118: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line119">119: </a><font color="#B22222">+  H - Hessian matrix (not altered in this routine)</font>
+<a name="line120">120: </a><font color="#B22222">.  B - newly computed Hessian matrix to use with preconditioner (generally the same as H)</font>
+<a name="line121">121: </a><font color="#B22222">-  flag - flag indicating whether the matrix sparsity structure has changed</font>
+
+<a name="line123">123: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line124">124: </a><font color="#B22222">+  -tao_fd - Activates <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>()</font>
+<a name="line125">125: </a><font color="#B22222">-  -tao_view_hessian - view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD</font>
+
+<a name="line127">127: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line129">129: </a><font color="#B22222">   Notes:</font>
+<a name="line130">130: </a><font color="#B22222">   This routine is slow and expensive, and is not currently optimized</font>
+<a name="line131">131: </a><font color="#B22222">   to take advantage of sparsity in the problem.  Although</font>
+<a name="line132">132: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>() is not recommended for general use</font>
+<a name="line133">133: </a><font color="#B22222">   in large-scale applications, It can be useful in checking the</font>
+<a name="line134">134: </a><font color="#B22222">   correctness of a user-provided Hessian.</font>
+
+<a name="line136">136: </a><font color="#B22222">   Note:</font>
+<a name="line137">137: </a><font color="#B22222">   The gradient evaluation must be set using the routine <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>().</font>
+
+<a name="line139">139: </a><font color="#B22222">.keywords: TAO_APPLICATION, finite differences, Hessian</font>
+
+<a name="line141">141: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>(), SNESDefaultComputeJacobian(),</font>
+<a name="line142">142: </a><font color="#B22222">          <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>(), TaoAppDefaultComputeGradient()</font>
+
+<a name="line144">144: </a><font color="#B22222">@*/</font>
+<a name="line145">145: </a><strong><font color="#4169E1"><a name="TaoAppDefaultComputeHessian"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>(TAO_APPLICATION taoapp,Vec V,Mat *H,Mat *B,</font></strong>
+<a name="line146">146: </a><strong><font color="#4169E1">                             MatStructure *flag,void *ctx)</font></strong>{
+<a name="line147">147: </a>  int                  info;
+<a name="line148">148: </a>  MPI_Comm             comm;
+<a name="line149">149: </a>  Vec                  G;
+<a name="line150">150: </a>  SNES                 snes;
+<a name="line151">151: </a>  TAO_SOLVER tao;
+
+
+<a name="line155">155: </a>  info = TaoAppGetTaoSolver(taoapp, &amp;tao);
+
+<a name="line158">158: </a>  info = VecDuplicate(V,&amp;G);CHKERRQ(info);
+
+<a name="line160">160: </a>  info = PetscInfo(G,<font color="#666666">"TAO Using finite differences w/o coloring to compute matrix\n"</font>); CHKERRQ(info);
+
+<a name="line162">162: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(taoapp,V,G); CHKERRQ(info);
+<a name="line163">163: </a>  tao-&gt;ngrads++;
+
+<a name="line165">165: </a>  info = PetscObjectGetComm((PetscObject)(*H),&amp;comm);CHKERRQ(info);
+<a name="line166">166: </a>  info = SNESCreate(comm,&amp;snes);CHKERRQ(info);
+
+<a name="line168">168: </a>  info = SNESSetFunction(snes,G,Ftemp,taoapp);CHKERRQ(info);
+<a name="line169">169: </a>  info = SNESDefaultComputeJacobian(snes,V,H,B,flag,taoapp);CHKERRQ(info);
+
+<a name="line171">171: </a>  info = SNESDestroy(snes);CHKERRQ(info);
+<a name="line172">172: </a>  
+<a name="line173">173: </a>  info = VecDestroy(G);CHKERRQ(info);
+<a name="line174">174: </a>  
+<a name="line175">175: </a>  <font color="#4169E1">return</font>(0);
+<a name="line176">176: </a>}
+
+
+
+
+<a name="line185">185: </a><font color="#B22222">/*@C</font>
+<a name="line186">186: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A> - Computes the Hessian using colored finite differences. </font>
+
+<a name="line188">188: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line190">190: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line191">191: </a><font color="#B22222">+  tao - the TAO_APPLICATION context</font>
+<a name="line192">192: </a><font color="#B22222">.  V - compute Hessian at this point</font>
+<a name="line193">193: </a><font color="#B22222">-  ctx - the TAO_APPLICATION structure, cast to (void*)</font>
+
+<a name="line195">195: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line196">196: </a><font color="#B22222">+  H - Hessian matrix (not altered in this routine)</font>
+<a name="line197">197: </a><font color="#B22222">.  B - newly computed Hessian matrix to use with preconditioner (generally the same as H)</font>
+<a name="line198">198: </a><font color="#B22222">-  flag - flag indicating whether the matrix sparsity structure has changed</font>
+
+<a name="line200">200: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line201">201: </a><font color="#B22222">+  -mat_fd_coloring_freq &lt;freq&gt;</font>
+<a name="line202">202: </a><font color="#B22222">-  -tao_view_hessian - view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD</font>
+
+<a name="line204">204: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line206">206: </a><font color="#B22222">   Note:</font>
+<a name="line207">207: </a><font color="#B22222">   The gradient evaluation must be set using the routine TaoSetPetscGradient().</font>
+
+<a name="line209">209: </a><font color="#B22222"> .keywords: TAO_APPLICATION, finite differences, Hessian, coloring, sparse</font>
+
+<a name="line211">211: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>(),SNESDefaultComputeJacobianColor(), </font>
+<a name="line212">212: </a><font color="#B22222">          <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetColoring.html#TaoAppSetColoring">TaoAppSetColoring</A>()</font>
+
+<a name="line214">214: </a><font color="#B22222">@*/</font>
+<a name="line215">215: </a><strong><font color="#4169E1"><a name="TaoAppDefaultComputeHessianColor"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>(TAO_APPLICATION taoapp, Vec V, Mat *HH,Mat *BB,</font></strong>
+<a name="line216">216: </a><strong><font color="#4169E1">                                  MatStructure *flag,void *ctx)</font></strong>{
+<a name="line217">217: </a>  int                 info;
+<a name="line218">218: </a>  MPI_Comm            comm;
+<a name="line219">219: </a>  Vec                 G=0;
+<a name="line220">220: </a>  Mat                 H=*HH,B=*BB;
+<a name="line221">221: </a>  SNES                snes;
+<a name="line222">222: </a>  ISColoring          iscoloring;
+<a name="line223">223: </a>  MatFDColoring       matfdcoloring;
+<a name="line224">224: </a>  TAO_SOLVER          tao;
+
+
+<a name="line232">232: </a>  info = TaoAppGetTaoSolver(taoapp,&amp;tao); CHKERRQ(info);
+<a name="line233">233: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppGetColoring.html#TaoAppGetColoring">TaoAppGetColoring</A>(taoapp,&amp;iscoloring); CHKERRQ(info);
+<a name="line234">234: </a>  <font color="#4169E1">if</font> (!iscoloring){
+<a name="line235">235: </a>    SETERRQ(1,<font color="#666666">"Must set coloring before using this routine.  Try Finite Differences without coloring\n"</font>);
+<a name="line236">236: </a>  }
+<a name="line237">237: </a>  info = VecDuplicate(V,&amp;G);CHKERRQ(info);
+
+<a name="line239">239: </a>  info=PetscInfo(G,<font color="#666666">"TAO computing matrix using finite differences and coloring\n"</font>); CHKERRQ(info);
+
+<a name="line241">241: </a>  info=<A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(taoapp,V,G); CHKERRQ(info);
+<a name="line242">242: </a>  tao-&gt;ngrads++;
+
+<a name="line244">244: </a>  info = PetscObjectGetComm((PetscObject)(H),&amp;comm);CHKERRQ(info);
+<a name="line245">245: </a>  info = SNESCreate(comm,&amp;snes);CHKERRQ(info);
+
+<a name="line247">247: </a>  info = MatFDColoringCreate(H,iscoloring,&amp;matfdcoloring);CHKERRQ(info);
+<a name="line248">248: </a>  info = MatFDColoringSetFunction(matfdcoloring,(int (*)(void)) Ftemp,taoapp);CHKERRQ(info);
+<a name="line249">249: </a>  info = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(info);
+
+<a name="line251">251: </a>  info = SNESSetFunction(snes,G,Ftemp,taoapp);CHKERRQ(info);
+<a name="line252">252: </a>  info = SNESSetJacobian(snes,H,B,SNESDefaultComputeJacobianColor,(void*)matfdcoloring);CHKERRQ(info);
+<a name="line253">253: </a>  info = SNESDefaultComputeJacobianColor(snes,V,HH,BB,flag,matfdcoloring);CHKERRQ(info);
+
+<a name="line255">255: </a>  info = MatFDColoringDestroy(matfdcoloring);CHKERRQ(info);
+<a name="line256">256: </a>  info = SNESDestroy(snes);CHKERRQ(info);
+<a name="line257">257: </a>  
+<a name="line258">258: </a>  info = VecDestroy(G);CHKERRQ(info);
+<a name="line259">259: </a>  <font color="#4169E1">return</font>(0);
+<a name="line260">260: </a>}
+
+<a name="line265">265: </a><font color="#B22222">/* @</font>
+<a name="line266">266: </a><font color="#B22222">  TaoAppSetFiniteDifferencesOptions - Sets various TAO parameters from user options</font>
+
+<a name="line268">268: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line270">270: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line271">271: </a><font color="#B22222">+  taoapp - the TAO Application (optional)</font>
+
+<a name="line273">273: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line275">275: </a><font color="#B22222">.keywords:  options, finite differences</font>
+
+<a name="line277">277: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>();</font>
+
+<a name="line279">279: </a><font color="#B22222">@ */</font>
+<a name="line280">280: </a><strong><font color="#4169E1"><a name="TaoAppSetFiniteDifferencesOptions"></a>int TaoAppSetFiniteDifferencesOptions(TAO_APPLICATION taoapp)</font></strong>{
+<a name="line281">281: </a>  int info;
+<a name="line282">282: </a>  PetscTruth flg;
+
+
+
+<a name="line288">288: </a>  flg=PETSC_FALSE;
+<a name="line289">289: </a>  info = PetscOptionsName(<font color="#666666">"-tao_fd"</font>,<font color="#666666">"use finite differences for Hessian"</font>,<font color="#666666">"<A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>"</font>,&amp;flg);CHKERRQ(info);
+<a name="line290">290: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line291">291: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>,(void*)taoapp);CHKERRQ(info);
+<a name="line292">292: </a>    info = PetscInfo(taoapp,<font color="#666666">"Setting default finite difference Hessian matrix\n"</font>); CHKERRQ(info);
+<a name="line293">293: </a>  }
+
+<a name="line295">295: </a>  flg=PETSC_FALSE;
+<a name="line296">296: </a>  info = PetscOptionsName(<font color="#666666">"-tao_fdgrad"</font>,<font color="#666666">"use finite differences for gradient"</font>,<font color="#666666">"TaoAppDefaultComputeGradient"</font>,&amp;flg);CHKERRQ(info);
+<a name="line297">297: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line298">298: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>(taoapp,TaoAppDefaultComputeGradient,(void*)taoapp);CHKERRQ(info);
+<a name="line299">299: </a>    info = PetscInfo(taoapp,<font color="#666666">"Setting default finite difference gradient routine\n"</font>); CHKERRQ(info);
+<a name="line300">300: </a>  }
+
+
+<a name="line303">303: </a>  flg=PETSC_FALSE;
+<a name="line304">304: </a>  info = PetscOptionsName(<font color="#666666">"-tao_fd_coloring"</font>,<font color="#666666">"use finite differences with coloring to compute Hessian"</font>,<font color="#666666">"<A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>"</font>,&amp;flg);CHKERRQ(info);
+<a name="line305">305: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line306">306: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(taoapp,<A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>,(void*)taoapp);CHKERRQ(info);
+<a name="line307">307: </a>    info = PetscInfo(taoapp,<font color="#666666">"Use finite differencing with coloring to compute Hessian \n"</font>); CHKERRQ(info);
+<a name="line308">308: </a>  }
+<a name="line309">309: </a>    
+<a name="line310">310: </a>  <font color="#4169E1">return</font>(0);
+<a name="line311">311: </a>}
+
+
+<a name="line314">314: </a>static char TaoAppColoringXXX[] = <font color="#666666">"TaoColoring"</font>;
+
+<a name="line316">316: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line317">317: </a>  ISColoring coloring;
+<a name="line318">318: </a>} TaoAppColorit;
+
+<a name="line322">322: </a><strong><font color="#4169E1"><a name="TaoAppDestroyColoringXXX"></a>static int TaoAppDestroyColoringXXX(void*ctx)</font></strong>{
+<a name="line323">323: </a>  int info;
+<a name="line324">324: </a>  TaoAppColorit *mctx=(TaoAppColorit*)ctx;
+<a name="line326">326: </a>  <font color="#4169E1">if</font> (mctx){
+<a name="line327">327: </a>    <font color="#B22222">/*</font>
+<a name="line328">328: </a><font color="#B22222">    if (mctx-&gt;coloring){  </font>
+<a name="line329">329: </a><font color="#B22222">      info = ISColoringDestroy(mctx-&gt;coloring);CHKERRQ(info);</font>
+<a name="line330">330: </a><font color="#B22222">    }</font>
+<a name="line331">331: </a><font color="#B22222">    */</font>
+<a name="line332">332: </a>    info = PetscFree(mctx); CHKERRQ(info);
+<a name="line333">333: </a>  }
+<a name="line334">334: </a>  <font color="#4169E1">return</font>(0);
+<a name="line335">335: </a>}
+
+<a name="line339">339: </a><font color="#B22222">/*@</font>
+<a name="line340">340: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetColoring.html#TaoAppSetColoring">TaoAppSetColoring</A> - Set the matrix coloring to be used when computing the</font>
+<a name="line341">341: </a><font color="#B22222">   Hessian by finite differences.</font>
+
+<a name="line343">343: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line345">345: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line346">346: </a><font color="#B22222">+  app - the TAO_APPLICATION context</font>
+<a name="line347">347: </a><font color="#B22222">-  coloring - the coloring to be used</font>
+
+<a name="line349">349: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line351">351: </a><font color="#B22222">   Note:</font>
+<a name="line352">352: </a><font color="#B22222">   The gradient evaluation must be set using the routine TaoSetPetscGradient().</font>
+
+<a name="line354">354: </a><font color="#B22222"> .keywords: TAO_APPLICATION, finite differences, Hessian, coloring, sparse</font>
+
+<a name="line356">356: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>(),</font>
+<a name="line357">357: </a><font color="#B22222">          <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>()</font>
+
+<a name="line359">359: </a><font color="#B22222">@*/</font>
+<a name="line360">360: </a><strong><font color="#4169E1"><a name="TaoAppSetColoring"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetColoring.html#TaoAppSetColoring">TaoAppSetColoring</A>(TAO_APPLICATION taoapp, ISColoring coloring)</font></strong>{
+<a name="line361">361: </a>  int info;
+<a name="line362">362: </a>  PetscInt ii;
+<a name="line363">363: </a>  TaoAppColorit *mctx;
+<a name="line366">366: </a>  
+<a name="line367">367: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppQueryForObject.html#TaoAppQueryForObject">TaoAppQueryForObject</A>(taoapp,TaoAppColoringXXX,(void**)&amp;mctx); CHKERRQ(info);
+<a name="line368">368: </a>  <font color="#4169E1">if</font> (mctx==0){
+<a name="line369">369: </a>    info=PetscNew(TaoAppColorit,(void**)&amp;mctx); CHKERRQ(info);
+<a name="line370">370: </a>    info=<A href="../../../../docs/manualpages/ptaopages/TaoAppAddObject.html#TaoAppAddObject">TaoAppAddObject</A>(taoapp,TaoAppColoringXXX,(void*)mctx,&amp;ii); CHKERRQ(info);
+<a name="line371">371: </a>    info=<A href="../../../../docs/manualpages/ptaopages/TaoAppSetDestroyRoutine.html#TaoAppSetDestroyRoutine">TaoAppSetDestroyRoutine</A>(taoapp,TaoAppDestroyColoringXXX, (void*)mctx); CHKERRQ(info);
+<a name="line372">372: </a>  }
+<a name="line373">373: </a>  <font color="#B22222">/*</font>
+<a name="line374">374: </a><font color="#B22222">  if (coloring){</font>
+<a name="line375">375: </a><font color="#B22222">  info=PetscObjectReference((PetscObject)coloring); CHKERRQ(info);</font>
+<a name="line376">376: </a><font color="#B22222">  }</font>
+<a name="line377">377: </a><font color="#B22222">  if (mctx-&gt;coloring){</font>
+<a name="line378">378: </a><font color="#B22222">       info=ISColoringDestroy(mctx-&gt;coloring); CHKERRQ(info);</font>
+<a name="line379">379: </a><font color="#B22222">  }</font>
+<a name="line380">380: </a><font color="#B22222">  */</font>
+<a name="line381">381: </a>  mctx-&gt;coloring=coloring;  
+<a name="line382">382: </a>  <font color="#4169E1">return</font>(0);
+<a name="line383">383: </a>}
+
+<a name="line387">387: </a><font color="#B22222">/*@C</font>
+<a name="line388">388: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppGetColoring.html#TaoAppGetColoring">TaoAppGetColoring</A> - Set the matrix coloring to be used when computing the</font>
+<a name="line389">389: </a><font color="#B22222">   Hessian by finite differences.</font>
+
+<a name="line391">391: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line393">393: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line394">394: </a><font color="#B22222">+  app - the TAO_APPLICATION context</font>
+<a name="line395">395: </a><font color="#B22222">-  coloring - the coloring to be used</font>
+
+<a name="line397">397: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line399">399: </a><font color="#B22222">   Note:</font>
+<a name="line400">400: </a><font color="#B22222">   The gradient evaluation must be set using the routine <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>().</font>
+
+<a name="line402">402: </a><font color="#B22222"> .keywords: TAO_APPLICATION, finite differences, Hessian, coloring, sparse</font>
+
+<a name="line404">404: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessianColor.html#TaoAppDefaultComputeHessianColor">TaoAppDefaultComputeHessianColor</A>(),</font>
+<a name="line405">405: </a><font color="#B22222">          <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>()</font>
+
+<a name="line407">407: </a><font color="#B22222">@*/</font>
+<a name="line408">408: </a><strong><font color="#4169E1"><a name="TaoAppGetColoring"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppGetColoring.html#TaoAppGetColoring">TaoAppGetColoring</A>(TAO_APPLICATION taoapp, ISColoring *coloring)</font></strong>{
+<a name="line409">409: </a>  int info;
+<a name="line410">410: </a>  TaoAppColorit *mctx;
+<a name="line413">413: </a>  <font color="#4169E1">if</font> (coloring){
+<a name="line414">414: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoAppQueryForObject.html#TaoAppQueryForObject">TaoAppQueryForObject</A>(taoapp,TaoAppColoringXXX,(void**)&amp;mctx); CHKERRQ(info);
+<a name="line415">415: </a>    <font color="#4169E1">if</font> (mctx){
+<a name="line416">416: </a>      *coloring=mctx-&gt;coloring;
+<a name="line417">417: </a>    } <font color="#4169E1">else</font> {
+<a name="line418">418: </a>      *coloring=0;
+<a name="line419">419: </a>    }
+<a name="line420">420: </a>  }
+<a name="line421">421: </a>  <font color="#4169E1">return</font>(0);
+<a name="line422">422: </a>}
+
+
+<a name="line427">427: </a><strong><font color="#4169E1"><a name="TaoAppAddFiniteDifferences"></a>int TaoAppAddFiniteDifferences(TAO_APPLICATION taoapp)</font></strong>{
+<a name="line428">428: </a>  int info;
+<a name="line430">430: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetOptionsRoutine.html#TaoAppSetOptionsRoutine">TaoAppSetOptionsRoutine</A>(taoapp,TaoAppSetFiniteDifferencesOptions); CHKERRQ(info);
+<a name="line431">431: </a>  <font color="#4169E1">return</font>(0);
+<a name="line432">432: </a>}
+
+<a name="line434">434: </a><strong><font color="#4169E1"><a name="MatTAOMFSetGradient"></a>int MatTAOMFSetGradient(Mat mat,Vec v,int (*func)(TAO_APPLICATION,Vec,Vec,void *),void *funcctx)</font></strong>{
+<a name="line436">436: </a>  <font color="#4169E1">return</font>(0);
+<a name="line437">437: </a>}
+
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+
+---- Minimal Surface Problem (simple boundary) -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value 1.59022, Residual: 0.489090 
+iter = 1, Function value 1.49168, Residual: 0.333810 
+iter = 2, Function value 1.45895, Residual: 0.251735 
+iter = 3, Function value 1.44456, Residual: 0.159005 
+iter = 4, Function value 1.4395, Residual: 0.099070 
+iter = 5, Function value 1.43604, Residual: 0.083886 
+iter = 6, Function value 1.43204, Residual: 0.100352 
+iter = 7, Function value 1.431, Residual: 0.065993 
+iter = 8, Function value 1.43038, Residual: 0.033417 
+iter = 9, Function value 1.43008, Residual: 0.017163 
+iter = 10, Function value 1.42999, Residual: 0.011880 
+
+---- Minimal Surface Problem (simple boundary) -----
+
+Grid: 0,    mx: 7     my: 6   
+iter = 0, Function value 1.47989, Residual: 0.359983 
+iter = 1, Function value 1.44037, Residual: 0.240820 
+iter = 2, Function value 1.43289, Residual: 0.163444 
+iter = 3, Function value 1.42657, Residual: 0.117205 
+iter = 4, Function value 1.42542, Residual: 0.144275 
+iter = 5, Function value 1.42266, Residual: 0.003712 
+Grid: 1,    mx: 13     my: 11   
+iter = 0, Function value 1.43878, Residual: 0.179467 
+iter = 1, Function value 1.43277, Residual: 0.071921 
+iter = 2, Function value 1.43198, Residual: 0.055414 
+iter = 3, Function value 1.43141, Residual: 0.040516 
+iter = 4, Function value 1.43071, Residual: 0.027325 
+iter = 5, Function value 1.43063, Residual: 0.017292 
+iter = 6, Function value 1.43059, Residual: 0.009447 
+Grid: 2,    mx: 25     my: 21   
+iter = 0, Function value 1.43471, Residual: 0.117870 
+iter = 1, Function value 1.43133, Residual: 0.069394 
+iter = 2, Function value 1.43023, Residual: 0.061412 
+iter = 3, Function value 1.42938, Residual: 0.042182 
+iter = 4, Function value 1.42842, Residual: 0.044100 
+iter = 5, Function value 1.42789, Residual: 0.059532 
+iter = 6, Function value 1.42748, Residual: 0.040492 
+iter = 7, Function value 1.42727, Residual: 0.026213 
+iter = 8, Function value 1.42706, Residual: 0.021834 
+iter = 9, Function value 1.42693, Residual: 0.025447 
+iter = 10, Function value 1.42676, Residual: 0.025144 
+iter = 11, Function value 1.42654, Residual: 0.019552 
+iter = 12, Function value 1.42634, Residual: 0.023952 
+iter = 13, Function value 1.42623, Residual: 0.017058 
+iter = 14, Function value 1.42616, Residual: 0.012263 
+iter = 15, Function value 1.42608, Residual: 0.011498 
+Grid: 3,    mx: 49     my: 41   
+iter = 0, Function value 1.42716, Residual: 0.049739 
+iter = 1, Function value 1.42669, Residual: 0.019612 
+iter = 2, Function value 1.4266, Residual: 0.010778 
+Grid: 4,    mx: 97     my: 81   
+iter = 0, Function value 1.42687, Residual: 0.025549 
+iter = 1, Function value 1.42676, Residual: 0.017595 
+iter = 2, Function value 1.42672, Residual: 0.005844 
+Grid: 5,    mx: 193     my: 161   
+iter = 0, Function value 1.42678, Residual: 0.012847 
+iter = 1, Function value 1.42675, Residual: 0.005888 

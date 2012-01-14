@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGAAppSetObjectiveRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGAAppSetObjectiveRoutine"><H1>TaoGAAppSetObjectiveRoutine</H1></A>
+Sets a routine for function evaluations. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp_ga.h" 
+int TaoGAAppSetObjectiveRoutine(TAO_GA_APPLICATION gaapp, int (*func)(TAO_GA_APPLICATION,GAVec,double*,void*), void *ctx)</PRE>
+Collective on TAO_GA_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gaapp </B></TD><TD>- the TAO_GA_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>func </B></TD><TD>- routine for evaluating the function
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- optional user-defined context for private data for the 
+function evaluation routine (may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of funcgrad</FONT></H2>
+<pre>
+    func (TAO_GA_APPLICATION tao,GAVec x,double *f,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- TAO_GA_APPLICATION application context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- optional user-defined context 
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+The user may call <A HREF="../gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>() to set a routine
+that evaluates both the function and gradient.  Alternatively, the
+user may call both <A HREF="../gaapp/TaoGAAppSetObjectiveRoutine.html#TaoGAAppSetObjectiveRoutine">TaoGAAppSetObjectiveRoutine</A>() and <A HREF="../gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>() to set
+separate routines for function and gradient evaluation.
+<P>
+Using a single routine to compute the function and gradient, as
+specified via <A HREF="../gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), may enable better performance
+for applications in which many of the function and gradient computations
+are identical.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<DT><B>-tao_view_gradient </B> -view the gradient after each iteration
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_GA_APPLICATION, set, function
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../gaapp/TaoGAAppSetGradientRoutine.html#TaoGAAppSetGradientRoutine">TaoGAAppSetGradientRoutine</A>(), <A HREF="../gaapp/TaoGAAppSetObjectiveAndGradientRoutine.html#TaoGAAppSetObjectiveAndGradientRoutine">TaoGAAppSetObjectiveAndGradientRoutine</A>(), <A HREF="../solver/TaoComputeFunctionGradient.html#TaoComputeFunctionGradient">TaoComputeFunctionGradient</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/external/globalarraytao/taoapp_ga.c.html#TaoGAAppSetObjectiveRoutine">src/external/globalarraytao/taoapp_ga.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

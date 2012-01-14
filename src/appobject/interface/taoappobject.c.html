@@ -1,0 +1,427 @@
+<center><a href="taoappobject.c">Actual source code: taoappobject.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:11+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"taoappobject.h"</font><font color="#A020F0">     </font><font color="#B22222">/*I "tao_solver.h"  I*/</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"taovec.h"</font><font color="#A020F0"></font>
+
+
+<a name="line8">  8: </a><font color="#B22222">/*@C</font>
+<a name="line9">  9: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A> - Evaluate the objective function</font>
+<a name="line10"> 10: </a><font color="#B22222">   at the point x.</font>
+
+<a name="line12"> 12: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line14"> 14: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line15"> 15: </a><font color="#B22222">.  xx - the point at which to evaluate the obective function</font>
+
+<a name="line17"> 17: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line18"> 18: </a><font color="#B22222">.  ff - objective function value</font>
+
+<a name="line20"> 20: </a><font color="#B22222">.seealso TaoSetPetscGradient(), <A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(), EvaluateObjectiveAndGradientFunction()</font>
+
+<a name="line22"> 22: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line24"> 24: </a><font color="#B22222">.keywords: application, context</font>
+
+<a name="line26"> 26: </a><font color="#B22222">@*/</font>
+<a name="line27"> 27: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(TaoVec *xx, double *ff){
+<a name="line28"> 28: </a>  TaoFunctionBegin;
+<a name="line29"> 29: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line30"> 30: </a>  //  TaoFunctionReturn(0);
+<a name="line31"> 31: </a>}
+
+<a name="line35"> 35: </a><font color="#B22222">/*@C</font>
+<a name="line36"> 36: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A> - Evaluate the gradient of the</font>
+<a name="line37"> 37: </a><font color="#B22222">   objective function at the point x.</font>
+
+<a name="line39"> 39: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line41"> 41: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line42"> 42: </a><font color="#B22222">.  xx - the point at which to evaluate the gradient</font>
+
+<a name="line44"> 44: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line45"> 45: </a><font color="#B22222">.  gg - the gradient vector</font>
+
+<a name="line47"> 47: </a><font color="#B22222">.seealso TaoSetPetscGradient(), <A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(), EvaluateObjectiveAndGradientFunction()</font>
+
+<a name="line49"> 49: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line51"> 51: </a><font color="#B22222">.keywords: application, context</font>
+
+<a name="line53"> 53: </a><font color="#B22222">@*/</font>
+<a name="line54"> 54: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(TaoVec *xx, TaoVec *gg){
+<a name="line55"> 55: </a>  TaoFunctionBegin;
+<a name="line56"> 56: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line57"> 57: </a>  //  TaoFunctionReturn(0);
+<a name="line58"> 58: </a>}
+
+
+<a name="line63"> 63: </a><font color="#B22222">/*@C</font>
+<a name="line64"> 64: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A> - Evaluate the objective function</font>
+<a name="line65"> 65: </a><font color="#B22222">   and its gradient at the point x.</font>
+
+<a name="line67"> 67: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line69"> 69: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line70"> 70: </a><font color="#B22222">.  xx - the point at which to evaluate the gradient</font>
+
+<a name="line72"> 72: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line73"> 73: </a><font color="#B22222">+  ff - the objective value</font>
+<a name="line74"> 74: </a><font color="#B22222">-  gg - the gradient vector</font>
+
+<a name="line76"> 76: </a><font color="#B22222">.seealso TaoSetPetscFunctionGradient(), <A href="../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(), <A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>()</font>
+
+<a name="line78"> 78: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line80"> 80: </a><font color="#B22222">.keywords: application, gradient</font>
+
+<a name="line82"> 82: </a><font color="#B22222">@*/</font>
+<a name="line83"> 83: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A>(TaoVec *xx, double *ff, TaoVec *gg){
+<a name="line84"> 84: </a>  int info;
+<a name="line85"> 85: </a>  TaoFunctionBegin;
+<a name="line86"> 86: </a>  info=this-&gt;<A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(xx,ff);CHKERRQ(info);
+<a name="line87"> 87: </a>  info=this-&gt;<A href="../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(xx,gg);CHKERRQ(info);
+<a name="line88"> 88: </a>  TaoFunctionReturn(0);
+<a name="line89"> 89: </a>}
+
+<a name="line93"> 93: </a><font color="#B22222">/*@C</font>
+<a name="line94"> 94: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A> - Evaluate the Hessian of the objective function</font>
+<a name="line95"> 95: </a><font color="#B22222">   at the point x.</font>
+
+<a name="line97"> 97: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line99"> 99: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line100">100: </a><font color="#B22222">.  xx - the point at which to evaluate the gradient</font>
+
+<a name="line102">102: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line103">103: </a><font color="#B22222">.  HH - the Hessian matrix</font>
+
+<a name="line105">105: </a><font color="#B22222">.seealso TaoSetPetscHessian()</font>
+<a name="line106">106: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line108">108: </a><font color="#B22222">.keywords: application, hessian</font>
+
+<a name="line110">110: </a><font color="#B22222">@*/</font>
+<a name="line111">111: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A>(TaoVec *xx, TaoMat *HH){
+<a name="line112">112: </a>  TaoFunctionBegin;
+<a name="line113">113: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line114">114: </a>  //  TaoFunctionReturn(0);
+<a name="line115">115: </a>}
+
+<a name="line119">119: </a><font color="#B22222">/*@C</font>
+<a name="line120">120: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/HessianSolve.html#HessianSolve">HessianSolve</A> - <A href="../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> a linear system involving the Hessian</font>
+<a name="line121">121: </a><font color="#B22222">matrix, or apply an inverse Hessian operator to a vector.</font>
+
+<a name="line123">123: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line125">125: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line126">126: </a><font color="#B22222">.  rhs - the right-hand side</font>
+
+<a name="line128">128: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line129">129: </a><font color="#B22222">+  vv - the solution</font>
+<a name="line130">130: </a><font color="#B22222">-  success - flag states whether solution was found.</font>
+
+<a name="line132">132: </a><font color="#B22222">.seealso <A href="../../../docs/manualpages/solver/TaoSetMethod.html#TaoSetMethod">TaoSetMethod</A>(), TaoLMVMSetSize(), <A href="../../../docs/manualpages/taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A>()</font>
+
+<a name="line134">134: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line136">136: </a><font color="#B22222">.keywords: application, Hessian, LMVM</font>
+
+<a name="line138">138: </a><font color="#B22222">@*/</font>
+<a name="line139">139: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/HessianSolve.html#HessianSolve">HessianSolve</A>(TaoVec *rhs, TaoVec*vv, TaoTruth *success){
+<a name="line140">140: </a>  int info;
+<a name="line141">141: </a>  TaoFunctionBegin;
+<a name="line142">142: </a>  info=vv-&gt;<A href="../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(rhs);CHKERRQ(info);
+<a name="line143">143: </a>  *success=TAO_TRUE;
+<a name="line144">144: </a>  TaoFunctionReturn(0);
+<a name="line145">145: </a>}
+
+
+<a name="line150">150: </a><font color="#B22222">/*@C</font>
+<a name="line151">151: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/EvaluateConstraints.html#EvaluateConstraints">EvaluateConstraints</A> - Evaluate the constraint functions</font>
+<a name="line152">152: </a><font color="#B22222">   at the point x.</font>
+
+<a name="line154">154: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line156">156: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line157">157: </a><font color="#B22222">.  xx - the point at which to evaluate the gradient</font>
+
+<a name="line159">159: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line160">160: </a><font color="#B22222">.  RR - the constraint vector</font>
+
+<a name="line162">162: </a><font color="#B22222">.seealso TaoSetPetscConstraintsFunction()</font>
+<a name="line163">163: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line165">165: </a><font color="#B22222">.keywords: application, constraints</font>
+
+<a name="line167">167: </a><font color="#B22222">@*/</font>
+<a name="line168">168: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/EvaluateConstraints.html#EvaluateConstraints">EvaluateConstraints</A>(TaoVec *xx, TaoVec *RR){
+<a name="line169">169: </a>  TaoFunctionBegin;
+<a name="line170">170: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line171">171: </a>  //  TaoFunctionReturn(0);
+<a name="line172">172: </a>}
+
+<a name="line176">176: </a><font color="#B22222">/*@C</font>
+<a name="line177">177: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/EvaluateJacobian.html#EvaluateJacobian">EvaluateJacobian</A> - Evaluate the Jacobian of the constraint functions</font>
+<a name="line178">178: </a><font color="#B22222">   at the point x.</font>
+
+<a name="line180">180: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line182">182: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line183">183: </a><font color="#B22222">.  xx - the point at which to evaluate the gradient</font>
+
+<a name="line185">185: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line186">186: </a><font color="#B22222">.  JJ - the Jacobian matrix</font>
+
+<a name="line188">188: </a><font color="#B22222">.seealso TaoSetPetscJacobian()</font>
+
+<a name="line190">190: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line192">192: </a><font color="#B22222">.keywords: application, constraints</font>
+
+<a name="line194">194: </a><font color="#B22222">@*/</font>
+<a name="line195">195: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/EvaluateJacobian.html#EvaluateJacobian">EvaluateJacobian</A>(TaoVec *xx, TaoMat *JJ){
+<a name="line196">196: </a>  TaoFunctionBegin;
+<a name="line197">197: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line198">198: </a>  //  TaoFunctionReturn(0);
+<a name="line199">199: </a>}
+
+<a name="line203">203: </a><font color="#B22222">/*@C</font>
+<a name="line204">204: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A> - Initialize the variables for the optimization</font>
+<a name="line205">205: </a><font color="#B22222">   solver.  Set an initial point.</font>
+
+
+<a name="line208">208: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line210">210: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line211">211: </a><font color="#B22222">.  xx - the variable vector</font>
+
+<a name="line213">213: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line215">215: </a><font color="#B22222">.keywords: application, constraints</font>
+
+<a name="line217">217: </a><font color="#B22222">@*/</font>
+<a name="line218">218: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *xx){
+<a name="line219">219: </a>  int info;
+<a name="line220">220: </a>  TaoFunctionBegin;
+<a name="line221">221: </a>  info=xx-&gt;<A href="../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>();CHKERRQ(info);
+<a name="line222">222: </a>  TaoFunctionReturn(0);
+<a name="line223">223: </a>}
+
+<a name="line227">227: </a><font color="#B22222">/*@C</font>
+<a name="line228">228: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A> - Sets the pointer to a vector that will</font>
+<a name="line229">229: </a><font color="#B22222">   be used to store the variables.</font>
+
+<a name="line231">231: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line233">233: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line234">234: </a><font color="#B22222">.  xx - vector to the variable vector</font>
+
+<a name="line236">236: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line238">238: </a><font color="#B22222">.keywords: application, variables</font>
+
+<a name="line240">240: </a><font color="#B22222">@*/</font>
+<a name="line241">241: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **xx){
+<a name="line242">242: </a>  TaoFunctionBegin;
+<a name="line243">243: </a>  *xx=0;
+<a name="line244">244: </a>  TaoFunctionReturn(0);
+<a name="line245">245: </a>}
+
+
+<a name="line250">250: </a><font color="#B22222">/*@C</font>
+<a name="line251">251: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A> - Set these vectors equal to the lower</font>
+<a name="line252">252: </a><font color="#B22222">   and upper bounds on the variables.</font>
+
+<a name="line254">254: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line256">256: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line257">257: </a><font color="#B22222">+  xxll - vector vector of lower bounds</font>
+<a name="line258">258: </a><font color="#B22222">-  xxuu - vector vector of upper bounds</font>
+
+<a name="line260">260: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line262">262: </a><font color="#B22222">.keywords: application, bounds</font>
+
+<a name="line264">264: </a><font color="#B22222">@*/</font>
+<a name="line265">265: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *xxll, TaoVec *xxuu)
+<a name="line266">266: </a>{
+<a name="line267">267: </a>  int info;
+
+<a name="line269">269: </a>  TaoFunctionBegin;
+
+<a name="line271">271: </a>  <font color="#4169E1">if</font> (xxll) {
+<a name="line272">272: </a>    info = xxll-&gt;<A href="../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(-TAO_INFINITY); CHKERRQ(info);
+<a name="line273">273: </a>  }
+
+<a name="line275">275: </a>  <font color="#4169E1">if</font> (xxuu) {
+<a name="line276">276: </a>    info = xxuu-&gt;<A href="../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(TAO_INFINITY); CHKERRQ(info);
+<a name="line277">277: </a>  }
+<a name="line278">278: </a>  TaoFunctionReturn(0);
+<a name="line279">279: </a>}
+
+
+<a name="line284">284: </a><font color="#B22222">/*@C</font>
+<a name="line285">285: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/GetHessianMatrix.html#GetHessianMatrix">GetHessianMatrix</A> - Sets the pointer to a matrix that will</font>
+<a name="line286">286: </a><font color="#B22222">   be used to store the Hessian of the objective function.</font>
+
+<a name="line288">288: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line290">290: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line291">291: </a><font color="#B22222">.  HH - vector to the Hessian</font>
+
+<a name="line293">293: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line295">295: </a><font color="#B22222">.keywords: application, gradient</font>
+
+<a name="line297">297: </a><font color="#B22222">@*/</font>
+<a name="line298">298: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/GetHessianMatrix.html#GetHessianMatrix">GetHessianMatrix</A>(TaoMat **HH){
+<a name="line299">299: </a>  TaoFunctionBegin;
+<a name="line300">300: </a>  *HH=0;
+<a name="line301">301: </a>  TaoFunctionReturn(0);
+<a name="line302">302: </a>}
+
+<a name="line306">306: </a><font color="#B22222">/*@C</font>
+<a name="line307">307: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/GetJacobianMatrix.html#GetJacobianMatrix">GetJacobianMatrix</A> - Sets the pointer to a matrix that will</font>
+<a name="line308">308: </a><font color="#B22222">   be used to store the Jacobian</font>
+
+<a name="line310">310: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line312">312: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line313">313: </a><font color="#B22222">.  JJ - matrix to the Jacobian</font>
+
+<a name="line315">315: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line317">317: </a><font color="#B22222">.keywords: application, gradient</font>
+
+<a name="line319">319: </a><font color="#B22222">@*/</font>
+<a name="line320">320: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/GetJacobianMatrix.html#GetJacobianMatrix">GetJacobianMatrix</A>(TaoMat **JJ){
+<a name="line321">321: </a>  TaoFunctionBegin;
+<a name="line322">322: </a>  *JJ=0;
+<a name="line323">323: </a>  TaoFunctionReturn(0);
+<a name="line324">324: </a>}
+
+<a name="line326">326: </a>int TaoApplication::GetConstraintVector(TaoVec **rr){
+<a name="line327">327: </a>  TaoFunctionBegin;
+<a name="line328">328: </a>  *rr=0;
+<a name="line329">329: </a>  TaoFunctionReturn(0);
+<a name="line330">330: </a>}
+
+
+<a name="line335">335: </a>int TaoApplication::GetInequalityConstraints(TaoVec**ll, TaoMat **AA, TaoVec **uu){
+<a name="line336">336: </a>  TaoFunctionBegin;
+<a name="line337">337: </a>  *ll=0;
+<a name="line338">338: </a>  *AA=0;
+<a name="line339">339: </a>  *uu=0;
+<a name="line340">340: </a>  TaoFunctionReturn(0);
+<a name="line341">341: </a>}
+
+<a name="line345">345: </a><font color="#B22222">/*@C</font>
+<a name="line346">346: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/Monitor.html#Monitor">Monitor</A> - <A href="../../../docs/manualpages/taoapp/Monitor.html#Monitor">Monitor</A> the current solution</font>
+
+<a name="line348">348: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line350">350: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line352">352: </a><font color="#B22222">   Note: This routine is called after each iteration</font>
+
+<a name="line354">354: </a><font color="#B22222">.keywords: application, monitor</font>
+
+<a name="line356">356: </a><font color="#B22222">@*/</font>
+<a name="line357">357: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/Monitor.html#Monitor">Monitor</A>(){
+<a name="line358">358: </a>  TaoFunctionBegin;
+<a name="line359">359: </a>  TaoFunctionReturn(0);
+<a name="line360">360: </a>}
+
+<a name="line364">364: </a><font color="#B22222">/*@C</font>
+<a name="line365">365: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/Monitor2.html#Monitor2">Monitor2</A> - </font>
+
+<a name="line367">367: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line369">369: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line370">370: </a><font color="#B22222">.  xx - the current solution</font>
+<a name="line371">371: </a><font color="#B22222">.  gl - the gradient of the Lagrangian function</font>
+<a name="line372">372: </a><font color="#B22222">.  dx - the step direction</font>
+
+<a name="line374">374: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line375">375: </a><font color="#B22222">.  *term - TAO_TRUE if the solver should stop iterating and TAO_FALSE if the solver should continue;</font>
+
+<a name="line377">377: </a><font color="#B22222">.seealso TaoSetPetscGradient(),</font>
+
+<a name="line379">379: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line381">381: </a><font color="#B22222">.keywords: application, context</font>
+
+<a name="line383">383: </a><font color="#B22222">@*/</font>
+<a name="line384">384: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/Monitor2.html#Monitor2">Monitor2</A>(TaoVec *xx, TaoVec *gg, TaoVec *ff, TaoTruth *term){
+<a name="line385">385: </a>  TaoFunctionBegin;
+<a name="line386">386: </a>  *term=TAO_FALSE;
+<a name="line387">387: </a>  TaoFunctionReturn(0);
+<a name="line388">388: </a>}
+
+
+
+<a name="line394">394: </a><font color="#B22222">/*@C</font>
+<a name="line395">395: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A> - Create and a linear solver used to solve this matrix</font>
+
+<a name="line397">397: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line399">399: </a><font color="#B22222">   input Parameters:</font>
+<a name="line400">400: </a><font color="#B22222">+  H - the operator to be used to solve</font>
+<a name="line401">401: </a><font color="#B22222">-  flag - indicates properties solver must have</font>
+
+<a name="line403">403: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line404">404: </a><font color="#B22222">.  tksp - the linear solver</font>
+
+<a name="line406">406: </a><font color="#B22222">   Types of linear solvers are:</font>
+<a name="line407">407: </a><font color="#B22222">+  100 - Solver for any square matrix</font>
+<a name="line408">408: </a><font color="#B22222">.  110 - GMRES</font>
+<a name="line409">409: </a><font color="#B22222">.  200 - Any symmetric matrix</font>
+<a name="line410">410: </a><font color="#B22222">.  210 - MINRES</font>
+<a name="line411">411: </a><font color="#B22222">.  220 - CG with Trust  Region</font>
+<a name="line412">412: </a><font color="#B22222">.  300 - Any symmetric positive definite</font>
+<a name="line413">413: </a><font color="#B22222">-  310 - Conjugate Gradient</font>
+
+<a name="line415">415: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line417">417: </a><font color="#B22222">.keywords: application, linear solver</font>
+
+<a name="line419">419: </a><font color="#B22222">@*/</font>
+<a name="line420">420: </a>int TaoApplication::<A href="../../../docs/manualpages/taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A>(TaoMat *H, int flag, TaoLinearSolver **tksp){
+<a name="line421">421: </a>  TaoFunctionBegin;
+<a name="line422">422: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line423">423: </a>}
+
+<a name="line427">427: </a><font color="#B22222">/*@</font>
+<a name="line428">428: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/TaoDestroyApplication.html#TaoDestroyApplication">TaoDestroyApplication</A> - Destroys the TAO application</font>
+
+<a name="line430">430: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line432">432: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line433">433: </a><font color="#B22222">.  myapp - pointer to the TaoApplication object (TaoApplication*),</font>
+
+
+<a name="line436">436: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line438">438: </a><font color="#B22222">.keywords: application</font>
+
+<a name="line440">440: </a><font color="#B22222">@*/</font>
+<a name="line441">441: </a><strong><font color="#4169E1"><a name="TaoDestroyApplication"></a>int <A href="../../../docs/manualpages/taoapp/TaoDestroyApplication.html#TaoDestroyApplication">TaoDestroyApplication</A>(TaoApplication *myapp)</font></strong>{
+<a name="line442">442: </a>  TaoFunctionBegin;
+<a name="line443">443: </a>  delete myapp;
+<a name="line444">444: </a>  TaoFunctionReturn(0);
+<a name="line445">445: </a>}
+
+
+</pre>
+</body>
+
+</html>

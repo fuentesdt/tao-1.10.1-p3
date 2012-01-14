@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetOptionsRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetOptionsRoutine"><H1>TaoAppSetOptionsRoutine</H1></A>
+Sets an ADDITIONAL function that is to be called during <A HREF="../solver/TaoSetFromOptions.html#TaoSetFromOptions">TaoSetFromOptions</A>(). 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetOptionsRoutine(TAO_APPLICATION taoapp,int (*options)(TAO_APPLICATION) )
+</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_APPLICATION solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>options </B></TD><TD>- routine the checks options
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of options</FONT></H2>
+<pre>
+    int myoptions(TAO_APPLICATION taoapp)
+</pre>
+<P>
+<DT><B>taoapp </B> -the TAO_APPLICATION solver context
+<br>
+<P>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+Several different options routines may be set by calling
+this routine.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ options, monitor, <A HREF="../lsolver/View.html#View">View</A>
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppSetFromOptions.html#TaoAppSetFromOptions">TaoAppSetFromOptions</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app.c.html#TaoAppSetOptionsRoutine">src/petsctao/application/petscapp/tao_app.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

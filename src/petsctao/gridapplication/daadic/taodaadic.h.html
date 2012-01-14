@@ -1,0 +1,31 @@
+<center><a href="taodaadic.h">Actual source code: taodaadic.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifdef TAO_USE_ADIC</font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"ad_deriv.h"</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><strong><font color="#4169E1">                                             int (*)</font></strong>(int[2],DERIV_TYPE[4],DERIV_TYPE*,void*), 
+<a name="line6">  6: </a>                                                    int, void *);
+
+<a name="line9">  9: </a><strong><font color="#4169E1">                                             int (*)</font></strong>(int[2],DERIV_TYPE[16],DERIV_TYPE*,void*), 
+<a name="line10"> 10: </a>                                                    int, void *);
+
+<a name="line12"> 12: </a><font color="#A020F0">#else</font>
+
+<a name="line14"> 14: </a><font color="#4169E1">typedef double InactiveDouble;</font>
+<a name="line15"> 15: </a><font color="#4169E1">typedef double DERIV_TYPE;</font>
+<a name="line16"> 16: </a><strong><font color="#228B22">#define <A href="../../../../docs/manualpages/daapp/DAAppSetADElementFunctionGradient.html#DAAppSetADElementFunctionGradient">DAAppSetADElementFunctionGradient</A>(a,b,c,d)   0</font></strong>
+<a name="line17"> 17: </a><strong><font color="#228B22">#define <A href="../../../../docs/manualpages/daapp/DAAppSetADElementFunctionGradient2.html#DAAppSetADElementFunctionGradient2">DAAppSetADElementFunctionGradient2</A>(a,b,c,d)   0</font></strong>
+
+<a name="line19"> 19: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetTaoSetUpDownRoutines</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetTaoSetUpDownRoutines"><H1>TaoSetTaoSetUpDownRoutines</H1></A>
+Sets the routines that setup and destroy solver data structures 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetTaoSetUpDownRoutines(TAO_SOLVER tao, 
+                              int (*setup)(TAO_SOLVER,void*),
+                              int (*setdown)(TAO_SOLVER,void*))
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>setup </B></TD><TD>- routine that creates the work vectors in a solver.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>setdown </B></TD><TD>- the routine that will destroy the work vectors of a solver
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine is generally called within a "TaoCreate_XXX" routine.
+The routines set here will be called in the <A HREF="../solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>() and
+<A HREF="../solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>() routines, respectively.  Vectors and other data structures
+needed by the solver can be created and destroyed within the TaoSolve_XXX()
+routine, or before and after this routine.  The advantage to doing it
+before and after is that the solver can be called multiple times
+without reallocated these structures -- improving efficiency.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+When the 'setup' routine is called, the solution vector, and other
+data will be available to clone.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+When TAO calls these routines, the second arguement will be the
+context specified in <A HREF="../solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>().
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_SOLVER, setup, destroy
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoCreate.html#TaoCreate">TaoCreate</A>(), <A HREF="../solver/TaoSetUp.html#TaoSetUp">TaoSetUp</A>(), <A HREF="../solver/TaoSetDown.html#TaoSetDown">TaoSetDown</A>(), <A HREF="../solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(), <A HREF="../solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/newsolver.c.html#TaoSetTaoSetUpDownRoutines">src/interface/newsolver.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

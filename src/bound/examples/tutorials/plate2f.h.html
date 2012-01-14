@@ -1,0 +1,86 @@
+<center><a href="plate2f.h">Actual source code: plate2f.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a>! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+<a name="line2">  2: </a>!             Include file <font color="#4169E1">for</font> program plate.f
+<a name="line3">  3: </a>! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+<a name="line4">  4: </a>!
+<a name="line5">  5: </a>!  This program uses CPP <font color="#4169E1">for</font> preprocessing, as indicated by the use of
+<a name="line6">  6: </a>!  TAO include files in the directories $TAO_DIR/include/finclude and
+<a name="line7">  7: </a>!  $PETSC_DIR/include/finclude.  This convention enables use of the CPP
+<a name="line8">  8: </a>!  preprocessor, which allows the use of the #include statements that
+<a name="line9">  9: </a>!  define TAO objects and variables.
+<a name="line10"> 10: </a>!
+<a name="line11"> 11: </a>!  Since one must be very careful to include each file no more than once
+<a name="line12"> 12: </a>!  in a Fortran routine, application programmers must explicitly list
+<a name="line13"> 13: </a>!  each file needed <font color="#4169E1">for</font> the various TAO and PETSc components within their
+<a name="line14"> 14: </a>!  program (unlike the C/C++ interface).
+<a name="line15"> 15: </a>!
+<a name="line16"> 16: </a>!  See the Fortran section of the PETSc users manual <font color="#4169E1">for</font> details.
+<a name="line17"> 17: </a>!
+<a name="line18"> 18: </a>!  The following include statements are generally used in TAO programs:
+<a name="line19"> 19: </a>!     tao_solver.h - TAO solvers
+<a name="line20"> 20: </a>!     petscksp.h   - Krylov subspace methods
+<a name="line21"> 21: </a>!     petscpc.h    - preconditioners
+<a name="line22"> 22: </a>!     petscmat.h   - matrices
+<a name="line23"> 23: </a>!     petscvec.h   - vectors
+<a name="line24"> 24: </a>!     petsc.h      - basic PETSc routines
+<a name="line25"> 25: </a>!  In addition, we need the following <font color="#4169E1">for</font> use of distributed arrays
+<a name="line26"> 26: </a>!     petscda.h    - distributed arrays (DAs)
+
+<a name="line28"> 28: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscsys.h"</font><font color="#A020F0"></font>
+<a name="line29"> 29: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscvec.h"</font><font color="#A020F0"></font>
+<a name="line30"> 30: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscmat.h"</font><font color="#A020F0"></font>
+<a name="line31"> 31: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscksp.h"</font><font color="#A020F0"></font>
+<a name="line32"> 32: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscpc.h"</font><font color="#A020F0"></font>
+<a name="line33"> 33: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscsnes.h"</font><font color="#A020F0"></font>
+<a name="line34"> 34: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscda.h"</font><font color="#A020F0"></font>
+<a name="line35"> 35: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/petscis.h"</font><font color="#A020F0"></font>
+<a name="line36"> 36: </a><font color="#A020F0">#include </font><font color="#666666">"finclude/tao_solver.h"</font><font color="#A020F0"></font>
+<a name="line37"> 37: </a>!  Common blocks:
+<a name="line38"> 38: </a>!  In this example we use common blocks to store data needed by the 
+<a name="line39"> 39: </a>!  application-provided call-back routines, FormFunction(), FormGradient(),
+<a name="line40"> 40: </a>!  and FormHessian().  Note that we can store (pointers to) TAO objects
+<a name="line41"> 41: </a>!  within these common blocks. 
+<a name="line42"> 42: </a>!
+<a name="line43"> 43: </a>!  common /params/ - contains parameters <font color="#4169E1">for</font> the global application 
+<a name="line44"> 44: </a>!     mx, my     - global discretization in x- and y-directions
+<a name="line45"> 45: </a>!     hx, hy     - mesh spacing in x- and y-directions
+<a name="line46"> 46: </a>!     N          - dimension of global vectorn
+<a name="line47"> 47: </a>!     bheight    - height of plate
+<a name="line48"> 48: </a>!     bmx,bmy    - grid dimensions under plate
+<a name="line49"> 49: </a>!
+<a name="line50"> 50: </a>!  common /pdata/ - contains some parallel data
+<a name="line51"> 51: </a>!     localX     - local work vector (including ghost points)
+<a name="line52"> 52: </a>!     localV     - local work vector (including ghost points)
+<a name="line53"> 53: </a>!     Top, Bottom, Left, Right - boundary vectors
+<a name="line54"> 54: </a>!     Nx, Ny     - number of processes in x- and y- directions
+<a name="line55"> 55: </a>!     da         - distributed array
+
+<a name="line57"> 57: </a>      Vec              localX, localV
+<a name="line58"> 58: </a>      Vec              Top, Left 
+<a name="line59"> 59: </a>      Vec              Right, Bottom
+<a name="line60"> 60: </a>      DA               da
+<a name="line61"> 61: </a>      double precision bheight
+<a name="line62"> 62: </a>      PetscInt          bmx, bmy
+<a name="line63"> 63: </a>      PetscInt          mx, my, Nx, Ny, N
+
+
+<a name="line66"> 66: </a>      common /params/ mx,my,bmx,bmy,bheight,N
+<a name="line67"> 67: </a>      common /pdata/  da,localX,localV,Nx,Ny
+<a name="line68"> 68: </a>      common /pdata/  Left, Top, Right, Bottom
+
+<a name="line70"> 70: </a>! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+</pre>
+</body>
+
+</html>

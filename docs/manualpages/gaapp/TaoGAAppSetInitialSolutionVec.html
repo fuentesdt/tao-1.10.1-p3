@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGAAppSetInitialSolutionVec</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGAAppSetInitialSolutionVec"><H1>TaoGAAppSetInitialSolutionVec</H1></A>
+Sets the vector representing the variables and an initial guess. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp_ga.h" 
+int TaoGAAppSetInitialSolutionVec(TAO_GA_APPLICATION gaapp, GAVec xx)</PRE>
+Collective on TAO_GA_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_GA_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xx </B></TD><TD>- variable vector that stores the solution
+</TD></TR>
+<P>
+
+<P>
+Note: This vector will be used by the solver, so do not use it
+for other purposes.  The user should destroy this vector after
+solving the application.
+<P>
+Note:  If the user is unaware of a decent initial solution,
+the vector should be set to zero.
+<P>
+Note:  The TAO solvers will not use the contents of this
+GAVec until the <A HREF="../gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A>() is called.  Therefore the user
+may compute an initial solution in this vector after this
+routine -- but before <A HREF="../gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A>().
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A HREF="../ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/external/globalarraytao/taoapp_ga.c.html#TaoGAAppSetInitialSolutionVec">src/external/globalarraytao/taoapp_ga.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetObjectiveAndGradientRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetObjectiveAndGradientRoutine"><H1>TaoAppSetObjectiveAndGradientRoutine</H1></A>
+Sets a routine for function and gradient evaluation. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetObjectiveAndGradientRoutine(TAO_APPLICATION taoapp, int (*funcgrad)(TAO_APPLICATION,Vec,double*,Vec, void*),void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>funcgrad </B></TD><TD>- routine for evaluating the function and gradient
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- optional user-defined context for private data for the 
+function and gradient evaluation routine (may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of funcgrad</FONT></H2>
+<pre>
+    funcgrad (TAO_APPLICATION tao,Vec x,double *f,Vec g,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- TAO_APPLICATION  context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- function value
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>g </B></TD><TD>- gradient vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- optional user-defined context 
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+The user may call <A HREF="../ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>() to set a routine
+that evaluates both the function and gradient.  Alternatively, the
+user may call both <A HREF="../ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>() and <A HREF="../ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>() to set
+separate routines for function and gradient evaluation.
+<P>
+Using a single routine to compute the function and gradient, as
+specified via <A HREF="../ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), may enable better performance
+for applications in which many of the function and gradient computations
+are identical.
+<P>
+<H2><FONT COLOR="#CC3333">Fortran Note</FONT></H2>
+If your Fortran compiler does not recognize symbols over 31 characters in length, then
+use the identical routine with the shortened name TaoAppSetObjectiveAndGradientRo()
+<P>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<DT><B>-tao_view_gradient </B> -view the gradient after each iteration using PETSC_VIEWER_STDOUT_WORLD
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_APPLICATION, set, objective, gradient
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_fg.c.html#TaoAppSetObjectiveAndGradientRoutine">src/petsctao/application/petscapp/tao_app_fg.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/bound/examples/tutorials/plate2.c.html">src/bound/examples/tutorials/plate2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/jbearing2.c.html">src/bound/examples/tutorials/jbearing2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/plate2f.F.html">src/bound/examples/tutorials/plate2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion1.c.html">src/unconstrained/examples/tutorials/eptorsion1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2.c.html">src/unconstrained/examples/tutorials/eptorsion2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1.c.html">src/unconstrained/examples/tutorials/rosenbrock1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2f.F.html">src/unconstrained/examples/tutorials/eptorsion2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1f.F.html">src/unconstrained/examples/tutorials/rosenbrock1f.F.html</A><BR>
+</BODY></HTML>

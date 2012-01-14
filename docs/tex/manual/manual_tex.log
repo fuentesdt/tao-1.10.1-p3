@@ -1,0 +1,580 @@
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2011.4.7)  15 SEP 2011 10:25
+entering extended mode
+ %&-line parsing enabled.
+**manual_tex
+(./manual_tex.tex
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, farsi, arabic, croatian, bulgarian, ukrainian, russian, czech, slov
+ak, danish, dutch, finnish, french, basque, ngerman, german, german-x-2009-06-1
+9, ngerman-x-2009-06-19, ibycus, monogreek, greek, ancientgreek, hungarian, san
+skrit, italian, latin, latvian, lithuanian, mongolian2a, mongolian, bokmal, nyn
+orsk, romanian, irish, coptic, serbian, turkish, welsh, esperanto, uppersorbian
+, estonian, indonesian, interlingua, icelandic, kurmanji, slovenian, polish, po
+rtuguese, spanish, galician, catalan, swedish, ukenglish, pinyin, loaded.
+(/usr/share/texmf-texlive/tex/latex/base/book.cls
+Document Class: book 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texmf-texlive/tex/latex/base/bk11.clo
+File: bk11.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(/usr/share/texmf-texlive/tex/generic/epsf/epsf.sty
+This is `epsf.tex' v2.7.3 <23 July 2005>
+\epsffilein=\read1
+\epsfframemargin=\dimen103
+\epsfframethickness=\dimen104
+\epsfrsize=\dimen105
+\epsftmp=\dimen106
+\epsftsize=\dimen107
+\epsfxsize=\dimen108
+\epsfysize=\dimen109
+\pspoints=\dimen110
+) (/usr/share/texmf-texlive/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2009/06/22 v3.00
+
+(/usr/share/texmf-texlive/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2009/06/22 v3.00 Basic AMSFonts support
+\@emptytoks=\toks14
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 96.
+))
+(/usr/share/texmf-texlive/tex/latex/moreverb/moreverb.sty
+Package: moreverb 2008/06/03 v2.3 `more' verbatim facilities
+ (./verbatim.sty
+Style-Option: `verbatim' v1.4d <91/04/24> (RmS)
+English Documentation          <91/04/24> (RmS)
+\every@verbatim=\toks15
+\verbatim@line=\toks16
+)
+\verbatim@out=\write3
+\tab@position=\count88
+\tab@size=\count89
+\listing@line=\count90
+) (./float.sty
+Package: float 1995/03/29 v1.2c Float enhancements (AL)
+\c@float@type=\count91
+\float@box=\box26
+\@floatcapt=\box27
+) (./url.sty
+Package: url 1999/03/02  ver 1.4  Verb mode for urls, email addresses, and file
+ names
+)
+(/usr/share/texmf-texlive/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2009/10/09 v6.79a Hypertext links for LaTeX
+
+(/usr/share/texmf-texlive/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks17
+) (./ifpdf.sty
+Package: ifpdf 2001/06/14 v1.0 Providing \ifpdf (HO)
+Package ifpdf Info: pdfTeX in pdf mode not detected on input line 140.
+)
+
+LaTeX Warning: You have requested, on input line 98, version
+               `2006/02/20' of package ifpdf,
+               but only version
+               `2001/06/14 v1.0 Providing \ifpdf (HO)'
+               is available.
+
+(/usr/share/texmf-texlive/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2008/11/04 v1.4 Switches for detecting VTeX and its modes (HO)
+Package ifvtex Info: VTeX not detected.
+)
+(/usr/share/texmf-texlive/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2009/01/23 v0.5 Provides ifxetex conditional
+)
+(/usr/share/texmf-texlive/tex/latex/oberdiek/hycolor.sty
+Package: hycolor 2009/10/02 v1.5 Code for color options of hyperref/bookmark (H
+O)
+
+(/usr/share/texmf-texlive/tex/latex/oberdiek/xcolor-patch.sty
+Package: xcolor-patch 2009/10/02 xcolor patch
+))
+\@linkdim=\dimen111
+\Hy@linkcounter=\count92
+\Hy@pagecounter=\count93
+
+(/usr/share/texmf-texlive/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2009/10/09 v6.79a Hyperref: PDFDocEncoding definition (HO)
+)
+(/usr/share/texmf-texlive/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2007/12/12 v1.2 Prefix for e-TeX command names (HO)
+
+(/usr/share/texmf-texlive/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2007/09/09 v1.2 Providing info/warning/message (HO)
+)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)
+(/usr/share/texmf-texlive/tex/latex/latexconfig/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+(/usr/share/texmf-texlive/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2009/08/13 v3.4 Keyval support for LaTeX options (HO)
+
+(/usr/share/texmf-texlive/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2009/07/30 v1.5 Key value parser with default handler suppor
+t (HO)
+))
+Package hyperref Info: Option `bookmarksopen' set `true' on input line 2864.
+Package hyperref Info: Option `colorlinks' set `true' on input line 2864.
+Package hyperref Info: Hyper figures OFF on input line 2975.
+Package hyperref Info: Link nesting OFF on input line 2980.
+Package hyperref Info: Hyper index ON on input line 2983.
+Package hyperref Info: Plain pages OFF on input line 2990.
+Package hyperref Info: Backreferencing OFF on input line 2995.
+
+Implicit mode ON; LaTeX internals redefined
+Package hyperref Info: Bookmarks ON on input line 3191.
+LaTeX Info: Redefining \url on input line 3428.
+(/usr/share/texmf-texlive/tex/generic/oberdiek/bitset.sty
+Package: bitset 2007/09/28 v1.0 Data type bit set (HO)
+
+(/usr/share/texmf-texlive/tex/generic/oberdiek/intcalc.sty
+Package: intcalc 2007/09/27 v1.1 Expandable integer calculations (HO)
+)
+(/usr/share/texmf-texlive/tex/generic/oberdiek/bigintcalc.sty
+Package: bigintcalc 2007/11/11 v1.1 Expandable big integer calculations (HO)
+
+(/usr/share/texmf-texlive/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2009/09/23 v0.6 LuaTeX support for pdfTeX utility functions
+ (HO)
+
+(/usr/share/texmf-texlive/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2009/04/17 v1.2 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+(/usr/share/texmf-texlive/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2009/08/05 v1.0 Some LaTeX kernel commands for general use (HO
+)
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+)))
+\Fld@menulength=\count94
+\Field@Width=\dimen112
+\Fld@charsize=\dimen113
+\Field@toks=\toks18
+Package hyperref Info: Hyper figures OFF on input line 4377.
+Package hyperref Info: Link nesting OFF on input line 4382.
+Package hyperref Info: Hyper index ON on input line 4385.
+Package hyperref Info: backreferencing OFF on input line 4392.
+Package hyperref Info: Link coloring ON on input line 4395.
+Package hyperref Info: Link coloring with OCG OFF on input line 4402.
+Package hyperref Info: PDF/A mode OFF on input line 4407.
+
+(/usr/share/texmf-texlive/tex/generic/oberdiek/atbegshi.sty
+Package: atbegshi 2008/07/31 v1.9 At begin shipout hook (HO)
+)
+\Hy@abspage=\count95
+\c@Item=\count96
+\c@Hfootnote=\count97
+)
+*hyperref using driver hdvipdfm*
+(/usr/share/texmf-texlive/tex/latex/hyperref/hdvipdfm.def
+File: hdvipdfm.def 2009/10/09 v6.79a Hyperref driver for dvipdfm
+\pdfm@box=\box28
+\c@Hy@AnnotLevel=\count98
+\HyField@AnnotCount=\count99
+\Fld@listcount=\count100
+)
+(/usr/share/texmf-texlive/tex/latex/tools/afterpage.sty
+Package: afterpage 1995/10/27 v1.08 After-Page Package (DPC)
+\AP@output=\toks19
+\AP@partial=\box29
+\AP@footins=\box30
+)
+\@indexfile=\write4
+\openout4 = `manual_tex.idx'.
+
+
+Writing index file manual_tex.idx
+(./manual_tex.aux (./sindex.aux))
+\openout1 = `manual_tex.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+
+(/usr/share/texmf-texlive/tex/latex/graphics/color.sty
+Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
+
+(/etc/texmf/tex/latex/config/color.cfg
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package color Info: Driver file: dvipdfm.def on input line 130.
+
+(/usr/share/texmf-texlive/tex/latex/dvipdfm/dvipdfm.def
+File: dvipdfm.def 1999/9/6 vx.x Driver-dependant file
+)
+(/usr/share/texmf-texlive/tex/latex/graphics/dvipsnam.def
+File: dvipsnam.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+))
+Package hyperref Info: Link coloring ON on input line 61.
+
+(/usr/share/texmf-texlive/tex/latex/hyperref/nameref.sty
+Package: nameref 2007/05/29 v2.31 Cross-referencing by name of section
+
+(/usr/share/texmf-texlive/tex/latex/oberdiek/refcount.sty
+Package: refcount 2008/08/11 v3.1 Data extraction from references (HO)
+)
+\c@section@level=\count101
+)
+LaTeX Info: Redefining \ref on input line 61.
+LaTeX Info: Redefining \pageref on input line 61.
+ (./manual_tex.out)
+(./manual_tex.out)
+\@outlinefile=\write5
+\openout5 = `manual_tex.out'.
+
+\AtBeginShipoutBox=\box31
+ (./cover.tex) [1
+
+] [2
+
+] (./manual_tex.toc
+LaTeX Font Info:    Try loading font information for U+msa on input line 2.
+
+(/usr/share/texmf-texlive/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2009/06/22 v3.00 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 2.
+
+(/usr/share/texmf-texlive/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2009/06/22 v3.00 AMS symbols B
+) [1
+
+])
+\tf@toc=\write6
+\openout6 = `manual_tex.toc'.
+
+ [2] (./abstract.tex) (./acknowl.tex
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 24.
+ (/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 24.
+) [3
+
+]
+[4
+
+] (./part0.tex
+Chapter 1.
+(taofig.eps
+)
+[1
+
+] [2]
+(pjb.eps
+)
+[3]) (./part1.tex [4]
+Chapter 2.
+
+LaTeX Warning: Characters dropped after `\end{verbatim}' on input line 34.
+
+
+LaTeX Warning: Characters dropped after `\end{verbatim}' on input line 48.
+
+
+Overfull \hbox (35.91864pt too wide) in paragraph at lines 62--64
+[]\OT1/cmr/m/n/10.95 Install TAO ac-cord-ing to the in-struc-tions in [][]$\OT1
+/cmtt/m/n/10.95 http : / / www . mcs . anl . gov / tao / documentation /
+ []
+
+[5
+
+] [6] (./rosenbrock1.c
+Overfull \hbox (28.37598pt too wide) in paragraph at lines 12--12
+[]  \OT1/cmtt/m/n/10 int        info;                  /* used to check for fun
+ctions returning nonzeros */[] 
+ []
+
+
+Overfull \hbox (2.1262pt too wide) in paragraph at lines 27--27
+[]  \OT1/cmtt/m/n/10 info = MatCreateSeqBDiag(PETSC_COMM_SELF,user.n,user.n,0,2
+,0,0,&H);CHKERRQ(info);[] 
+ []
+
+
+Overfull \hbox (33.62593pt too wide) in paragraph at lines 38--38
+[]  \OT1/cmtt/m/n/10 info = TaoAppSetObjectiveAndGradientRoutine(taoapp,FormFun
+ctionGradient,(void *)&user);[] 
+ []
+
+)
+Overfull \vbox (107.85483pt too high) has occurred while \output is active []
+
+
+[7]
+Overfull \hbox (43.52109pt too wide) in paragraph at lines 179--179
+[]            \OT1/cmtt/m/n/10.95 int (*FormFGradient)(TAO_APPLICATION,Vec,doub
+le,Vec,void*),void *user);[] 
+ []
+
+
+Overfull \hbox (129.7514pt too wide) in paragraph at lines 182--182
+[]            \OT1/cmtt/m/n/10.95 int (*Hessian)(TAO_APPLICATION, Vec, Mat*, Ma
+t*, MatStructure*, void*),(void *)&user);[] 
+ []
+
+[8] [9] [10]
+LaTeX Font Info:    Try loading font information for OMS+cmtt on input line 422
+.
+ (/usr/share/texmf/tex/latex/R/omscmtt.fd
+File: omscmtt.fd 
+)
+LaTeX Font Info:    Font shape `OMS/cmtt/m/n' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 422.
+ [11] [12]
+Overfull \hbox (1.1868pt too wide) in paragraph at lines 559--563
+[]\OT1/cmtt/m/n/10.95 docs \OT1/cmr/m/n/10.95 - All doc-u-men-ta-tion for TAO. 
+The files \OT1/cmtt/m/n/10.95 tao[]manual.ps \OT1/cmr/m/n/10.95 and \OT1/cmtt/m
+/n/10.95 manual/manual.html
+ []
+
+) (./part2.tex [13] [14
+
+]
+Chapter 3.
+[15] [16]) (./part2b.tex [17] [18
+
+]
+Chapter 4.
+
+Overfull \hbox (9.79669pt too wide) in paragraph at lines 12--15
+[]\OT1/cmr/m/n/10.95 Function and gra-di-ent eval-u-a-tions -- limited-memory, 
+variable-metric method (\OT1/cmtt/m/n/10.95 tao[]lmvm\OT1/cmr/m/n/10.95 )
+ []
+
+[19]
+
+LaTeX Warning: Citation `Gilbert-Lemarachal' on page 20 undefined on input line
+ 107.
+
+[20]
+
+LaTeX Warning: Citation `Gilbert-Lemarachal' on page 21 undefined on input line
+ 156.
+
+[21]
+
+LaTeX Warning: Citation `Gilbert-Lemarachal' on page 22 undefined on input line
+ 184.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 231--232
+[]\OT1/cmr/m/n/10.95 Value of $\OML/cmm/m/it/10.95 $ \OT1/cmr/m/n/10.95 for re
+scal-ing
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 232--233
+[]\OT1/cmr/m/n/10.95 Value of $\OML/cmm/m/it/10.95 ^^L$ \OT1/cmr/m/n/10.95 for 
+rescal-ing
+ []
+
+
+Overfull \hbox (38.8201pt too wide) in paragraph at lines 222--237
+[][] 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[22]
+Overfull \hbox (1.4605pt too wide) in paragraph at lines 250--256
+\OT1/cmr/m/n/10.95 Reeves method, the Polak-Ribi^^Sere method, the Polak-Ribi^^
+Sere-Plus method[[]], the Hestenes-
+ []
+
+[23] [24] [25]
+Underfull \hbox (badness 10000) in paragraph at lines 443--444
+[]\OT1/cmr/m/n/10.95 Type of Krylov sub-space
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--444
+[]\OT1/cmr/m/n/10.95 none, ahess, bfgs,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 451--452
+[]\OT1/cmr/m/n/10.95 Growth fac-tor ap-plied to
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 454--455
+\OT1/cmr/m/n/10.95 tur-ba-tion when de-creas-ing
+ []
+
+
+Overfull \hbox (34.29047pt too wide) in paragraph at lines 441--457
+[][] 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 463--464
+[]\OT1/cmr/m/n/10.95 Method used to ini-tial-ize
+ []
+
+
+Overfull \hbox (38.94205pt too wide) in paragraph at lines 461--498
+[][] 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[26] [27]
+Underfull \hbox (badness 10000) in paragraph at lines 605--606
+[]\OT1/cmr/m/n/10.95 Type of Krylov sub-space
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 606--606
+[]\OT1/cmr/m/n/10.95 none, ahess, bfgs,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 608--609
+[]\OT1/cmr/m/n/10.95 Method used to ini-tial-ize
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 616--616
+[]\OT1/cmr/m/n/10.95 reduction, in-ter-po-la-
+ []
+
+
+Overfull \hbox (60.32716pt too wide) in paragraph at lines 603--634
+[][] 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[28] [29] [30]) (./taoapplication.tex [31] [32] [33] [34]
+Chapter 5.
+[35
+
+]
+Overfull \hbox (35.67844pt too wide) in paragraph at lines 101--109
+\OT1/cmr/m/n/10.95 lu-tion that that can be used, the rou-tine []\OT1/cmtt/m/n/
+10.95 TaoAppSetDefaultSolutionVec(TAO[]APPLICATION,Vec);
+ []
+
+[36] [37] [38]
+
+LaTeX Warning: Characters dropped after `\end{verbatim}' on input line 310.
+
+
+Overfull \hbox (29.25786pt too wide) in paragraph at lines 324--328
+\OT1/cmr/m/n/10.95 These rou-tines can be set us-ing \OT1/cmtt/m/n/10.95 TaoApp
+SetGradientRoutine() \OT1/cmr/m/n/10.95 and \OT1/cmtt/m/n/10.95 TaoAppSetHessia
+nRoutine()
+ []
+
+[39]
+Overfull \hbox (3.28027pt too wide) in paragraph at lines 424--424
+[]                \OT1/cmtt/m/n/10.95 int (*)(TAO_APPLICATION,Vec,Mat*,Mat*, Ma
+tStructure*,void*),[] 
+ []
+
+[40] [41] [42] [43] [44]
+Overfull \hbox (9.02896pt too wide) in paragraph at lines 801--801
+[]   \OT1/cmtt/m/n/10.95 call TaoSolveApplication(TAO_APPLICATION taoapp, TAO_S
+OLVER tao, int info)[] 
+ []
+
+
+LaTeX Warning: Characters dropped after `\end{verbatim}' on input line 854.
+
+[45]) (./part3.tex [46]
+Chapter 6.
+[47
+
+]) (./addsolver.tex [48]
+Chapter 7.
+[49
+
+] [50] [51]
+Overfull \hbox (9.02896pt too wide) in paragraph at lines 213--213
+[]   \OT1/cmtt/m/n/10.95 int TaoLineSearchApply(TAO_SOLVER tao, TaoVec *xx, Tao
+Vec *gg, TaoVec *dx,[] 
+ []
+
+[52]
+Overfull \hbox (3.28027pt too wide) in paragraph at lines 251--251
+[]  \OT1/cmtt/m/n/10.95 info = TaoSetTaoSolveRoutine(tao,TaoSolve_CG_FR,(void*)
+cg); CHKERRQ(info);[] 
+ []
+
+
+Overfull \hbox (37.7724pt too wide) in paragraph at lines 252--252
+[]  \OT1/cmtt/m/n/10.95 info = TaoSetTaoSetUpDownRoutines(tao,TaoSetUp_CG,TaoDe
+stroy_CG); CHKERRQ(info);[] 
+ []
+
+[53]) [54]
+\openout2 = `sindex.aux'.
+
+ (./sindex.tex
+Overfull \hbox (13.47134pt too wide) in paragraph at lines 69--70
+[]\OT1/cmr/m/n/10.95 TaoAppSetObjectiveAndGradientRoutine(), [][]38[][] 
+ []
+
+[55
+
+
+]) (./manual_tex.bbl [56
+
+
+
+] [57]) [58] (./manual_tex.aux (./sindex.aux))
+
+LaTeX Warning: There were undefined references.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 4413 strings out of 493849
+ 63739 string characters out of 1152847
+ 167578 words of memory out of 3000000
+ 7568 multiletter control sequences out of 15000+50000
+ 14628 words of font info for 54 fonts, out of 3000000 for 9000
+ 714 hyphenation exceptions out of 8191
+ 38i,12n,39p,273b,396s stack positions out of 5000i,500n,10000p,200000b,50000s
+
+Output written on manual_tex.dvi (64 pages, 283260 bytes).

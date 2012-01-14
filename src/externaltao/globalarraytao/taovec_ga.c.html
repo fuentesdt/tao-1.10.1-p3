@@ -1,0 +1,669 @@
+<center><a href="taovec_ga.c">Actual source code: taovec_ga.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/**************************************************************</font>
+<a name="line2">  2: </a><font color="#B22222">File: taovec_ga.c</font>
+
+<a name="line4">  4: </a><font color="#B22222">TAO/GLobal Array Project</font>
+
+<a name="line6">  6: </a><font color="#B22222">Author: Limin Zhang, Ph.D.</font>
+<a name="line7">  7: </a><font color="#B22222">        Mathematics Department</font>
+<a name="line8">  8: </a><font color="#B22222">        Columbia Basin College</font>
+<a name="line9">  9: </a><font color="#B22222">        Pasco, WA 99301</font>
+<a name="line10"> 10: </a><font color="#B22222">        Limin.Zhang@cbc2.org</font>
+
+<a name="line12"> 12: </a><font color="#B22222">Mentor: Jarek Naplocha, Ph.D.</font>
+<a name="line13"> 13: </a><font color="#B22222">        Environmental Molecular Science Laboratory</font>
+<a name="line14"> 14: </a><font color="#B22222">        Pacific Northwest National Laboratory</font>
+<a name="line15"> 15: </a><font color="#B22222">        Richland, WA 99352</font>
+
+<a name="line17"> 17: </a><font color="#B22222">Purpose:</font>
+<a name="line18"> 18: </a><font color="#B22222">      to design and implement some interfaces between TAO and</font>
+<a name="line19"> 19: </a><font color="#B22222">      global arrays.</font>
+
+<a name="line21"> 21: </a><font color="#B22222">Date: 4/22/2002</font>
+
+
+<a name="line24"> 24: </a><font color="#B22222">Revise history: </font>
+
+<a name="line26"> 26: </a><font color="#B22222">7/15/02</font>
+<a name="line27"> 27: </a><font color="#B22222">         replace pv with this-&gt;pv </font>
+<a name="line28"> 28: </a><font color="#B22222">         introduce GAVec as int </font>
+
+<a name="line30"> 30: </a><font color="#B22222">8/8/02</font>
+<a name="line31"> 31: </a><font color="#B22222">         clean Petsc function calls and marcos.</font>
+
+<a name="line33"> 33: </a><font color="#B22222">**************************************************************/</font>
+
+<a name="line35"> 35: </a><font color="#A020F0">#include </font><font color="#666666">"math.h"</font><font color="#A020F0"></font>
+
+
+<a name="line38"> 38: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line39"> 39: </a><font color="#A020F0">#include </font><font color="#666666">"taovec_ga.h"</font><font color="#A020F0"> </font><font color="#B22222">/*I "taovec_ga.h" I*/</font><font color="#A020F0"></font>
+
+
+<a name="line44"> 44: </a><font color="#B22222">/*@C </font>
+<a name="line45"> 45: </a><font color="#B22222">  <A href="../../../docs/manualpages/gaapp/TaoWrapGaVec.html#TaoWrapGaVec">TaoWrapGaVec</A> - Creates a new TaoVec object using an existing</font>
+<a name="line46"> 46: </a><font color="#B22222">  GlobalArray vector.</font>
+
+<a name="line48"> 48: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line49"> 49: </a><font color="#B22222">+  V -  a GlobalArray vector</font>
+<a name="line50"> 50: </a><font color="#B22222">-  TV -  the address of a pointer to a TaoGaVec</font>
+
+<a name="line52"> 52: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line53"> 53: </a><font color="#B22222">.  TV - pointer to a new TaoGaVec</font>
+
+<a name="line55"> 55: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line57"> 57: </a><font color="#B22222">.seealso <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A>(), <A href="../../../docs/manualpages/ptaopages/TaoWrapPetscVec.html#TaoWrapPetscVec">TaoWrapPetscVec</A>()</font>
+<a name="line58"> 58: </a><font color="#B22222">@*/</font>
+<a name="line59"> 59: </a><strong><font color="#4169E1"><a name="TaoWrapGaVec"></a>int <A href="../../../docs/manualpages/gaapp/TaoWrapGaVec.html#TaoWrapGaVec">TaoWrapGaVec</A> (GAVec V, TaoVecGa ** TV)</font></strong>
+<a name="line60"> 60: </a>{
+<a name="line61"> 61: </a>  TaoFunctionBegin;
+<a name="line62"> 62: </a>  *TV = new TaoVecGa (V);
+<a name="line63"> 63: </a>  TaoFunctionReturn(0);
+<a name="line64"> 64: </a>}
+
+<a name="line68"> 68: </a><font color="#B22222">/*@C</font>
+<a name="line69"> 69: </a><font color="#B22222">   <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> - If the TaoVec is of the TaoVecGa type, this routine gets the underlying Ga Vec.</font>
+
+<a name="line71"> 71: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line72"> 72: </a><font color="#B22222">.  TV - the TaoVecGa </font>
+
+<a name="line74"> 74: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line75"> 75: </a><font color="#B22222">.  V -  the Ga vector</font>
+
+
+<a name="line78"> 78: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line80"> 80: </a><font color="#B22222">.seealso <A href="../../../docs/manualpages/gaapp/TaoWrapGaVec.html#TaoWrapGaVec">TaoWrapGaVec</A>()</font>
+
+<a name="line82"> 82: </a><font color="#B22222">@*/</font>
+
+<a name="line84"> 84: </a><strong><font color="#4169E1"><a name="TaoVecGetGaVec"></a>int <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (TaoVec * TV, GAVec * V)</font></strong>
+<a name="line85"> 85: </a>{
+<a name="line86"> 86: </a>  TaoFunctionBegin;
+<a name="line87"> 87: </a>  <font color="#4169E1">if</font> (TV)
+<a name="line88"> 88: </a>    {
+<a name="line89"> 89: </a>      TaoVecGa *tmp = dynamic_cast&lt;TaoVecGa *&gt;(TV);
+<a name="line90"> 90: </a>      <font color="#4169E1">if</font> (!tmp) {
+<a name="line91"> 91: </a>        SETERRQ(1,<font color="#666666">"Could not cast from TaoVec* to TaoVecGa*."</font>);
+<a name="line92"> 92: </a>      }
+<a name="line93"> 93: </a>      *V = tmp-&gt;GetVec ();
+<a name="line94"> 94: </a>    }
+<a name="line95"> 95: </a>  <font color="#4169E1">else</font>
+<a name="line96"> 96: </a>    {
+<a name="line97"> 97: </a>      *V = 0;
+<a name="line98"> 98: </a>    }
+<a name="line99"> 99: </a>  TaoFunctionReturn(0);
+<a name="line100">100: </a>}
+
+<a name="line104">104: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:TaoVecGa (GAVec VV)
+<a name="line105">105: </a>{
+<a name="line106">106: </a>  this-&gt;pv = VV;
+<a name="line107">107: </a>  //this-&gt;VecObject = (void *) (&amp;VV);
+<a name="line108">108: </a>  <font color="#4169E1">return</font>;
+<a name="line109">109: </a>}
+
+<a name="line113">113: </a>int
+<a name="line114">114: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A> (TaoVec ** ntv)
+<a name="line115">115: </a>{
+<a name="line116">116: </a>  TaoVecGa *nptv;
+<a name="line117">117: </a>  GAVec npv;
+
+<a name="line119">119: </a>  TaoFunctionBegin;
+<a name="line120">120: </a>  npv = GA_Duplicate (this-&gt;pv, (char*)<font color="#666666">"Cloned"</font>);        //pv is the ga handle of the current object. 
+<a name="line121">121: </a>  <font color="#4169E1">if</font> (!npv)
+<a name="line122">122: </a>    GA_Error ((char*)<font color="#666666">"TaoVecGa::<A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>:duplicate failed: "</font>, npv);
+<a name="line123">123: </a>  <A href="../../../docs/manualpages/gaapp/TaoWrapGaVec.html#TaoWrapGaVec">TaoWrapGaVec</A> (npv, &amp;nptv);
+<a name="line124">124: </a>  *ntv = nptv;
+<a name="line125">125: </a>  npv = 0;
+<a name="line126">126: </a>  TaoFunctionReturn(0);
+<a name="line127">127: </a>}
+
+
+<a name="line132">132: </a>int TaoVecGa::<A href="../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A> (TaoVec * tv, TaoTruth *flag)
+<a name="line133">133: </a>{
+<a name="line134">134: </a>  int info;
+<a name="line135">135: </a>  int  pv2 = 0;
+
+<a name="line137">137: </a>  TaoFunctionBegin;
+<a name="line138">138: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv2); CHKERRQ(info);
+<a name="line139">139: </a>  info = GA_Compare_distr (this-&gt;pv, pv2);
+
+<a name="line141">141: </a>  <font color="#4169E1">if</font> (info == 0)
+<a name="line142">142: </a>    *flag =  TAO_TRUE;
+<a name="line143">143: </a>  <font color="#4169E1">else</font>
+<a name="line144">144: </a>    *flag = TAO_FALSE;
+
+<a name="line146">146: </a>  TaoFunctionReturn(0);
+<a name="line147">147: </a>}
+
+
+<a name="line152">152: </a>int
+<a name="line153">153: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A> (TaoScalar c)
+<a name="line154">154: </a>{
+<a name="line155">155: </a>  TaoFunctionBegin;
+<a name="line156">156: </a>  GA_Fill (this-&gt;pv, &amp;c);
+<a name="line157">157: </a>  TaoFunctionReturn(0);
+<a name="line158">158: </a>}
+
+
+<a name="line163">163: </a>int
+<a name="line164">164: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A> ()
+<a name="line165">165: </a>{
+<a name="line166">166: </a>  TaoFunctionBegin;
+<a name="line167">167: </a>  GA_Zero (this-&gt;pv);
+<a name="line168">168: </a>  TaoFunctionReturn(0);
+<a name="line169">169: </a>}
+
+<a name="line173">173: </a>int
+<a name="line174">174: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A> (TaoVec * tv)
+<a name="line175">175: </a>{
+<a name="line176">176: </a>  int pv2 = 0;
+<a name="line177">177: </a>  TaoFunctionBegin;
+<a name="line178">178: </a>  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv2);
+<a name="line179">179: </a>  GA_Copy (pv2, this-&gt;pv);
+<a name="line180">180: </a>  TaoFunctionReturn(0);
+<a name="line181">181: </a>}
+
+
+<a name="line186">186: </a>int
+<a name="line187">187: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A> (TaoScalar a, TaoVec * tv)
+<a name="line188">188: </a>{
+<a name="line189">189: </a>  int info, pv2 = 0;
+<a name="line190">190: </a>  TaoFunctionBegin;
+<a name="line191">191: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv2);
+<a name="line192">192: </a>  GA_Copy (pv2, this-&gt;pv);
+<a name="line193">193: </a>  GA_Scale (this-&gt;pv, &amp;a);
+<a name="line194">194: </a>  TaoFunctionReturn(0);
+<a name="line195">195: </a>}
+
+
+
+<a name="line201">201: </a>int
+<a name="line202">202: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A> (TaoScalar * vnorm)
+<a name="line203">203: </a>{
+<a name="line204">204: </a>  TaoFunctionBegin;
+<a name="line205">205: </a>  GA_Norm_infinity (this-&gt;pv, vnorm);
+<a name="line206">206: </a>  TaoFunctionReturn(0);
+<a name="line207">207: </a>}
+
+<a name="line211">211: </a>int
+<a name="line212">212: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A> (TaoScalar * vnorm)
+<a name="line213">213: </a>{
+<a name="line214">214: </a>  TaoFunctionBegin;
+<a name="line215">215: </a>  GA_Norm1 (this-&gt;pv, vnorm);
+<a name="line216">216: </a>  TaoFunctionReturn(0);
+<a name="line217">217: </a>}
+
+
+<a name="line222">222: </a>int
+<a name="line223">223: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A> (TaoScalar * vnorm)
+<a name="line224">224: </a>{
+<a name="line225">225: </a>  TaoFunctionBegin;
+<a name="line226">226: </a>  *vnorm = sqrt (GA_Ddot (this-&gt;pv, this-&gt;pv));
+<a name="line227">227: </a>  TaoFunctionReturn(0);
+<a name="line228">228: </a>}
+
+<a name="line232">232: </a>int
+<a name="line233">233: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Norm2squared.html#Norm2squared">Norm2squared</A> (TaoScalar * vnorm)
+<a name="line234">234: </a>{
+<a name="line235">235: </a>  TaoFunctionBegin;
+<a name="line236">236: </a>  *vnorm = GA_Ddot (this-&gt;pv, this-&gt;pv);
+<a name="line237">237: </a>  TaoFunctionReturn(0);
+<a name="line238">238: </a>}
+
+<a name="line242">242: </a>int
+<a name="line243">243: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Scale.html#Scale">Scale</A> (TaoScalar alpha)
+<a name="line244">244: </a>{
+<a name="line245">245: </a>  TaoFunctionBegin;
+<a name="line246">246: </a>  GA_Scale (this-&gt;pv, &amp;alpha);
+<a name="line247">247: </a>  TaoFunctionReturn(0);
+<a name="line248">248: </a>}
+
+
+<a name="line253">253: </a>int
+<a name="line254">254: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A> (TaoScalar alpha, TaoVec * tv)
+<a name="line255">255: </a>{
+<a name="line256">256: </a>  int info, pv2 = 0;
+<a name="line257">257: </a>  TaoScalar a = 1.0, b = alpha;
+<a name="line258">258: </a>  TaoFunctionBegin;
+<a name="line259">259: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv2); CHKERRQ(info);
+<a name="line260">260: </a>  GA_Add (&amp;a, this-&gt;pv, &amp;b, pv2, this-&gt;pv);
+<a name="line261">261: </a>  TaoFunctionReturn(0);
+<a name="line262">262: </a>}
+
+
+<a name="line267">267: </a>int
+<a name="line268">268: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Axpby.html#Axpby">Axpby</A> (TaoScalar alpha, TaoVec * tv, TaoScalar beta)
+<a name="line269">269: </a>{
+<a name="line270">270: </a>  int info, pv2 = 0;
+<a name="line271">271: </a>  TaoScalar a = alpha, b = beta;
+<a name="line272">272: </a>  TaoFunctionBegin;
+
+<a name="line274">274: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv2); CHKERRQ(info);
+<a name="line275">275: </a>  GA_Add (&amp;a, pv2, &amp;b, this-&gt;pv, this-&gt;pv);
+<a name="line276">276: </a>  TaoFunctionReturn(0);
+<a name="line277">277: </a>}
+
+
+<a name="line282">282: </a>int
+<a name="line283">283: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A> (TaoScalar alpha, TaoVec * x)
+<a name="line284">284: </a>{
+<a name="line285">285: </a>  int info, pv2 = 0;
+<a name="line286">286: </a>  TaoScalar a = alpha, b = 1.0;
+<a name="line287">287: </a>  TaoFunctionBegin;
+
+<a name="line289">289: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (x, &amp;pv2); CHKERRQ(info);
+<a name="line290">290: </a>  GA_Add (&amp;a, this-&gt;pv, &amp;b, pv2, this-&gt;pv);
+<a name="line291">291: </a>  TaoFunctionReturn(0);
+<a name="line292">292: </a>}
+
+
+<a name="line297">297: </a>int
+<a name="line298">298: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A> (TaoScalar c)
+<a name="line299">299: </a>{
+<a name="line300">300: </a>  TaoFunctionBegin;
+<a name="line301">301: </a>  GA_Add_constant (this-&gt;pv, &amp;c);
+<a name="line302">302: </a>  TaoFunctionReturn(0);
+<a name="line303">303: </a>}
+
+<a name="line307">307: </a>int
+<a name="line308">308: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Dot.html#Dot">Dot</A> (TaoVec * tv, TaoScalar * vDotv)
+<a name="line309">309: </a>{
+<a name="line310">310: </a>  int info, pv2 = 0;
+<a name="line311">311: </a>  TaoFunctionBegin;
+<a name="line312">312: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv2); CHKERRQ(info);
+<a name="line313">313: </a>  *vDotv = GA_Ddot (this-&gt;pv, pv2);
+<a name="line314">314: </a>  TaoFunctionReturn(0);
+<a name="line315">315: </a>}
+
+<a name="line319">319: </a>int
+<a name="line320">320: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Negate.html#Negate">Negate</A> ()
+<a name="line321">321: </a>{
+<a name="line322">322: </a>  TaoScalar m1 = -1.0;
+<a name="line323">323: </a>  TaoFunctionBegin;
+<a name="line324">324: </a>  GA_Scale (this-&gt;pv, &amp;m1);
+<a name="line325">325: </a>  TaoFunctionReturn(0);
+<a name="line326">326: </a>}
+
+<a name="line330">330: </a>int
+<a name="line331">331: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A> ()
+<a name="line332">332: </a>{
+<a name="line333">333: </a>  TaoFunctionBegin;
+<a name="line334">334: </a>  GA_Recip (this-&gt;pv);
+<a name="line335">335: </a>  TaoFunctionReturn(0);
+<a name="line336">336: </a>}
+
+
+<a name="line341">341: </a>int
+<a name="line342">342: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A> (int *n)
+<a name="line343">343: </a>{
+<a name="line344">344: </a>  int type, ndim, dims;
+<a name="line345">345: </a>  TaoFunctionBegin;
+<a name="line346">346: </a>  NGA_Inquire (this-&gt;pv, &amp;type, &amp;ndim, &amp;dims);
+<a name="line347">347: </a>  <font color="#4169E1">if</font> (ndim != 1)
+<a name="line348">348: </a>    SETERRQ(1,<font color="#666666">"GA Vector has bad dimension"</font>);
+<a name="line349">349: </a>  *n = dims;
+<a name="line350">350: </a>  TaoFunctionReturn(0);
+<a name="line351">351: </a>}
+
+
+<a name="line356">356: </a>int
+<a name="line357">357: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A> (TaoVec * tv, TaoVec * tw)
+<a name="line358">358: </a>{
+<a name="line359">359: </a>  int info, pv1 = 0, pv2 = 0;
+<a name="line360">360: </a>  TaoFunctionBegin;
+<a name="line361">361: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv1); CHKERRQ(info);
+<a name="line362">362: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tw, &amp;pv2); CHKERRQ(info);
+<a name="line363">363: </a>  GA_Elem_multiply (pv1, pv2, this-&gt;pv);
+<a name="line364">364: </a>  TaoFunctionReturn(0);
+<a name="line365">365: </a>}
+
+
+<a name="line370">370: </a>int
+<a name="line371">371: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A> (TaoVec * tv, TaoVec * tw)
+<a name="line372">372: </a>{
+<a name="line373">373: </a>  int info, pv1 = 0, pv2 = 0;
+<a name="line374">374: </a>  TaoFunctionBegin;
+<a name="line375">375: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv1); CHKERRQ(info);
+<a name="line376">376: </a>  info =  <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tw, &amp;pv2); CHKERRQ(info);
+<a name="line377">377: </a>  GA_Elem_divide (pv1, pv2, this-&gt;pv);
+<a name="line378">378: </a>  TaoFunctionReturn(0);
+<a name="line379">379: </a>}
+
+<a name="line383">383: </a>int
+<a name="line384">384: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Median.html#Median">Median</A> (TaoVec * tv, TaoVec * tw, TaoVec * tx)
+<a name="line385">385: </a>{
+<a name="line386">386: </a>  int info, pv1 = 0, pv2 = 0, pv3 = 0;
+<a name="line387">387: </a>  TaoFunctionBegin;
+<a name="line388">388: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv1); CHKERRQ(info);
+<a name="line389">389: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tw, &amp;pv2); CHKERRQ(info);
+<a name="line390">390: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tx, &amp;pv3); CHKERRQ(info);
+
+<a name="line392">392: </a>  GA_Median (pv1, pv2, pv3, this-&gt;pv);
+
+<a name="line394">394: </a>  TaoFunctionReturn(0);
+<a name="line395">395: </a>}
+
+<a name="line399">399: </a>int
+<a name="line400">400: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A> (TaoVec * tv, TaoVec * tw)
+<a name="line401">401: </a>{
+<a name="line402">402: </a>  int info, pv1 = 0, pv2 = 0;
+<a name="line403">403: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv1); CHKERRQ(info);
+<a name="line404">404: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tw, &amp;pv2); CHKERRQ(info);
+
+<a name="line406">406: </a>  GA_Elem_minimum (pv1, pv2, this-&gt;pv);
+<a name="line407">407: </a>  TaoFunctionReturn(0);
+<a name="line408">408: </a>}
+
+<a name="line412">412: </a>int
+<a name="line413">413: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A> (TaoVec * tx, TaoVec * tf, TaoVec * tl, TaoVec * tu)
+<a name="line414">414: </a>{
+<a name="line415">415: </a>  TaoFunctionBegin;
+<a name="line416">416: </a>  SETERRQ(1,<font color="#666666">" TaoVecGa::<A href="../../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A> not implemented."</font>);
+<a name="line417">417: </a>  TaoFunctionReturn(0);
+<a name="line418">418: </a>}
+
+<a name="line422">422: </a>int
+<a name="line423">423: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A> (TaoVec * tv, TaoVec * tw)
+<a name="line424">424: </a>{
+<a name="line425">425: </a>  int info, pv1 = 0, pv2 = 0;
+<a name="line426">426: </a>  TaoFunctionBegin;
+<a name="line427">427: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv1); CHKERRQ(info);
+<a name="line428">428: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tw, &amp;pv2); CHKERRQ(info);
+<a name="line429">429: </a>  GA_Elem_maximum (pv1, pv2, this-&gt;pv);
+<a name="line430">430: </a>  TaoFunctionReturn(0);
+<a name="line431">431: </a>}
+
+<a name="line435">435: </a>//Sums two scaled vectors and stores the result in this vector. (this=alpha*xx+beta*yy) 
+<a name="line436">436: </a>int
+<a name="line437">437: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A> (TaoScalar a, TaoVec * tv, TaoScalar b, TaoVec * tw)
+<a name="line438">438: </a>{
+<a name="line439">439: </a>  int info, pv1 = 0, pv2 = 0;
+<a name="line440">440: </a>  TaoFunctionBegin;
+<a name="line441">441: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;pv1); CHKERRQ(info);
+<a name="line442">442: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tw, &amp;pv2); CHKERRQ(info);
+
+<a name="line444">444: </a>  <font color="#4169E1">if</font> ((a == 0) &amp;&amp; (b == 0))
+<a name="line445">445: </a>    GA_Zero (this-&gt;pv);
+<a name="line446">446: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (a == 0)
+<a name="line447">447: </a>    {
+<a name="line448">448: </a>      GA_Scale (pv2, &amp;b);
+<a name="line449">449: </a>      GA_Copy (pv2, this-&gt;pv);
+<a name="line450">450: </a>    }
+<a name="line451">451: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (b == 0)
+<a name="line452">452: </a>    {
+<a name="line453">453: </a>      GA_Scale (pv1, &amp;a);
+<a name="line454">454: </a>      GA_Copy (pv1, this-&gt;pv);
+<a name="line455">455: </a>    }
+<a name="line456">456: </a>  <font color="#4169E1">else</font>
+<a name="line457">457: </a>    GA_Add (&amp;a, pv1, &amp;b, pv2, this-&gt;pv);
+
+<a name="line459">459: </a>  TaoFunctionReturn(0);
+<a name="line460">460: </a>}
+
+
+<a name="line465">465: </a>int
+<a name="line466">466: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A> ()
+<a name="line467">467: </a>{
+<a name="line468">468: </a>  TaoFunctionBegin;
+<a name="line469">469: </a>  GA_Abs_value (this-&gt;pv);
+<a name="line470">470: </a>  TaoFunctionReturn(0);
+<a name="line471">471: </a>}
+
+
+<a name="line476">476: </a>int
+<a name="line477">477: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/MinElement.html#MinElement">MinElement</A> (TaoScalar * val)
+<a name="line478">478: </a>{
+<a name="line479">479: </a>  int index;
+<a name="line480">480: </a>  TaoFunctionBegin;
+<a name="line481">481: </a>  NGA_Select_elem (this-&gt;pv, (char*)<font color="#666666">"min"</font>, val, &amp;index);
+<a name="line482">482: </a>  TaoFunctionReturn(0);
+<a name="line483">483: </a>}
+
+<a name="line485">485: </a><font color="#B22222">/*</font>
+
+<a name="line487">487: </a><font color="#B22222">int TaoVecGa::<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A> (TaoScalar ** dptr, int *n)</font>
+<a name="line488">488: </a><font color="#B22222">dptr - a pointer to the pointer to the first memory location on the local patch (output)</font>
+<a name="line489">489: </a><font color="#B22222">n    - the number of elements of the GA vector at the location pointed by dptr. (output)</font>
+<a name="line490">490: </a><font color="#B22222">*/</font>
+<a name="line493">493: </a>int
+<a name="line494">494: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A> (TaoScalar ** dptr, int *n)
+<a name="line495">495: </a>{
+<a name="line496">496: </a>  int type, ndim, dims;
+<a name="line497">497: </a>  int lo, hi, ld;
+<a name="line498">498: </a>  TaoScalar *ptr = 0;
+
+<a name="line500">500: </a>  TaoFunctionBegin;
+<a name="line501">501: </a>  int me = GA_Nodeid ();
+
+<a name="line503">503: </a>  GA_Sync ();
+
+<a name="line505">505: </a>  NGA_Inquire (this-&gt;pv, &amp;type, &amp;ndim, &amp;dims);
+<a name="line506">506: </a>  <font color="#4169E1">if</font> (type != MT_C_DBL) {
+<a name="line507">507: </a>    //the only datatype <font color="#4169E1">for</font> taovec is TaoScalar
+<a name="line508">508: </a>    SETERRQ(1,<font color="#666666">"Global Array is wrong data type"</font>);
+<a name="line509">509: </a>  }
+
+<a name="line511">511: </a>  <font color="#4169E1">if</font> (ndim != 1) {
+<a name="line512">512: </a>    //we only deal with one dimensional global array as a vector
+<a name="line513">513: </a>    SETERRQ(1,<font color="#666666">"Global Array has wrong dimension"</font>);
+<a name="line514">514: </a>  }
+
+<a name="line516">516: </a>  NGA_Distribution (this-&gt;pv, me, &amp;lo, &amp;hi);
+
+<a name="line518">518: </a>  //Get the size of the patch on this processor
+<a name="line519">519: </a>  <font color="#4169E1">if</font> (lo &gt;= 0 &amp;&amp; hi &gt;= 0) {
+<a name="line520">520: </a>    NGA_Access (this-&gt;pv, &amp;lo, &amp;hi, &amp;ptr, &amp;ld);
+<a name="line521">521: </a>    *n = hi - lo + 1;
+<a name="line522">522: </a>  } <font color="#4169E1">else</font> 
+<a name="line523">523: </a>    *n = 0;
+
+<a name="line525">525: </a>  *dptr = ptr;
+<a name="line526">526: </a>  TaoFunctionReturn(0);
+<a name="line527">527: </a>}
+
+<a name="line531">531: </a>int
+<a name="line532">532: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A> (TaoScalar ** dptr, int *n)
+<a name="line533">533: </a>{
+<a name="line534">534: </a>  int lo, hi;
+<a name="line535">535: </a>  int me = GA_Nodeid ();
+
+<a name="line537">537: </a>  TaoFunctionBegin;
+<a name="line538">538: </a>  GA_Sync ();
+<a name="line539">539: </a>  NGA_Distribution (this-&gt;pv, me, &amp;lo, &amp;hi);
+
+<a name="line541">541: </a>  <font color="#4169E1">if</font> (lo != 0 &amp;&amp; hi != -1) 
+<a name="line542">542: </a>    NGA_Release_update (this-&gt;pv, &amp;lo, &amp;hi);
+
+<a name="line544">544: </a>  GA_Sync ();
+
+<a name="line546">546: </a>  *dptr = 0;
+<a name="line547">547: </a>  *n = 0;
+<a name="line548">548: </a>  TaoFunctionReturn(0);
+<a name="line549">549: </a>}
+
+<a name="line553">553: </a>int
+<a name="line554">554: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A> (TaoVec * VV, TaoIndexSet * SS)
+<a name="line555">555: </a>{
+<a name="line556">556: </a>  TaoFunctionBegin;
+<a name="line557">557: </a>  SETERRQ(1,<font color="#666666">"TaoVecGa::<A href="../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A> not yet implemented"</font>);
+<a name="line558">558: </a>  TaoFunctionReturn(0);
+<a name="line559">559: </a>}
+
+
+<a name="line564">564: </a>int
+<a name="line565">565: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A> (TaoVec * VV, TaoIndexSet * SS)
+<a name="line566">566: </a>{
+<a name="line567">567: </a>  TaoFunctionBegin;
+<a name="line568">568: </a>  SETERRQ(1,<font color="#666666">"TaoVecGa::<A href="../../../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A> not yet implemented."</font>);
+<a name="line569">569: </a>  TaoFunctionReturn(0);
+<a name="line570">570: </a>}
+
+<a name="line574">574: </a>int
+<a name="line575">575: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/ReducedCopyFromFull.html#ReducedCopyFromFull">ReducedCopyFromFull</A> (TaoVec * VV, TaoIndexSet * SS)
+<a name="line576">576: </a>{
+<a name="line577">577: </a>  TaoFunctionBegin;
+<a name="line578">578: </a>  SETERRQ(1,<font color="#666666">"TaoVecGa::<A href="../../../docs/manualpages/vector/ReducedCopyFromFull.html#ReducedCopyFromFull">ReducedCopyFromFull</A> not yet implemented."</font>);
+<a name="line579">579: </a>  TaoFunctionReturn(0);
+<a name="line580">580: </a>}
+
+<a name="line584">584: </a>int
+<a name="line585">585: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A> (TaoVec * tv, double * step)
+<a name="line586">586: </a>{
+<a name="line587">587: </a>  int info;
+<a name="line588">588: </a>  TaoFunctionBegin;
+<a name="line589">589: </a>  GAVec X = this-&gt;GetVec ();
+<a name="line590">590: </a>  GAVec DX = 0;
+<a name="line591">591: </a>  info = <A href="../../../docs/manualpages/gaapp/TaoVecGetGaVec.html#TaoVecGetGaVec">TaoVecGetGaVec</A> (tv, &amp;DX); CHKERRQ(info);
+<a name="line592">592: </a>  GA_Step_max (X, DX, step);
+<a name="line593">593: </a>  TaoFunctionReturn(0);
+<a name="line594">594: </a>}
+
+
+<a name="line599">599: </a>int
+<a name="line600">600: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:StepMax2 (TaoVec * tv, TaoVec * xl, TaoVec * xu, TaoScalar * step)
+<a name="line601">601: </a>{
+
+<a name="line603">603: </a>  TaoFunctionBegin;
+<a name="line604">604: </a>  SETERRQ(1,<font color="#666666">"TaoVecGa::CreatIndexSet not yet implemented."</font>);
+<a name="line605">605: </a>  TaoFunctionReturn(0);
+
+<a name="line607">607: </a>}
+
+
+
+<a name="line613">613: </a>int
+<a name="line614">614: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/lsolver/View.html#View">View</A> ()
+<a name="line615">615: </a>{
+<a name="line616">616: </a>  TaoFunctionBegin;
+<a name="line617">617: </a>  GA_Print (this-&gt;pv);
+<a name="line618">618: </a>  TaoFunctionReturn(0);
+<a name="line619">619: </a>}
+
+<a name="line623">623: </a>int
+<a name="line624">624: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/CreateIndexSet.html#CreateIndexSet">CreateIndexSet</A> (TaoIndexSet ** SSS)
+<a name="line625">625: </a>{
+<a name="line626">626: </a>  TaoFunctionBegin;
+<a name="line627">627: </a>  SETERRQ(1,<font color="#666666">"TaoVecGa::CreatIndexSet not yet implemented."</font>);
+<a name="line628">628: </a>  TaoFunctionReturn(0);
+<a name="line629">629: </a>}
+
+<a name="line633">633: </a>int 
+<a name="line634">634: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/StepBoundInfo.html#StepBoundInfo">StepBoundInfo</A>(TaoVec *TXL, TaoVec *TXU, TaoVec *S, 
+<a name="line635">635: </a>                        double *bmin1, double *bmin2, double *bmax) {
+<a name="line636">636: </a>  int i, n, n2, n3, n4, info;
+<a name="line637">637: </a>  double tt,t1=1.0e+20, t2=1.0e+20, t3=0;
+<a name="line638">638: </a>  GAScalar *x,*xl,*xu,*dx;
+
+<a name="line640">640: </a>  TaoVecGa *X=this;
+
+<a name="line642">642: </a>  TaoFunctionBegin;
+<a name="line643">643: </a>  info = X-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;x, &amp;n); CHKERRQ(info);
+<a name="line644">644: </a>  info = TXL-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;xl, &amp;n2); CHKERRQ(info);
+<a name="line645">645: </a>  info = TXU-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;xu, &amp;n3); CHKERRQ(info);
+<a name="line646">646: </a>  info = S-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;dx, &amp;n4); CHKERRQ(info);
+
+<a name="line648">648: </a>  <font color="#4169E1">if</font> ( (n != n2) || (n != n3) || (n != n4) ) {
+<a name="line649">649: </a>    SETERRQ(1,<font color="#666666">"Vectors must all be same size"</font>);
+<a name="line650">650: </a>  }
+<a name="line651">651: </a>  
+<a name="line652">652: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++){
+<a name="line653">653: </a>    <font color="#4169E1">if</font> (dx[i]&gt;0){
+<a name="line654">654: </a>      tt=(xu[i]-x[i])/dx[i];
+<a name="line655">655: </a>      t1=TaoMin(t1,tt);
+<a name="line656">656: </a>      <font color="#4169E1">if</font> (t1&gt;0){
+<a name="line657">657: </a>        t2=TaoMin(t2,tt);
+<a name="line658">658: </a>      }
+<a name="line659">659: </a>      t3=TaoMax(t3,tt);
+<a name="line660">660: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dx[i]&lt;0){
+<a name="line661">661: </a>      tt=(xl[i]-x[i])/dx[i];
+<a name="line662">662: </a>      t1=TaoMin(t1,tt);
+<a name="line663">663: </a>      <font color="#4169E1">if</font> (t1&gt;0){
+<a name="line664">664: </a>        t2=TaoMin(t2,tt);
+<a name="line665">665: </a>      }
+<a name="line666">666: </a>      t3=TaoMax(t3,tt);
+<a name="line667">667: </a>    }
+<a name="line668">668: </a>  }
+<a name="line669">669: </a>  
+<a name="line670">670: </a>  info = X-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;x, &amp;n); CHKERRQ(info);
+<a name="line671">671: </a>  info = TXL-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;xl, &amp;n2); CHKERRQ(info);
+<a name="line672">672: </a>  info = TXU-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;xu, &amp;n3); CHKERRQ(info);
+<a name="line673">673: </a>  info = S-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;dx, &amp;n4); CHKERRQ(info);
+<a name="line674">674: </a>  
+<a name="line675">675: </a>  <font color="#4169E1">if</font> (bmin1) GA_Dgop(&amp;t1, 1, (char*)<font color="#666666">"min"</font>);
+<a name="line676">676: </a>  <font color="#4169E1">if</font> (bmin2) GA_Dgop(&amp;t2, 1, (char*)<font color="#666666">"min"</font>);
+<a name="line677">677: </a>  <font color="#4169E1">if</font> (bmax)  GA_Dgop(&amp;t3, 1, (char*)<font color="#666666">"max"</font>);
+<a name="line678">678: </a>  
+<a name="line679">679: </a>  *bmin1 = t1; <font color="#B22222">/* boundmin */</font>
+<a name="line680">680: </a>  *bmin2 = t2; <font color="#B22222">/* wolfemin */</font>
+<a name="line681">681: </a>  *bmax  = t3; <font color="#B22222">/* boundmax */</font>
+<a name="line682">682: </a>  
+<a name="line683">683: </a>  TaoFunctionReturn(0);
+<a name="line684">684: </a>}
+
+
+
+<a name="line690">690: </a>int 
+<a name="line691">691: </a><strong><font color="#FF0000">TaoVecGa:</font></strong>:<A href="../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(TaoVec *GG, TaoVec *XXL, TaoVec *XX, 
+<a name="line692">692: </a>                                  TaoVec *XXU) {
+<a name="line693">693: </a>  
+<a name="line694">694: </a>  TaoVecGa *GP  = this;
+<a name="line695">695: </a>  
+<a name="line696">696: </a>  int i, n, n2, n3, n4, n5, info; 
+<a name="line697">697: </a>  GAScalar *xptr,*xlptr,*xuptr,*gptr,*gpptr;
+<a name="line698">698: </a>  GAScalar xval,gpval;
+<a name="line699">699: </a>  
+<a name="line700">700: </a>  TaoFunctionBegin;
+<a name="line701">701: </a>  <font color="#B22222">/* Project variables at the lower and upper bound */</font>   
+
+<a name="line703">703: </a>  info = XX-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;xptr, &amp;n); CHKERRQ(info);
+<a name="line704">704: </a>  info = XXL-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;xlptr, &amp;n2); CHKERRQ(info);
+<a name="line705">705: </a>  info = XXU-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;xuptr, &amp;n3); CHKERRQ(info);
+<a name="line706">706: </a>  info = GG-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;gptr, &amp;n4); CHKERRQ(info);
+
+<a name="line708">708: </a>  <font color="#4169E1">if</font> ( (n != n2) || (n != n3) || (n != n4) ) {
+<a name="line709">709: </a>    SETERRQ(1,<font color="#666666">"Vectors must all be same size"</font>);
+<a name="line710">710: </a>  }
+<a name="line711">711: </a>  
+
+<a name="line713">713: </a>  <font color="#4169E1">if</font> (GG!=GP){
+<a name="line714">714: </a>    info = GP-&gt;<A href="../../../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>((TaoScalar **)&amp;gpptr,&amp;n5);  CHKERRQ(info);
+<a name="line715">715: </a>    <font color="#4169E1">if</font> (n != n5) {SETERRQ(1, <font color="#666666">"Vectors must all be same size"</font>);}
+<a name="line716">716: </a>  } <font color="#4169E1">else</font> { gpptr=gptr; }
+
+<a name="line718">718: </a>  <font color="#4169E1">for</font> (i=0; i&lt;n; ++i){
+<a name="line719">719: </a>    gpval = gptr[i]; xval = xptr[i];
+<a name="line720">720: </a>    
+<a name="line721">721: </a>    <font color="#4169E1">if</font> (gpval&gt;0 &amp;&amp; xval&lt;=xlptr[i]){
+<a name="line722">722: </a>      gpval = 0;
+<a name="line723">723: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (gpval&lt;0 &amp;&amp; xval&gt;=xuptr[i]){
+<a name="line724">724: </a>      gpval = 0;
+<a name="line725">725: </a>    }
+<a name="line726">726: </a>    gpptr[i] = gpval;
+<a name="line727">727: </a>  }
+<a name="line728">728: </a>  
+<a name="line729">729: </a>  info = XX-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;xptr, &amp;n); CHKERRQ(info);
+<a name="line730">730: </a>  info = XXL-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;xlptr, &amp;n2); CHKERRQ(info);
+<a name="line731">731: </a>  info = XXU-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;xuptr, &amp;n3); CHKERRQ(info);
+<a name="line732">732: </a>  info = GG-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;gptr, &amp;n4); CHKERRQ(info);
+<a name="line733">733: </a>  <font color="#4169E1">if</font> (GG!=GP) {
+<a name="line734">734: </a>    info = GP-&gt;<A href="../../../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>((TaoScalar **)&amp;gpptr, &amp;n5); CHKERRQ(info);
+<a name="line735">735: </a>  }
+<a name="line736">736: </a>  TaoFunctionReturn(0);
+<a name="line737">737: </a>}
+
+
+</pre>
+</body>
+
+</html>

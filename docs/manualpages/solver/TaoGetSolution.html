@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoGetSolution</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoGetSolution"><H1>TaoGetSolution</H1></A>
+Sets a pointer to a TaoVec to the address of the  vector containing the current solution. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoGetSolution(TAO_SOLVER solver,TaoVec** xx)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>solver </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xx </B></TD><TD>- the address of a pointer to a TaoVec
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<DT><B>xx </B> -the solution
+<br>
+<P>
+
+<P>
+Note:  This routine does not create a vector.  It sets a pointer
+to the location of an existing vector.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This vector is a reference to the vector set in the application and passed
+to TAO in <A HREF="../solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>().
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ solve, solution
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoCreate.html#TaoCreate">TaoCreate</A>(), <A HREF="../solver/TaoGetGradient.html#TaoGetGradient">TaoGetGradient</A>(), <A HREF="../solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao_fghj.c.html#TaoGetSolution">src/interface/tao_fghj.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,33 @@
+<center><a href="zpetsc_kernel.c">Actual source code: zpetsc_kernel.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:15+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"private/fortranimpl.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifdef PETSC_HAVE_FORTRAN_CAPS</font>
+<a name="line5">  5: </a><strong><font color="#228B22">#define taoprintstatement_         TAOPRINTSTATEMENT</font></strong>
+
+<a name="line7">  7: </a><font color="#A020F0">#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)</font>
+<a name="line8">  8: </a><strong><font color="#228B22">#define taoprintstatement_         taoprintstatement</font></strong>
+
+<a name="line10"> 10: </a><font color="#A020F0">#endif</font>
+
+<a name="line13"> 13: </a><strong><font color="#4169E1">void PETSC_STDCALL taoprintstatement_(TAO_SOLVER *tao, CHAR statement PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len))</font></strong> 
+<a name="line14"> 14: </a>{
+<a name="line15"> 15: </a>  char *c1;
+
+<a name="line17"> 17: </a>  FIXCHAR(statement,len,c1);
+<a name="line18"> 18: </a>  *<A href="../../../docs/manualpages/solver/TaoPrintStatement.html#TaoPrintStatement">TaoPrintStatement</A>(*tao,c1);
+<a name="line19"> 19: </a>  FREECHAR(statement,c1);
+<a name="line20"> 20: </a>}
+</pre>
+</body>
+
+</html>

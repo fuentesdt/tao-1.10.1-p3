@@ -1,0 +1,192 @@
+<center><a href="fdtest.c">Actual source code: fdtest.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:07+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#ifdef TAO_USE_PETSC</font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/application/taoapp/taoapp_petsc.h"</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line6">  6: </a>  PetscTruth check_gradient;
+<a name="line7">  7: </a>  PetscTruth check_hessian;
+<a name="line8">  8: </a>  PetscTruth complete_print;
+<a name="line9">  9: </a>} TAO_FD;
+
+<a name="line13"> 13: </a><strong><font color="#4169E1"><a name="TaoSolve_FD"></a>static int TaoSolve_FD(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line14"> 14: </a>{
+<a name="line15"> 15: </a>  Mat A,Apre,B;
+<a name="line16"> 16: </a>  MatStructure flg;
+<a name="line17"> 17: </a>  Vec            x,g1,g2;
+<a name="line18"> 18: </a>  PetscInt       i;
+<a name="line19"> 19: </a>  PetscReal      hcnorm,diffnorm;
+<a name="line20"> 20: </a>  int info;
+<a name="line21"> 21: </a>  TAO_FD *fd       = (TAO_FD*)solver;
+<a name="line22"> 22: </a>  TaoApplication *tapp;
+<a name="line23"> 23: </a>  TaoPetscApplication *tpapp;
+<a name="line24"> 24: </a>  TAO_APPLICATION app;
+<a name="line25"> 25: </a>  MPI_Comm comm, gcomm;
+<a name="line26"> 26: </a>  TaoFunctionBegin;
+<a name="line27"> 27: </a>  
+<a name="line28"> 28: </a>  info = <A href="../../docs/manualpages/solver/TaoGetApplication.html#TaoGetApplication">TaoGetApplication</A>(tao,&amp;tapp); CHKERRQ(info);
+<a name="line29"> 29: </a>  tpapp = dynamic_cast&lt;TaoPetscApplication*&gt;(tapp);
+<a name="line30"> 30: </a>  <font color="#4169E1">if</font> (!tpapp) {
+<a name="line31"> 31: </a>    SETERRQ(1,<font color="#666666">"tao_fd_check solver only works with PETSc applications"</font>);
+<a name="line32"> 32: </a>  }
+<a name="line33"> 33: </a>  app = tpapp-&gt;papp;
+<a name="line34"> 34: </a>  info = tpapp-&gt;GetComm(&amp;comm); CHKERRQ(info);
+<a name="line35"> 35: </a>  info = <A href="../../docs/manualpages/ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(app,&amp;x); CHKERRQ(info);
+<a name="line36"> 36: </a>  <font color="#4169E1">if</font> (fd-&gt;check_gradient) {
+<a name="line37"> 37: </a>    info = PetscPrintf(comm,<font color="#666666">"Testing hand-coded gradient, if the ratio ||fd - hc|| / ||hc|| is\n"</font>); CHKERRQ(info);
+<a name="line38"> 38: </a>    info = PetscPrintf(comm,<font color="#666666">"0 (1.e-8), the hand-coded gradient is probably correct.\n"</font>); CHKERRQ(info);
+
+<a name="line40"> 40: </a>    <font color="#4169E1">if</font> (!fd-&gt;complete_print) {
+<a name="line41"> 41: </a>      info = PetscPrintf(comm,<font color="#666666">"Run with -tao_test_display to show difference\n"</font>);CHKERRQ(info);
+<a name="line42"> 42: </a>      info = PetscPrintf(comm,<font color="#666666">"between hand-coded and finite difference gradient.\n"</font>);CHKERRQ(info);
+<a name="line43"> 43: </a>    }
+<a name="line44"> 44: </a>    
+<a name="line45"> 45: </a>    info = VecDuplicate(x,&amp;g1); CHKERRQ(info);
+<a name="line46"> 46: </a>    info = VecDuplicate(x,&amp;g2); CHKERRQ(info);
+<a name="line47"> 47: </a>    <font color="#4169E1">for</font> (i=0; i&lt;3; i++) {  
+<a name="line48"> 48: </a>      <font color="#4169E1">if</font> (i == 1) {info = VecSet(x,-1.0);CHKERRQ(info);}
+<a name="line49"> 49: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (i == 2) {info = VecSet(x,1.0);CHKERRQ(info);}
+<a name="line50"> 50: </a> 
+<a name="line51"> 51: </a>      <font color="#B22222">/* compute both versions of gradient */</font>
+<a name="line52"> 52: </a>      info = <A href="../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(app,x,g1); CHKERRQ(info);
+<a name="line53"> 53: </a>      info = TaoAppDefaultComputeGradient(app,x,g2,PETSC_NULL); CHKERRQ(info);
+<a name="line54"> 54: </a>      <font color="#4169E1">if</font> (fd-&gt;complete_print) {
+<a name="line55"> 55: </a>        info = PetscPrintf(comm,<font color="#666666">"Finite difference gradient\n"</font>); CHKERRQ(info);
+<a name="line56"> 56: </a>        info = PetscObjectGetComm((PetscObject)g2,&amp;gcomm); CHKERRQ(info);
+<a name="line57"> 57: </a>        info = VecView(g2,PETSC_VIEWER_STDOUT_(gcomm)); CHKERRQ(info);
+<a name="line58"> 58: </a>        info = PetscPrintf(comm,<font color="#666666">"Hand-coded gradient\n"</font>);CHKERRQ(info);
+<a name="line59"> 59: </a>        info = PetscObjectGetComm((PetscObject)g1,&amp;gcomm);CHKERRQ(info);
+<a name="line60"> 60: </a>        info = VecView(g1,PETSC_VIEWER_STDOUT_(gcomm));CHKERRQ(info);
+<a name="line61"> 61: </a>        info = PetscPrintf(comm,<font color="#666666">"\n"</font>);CHKERRQ(info);
+<a name="line62"> 62: </a>      }
+<a name="line63"> 63: </a>      
+<a name="line64"> 64: </a>      info = VecAXPY(g2,-1.0,g1); CHKERRQ(info); // g2 := g2-g1
+<a name="line65"> 65: </a>      info = VecNorm(g1,NORM_2,&amp;hcnorm); CHKERRQ(info);
+<a name="line66"> 66: </a>      info = VecNorm(g2,NORM_2,&amp;diffnorm); CHKERRQ(info);
+
+<a name="line68"> 68: </a>      info = PetscPrintf(comm,<font color="#666666">"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n"</font>,diffnorm/hcnorm,diffnorm);CHKERRQ(info);
+<a name="line69"> 69: </a>      info = PetscPrintf(comm,<font color="#666666">"\n"</font>);CHKERRQ(info);
+<a name="line70"> 70: </a>    }
+<a name="line71"> 71: </a>  }
+<a name="line72"> 72: </a>  <font color="#4169E1">if</font> (fd-&gt;check_hessian) {
+<a name="line73"> 73: </a>    info = <A href="../../docs/manualpages/ptaopages/TaoAppGetHessianMat.html#TaoAppGetHessianMat">TaoAppGetHessianMat</A>(app,&amp;A, &amp;Apre); CHKERRQ(info);
+<a name="line74"> 74: </a>    <font color="#4169E1">if</font> (A != Apre) {
+<a name="line75"> 75: </a>      SETERRQ(1,<font color="#666666">"Cannot test with alternative preconditioner"</font>);
+<a name="line76"> 76: </a>    }
+<a name="line77"> 77: </a>    info = PetscPrintf(comm,<font color="#666666">"Testing hand-coded hessian, if the ratio ||fd - hc|| / ||hc|| is\n"</font>); CHKERRQ(info);
+<a name="line78"> 78: </a>    info = PetscPrintf(comm,<font color="#666666">"0 (1.e-8), the hand-coded hessian is probably correct.\n"</font>); CHKERRQ(info);
+
+<a name="line80"> 80: </a>    <font color="#4169E1">if</font> (!fd-&gt;complete_print) {
+<a name="line81"> 81: </a>      info = PetscPrintf(comm,<font color="#666666">"Run with -tao_test_display to show difference\n"</font>);CHKERRQ(info);
+<a name="line82"> 82: </a>      info = PetscPrintf(comm,<font color="#666666">"between hand-coded and finite difference hessian.\n"</font>);CHKERRQ(info);
+<a name="line83"> 83: </a>    }
+<a name="line84"> 84: </a>    <font color="#4169E1">for</font> (i=0;i&lt;3;i++) {
+<a name="line85"> 85: </a>      <font color="#4169E1">if</font> (i==1) {
+<a name="line86"> 86: </a>        info = VecSet(x,-1.0); CHKERRQ(info);
+<a name="line87"> 87: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (i==2) {
+<a name="line88"> 88: </a>        info = VecSet(x,1.0); CHKERRQ(info);
+<a name="line89"> 89: </a>      }
+<a name="line90"> 90: </a>      info = <A href="../../docs/manualpages/ptaopages/TaoAppComputeHessian.html#TaoAppComputeHessian">TaoAppComputeHessian</A>(app,x,&amp;A,&amp;A,&amp;flg); CHKERRQ(info);
+<a name="line91"> 91: </a>      <font color="#4169E1">if</font> (!i) {
+<a name="line92"> 92: </a>        info = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&amp;B); CHKERRQ(info);
+<a name="line93"> 93: </a>      }
+<a name="line94"> 94: </a>      info = <A href="../../docs/manualpages/ptaopages/TaoAppDefaultComputeHessian.html#TaoAppDefaultComputeHessian">TaoAppDefaultComputeHessian</A>(app, x, &amp;B, &amp;B, &amp;flg, PETSC_NULL); CHKERRQ(info);
+<a name="line95"> 95: </a>      <font color="#4169E1">if</font> (fd-&gt;complete_print) {
+<a name="line96"> 96: </a>        info = PetscObjectGetComm((PetscObject)A,&amp;gcomm); CHKERRQ(info);
+<a name="line97"> 97: </a>        info = PetscPrintf(comm,<font color="#666666">"Finite difference hessian\n"</font>); CHKERRQ(info);
+<a name="line98"> 98: </a>        info = MatView(B,PETSC_VIEWER_STDOUT_(gcomm)); CHKERRQ(info);
+<a name="line99"> 99: </a>        info = PetscPrintf(comm,<font color="#666666">"Hand-coded hessian\n"</font>); CHKERRQ(info);
+<a name="line100">100: </a>        info = MatView(A,PETSC_VIEWER_STDOUT_(gcomm)); CHKERRQ(info);
+<a name="line101">101: </a>        info = PetscPrintf(comm,<font color="#666666">"\n"</font>); CHKERRQ(info);
+<a name="line102">102: </a>      }
+<a name="line103">103: </a>      info = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(info);
+<a name="line104">104: </a>      info = MatNorm(B,NORM_FROBENIUS,&amp;diffnorm); CHKERRQ(info);
+<a name="line105">105: </a>      info = MatNorm(A,NORM_FROBENIUS,&amp;hcnorm); CHKERRQ(info);
+
+<a name="line107">107: </a>      info = PetscPrintf(comm,<font color="#666666">"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n"</font>,diffnorm/hcnorm,diffnorm);CHKERRQ(info);
+<a name="line108">108: </a>      info = PetscPrintf(comm,<font color="#666666">"\n"</font>);CHKERRQ(info);
+<a name="line109">109: </a>    }
+<a name="line110">110: </a>    info = MatDestroy(B); CHKERRQ(info);
+<a name="line111">111: </a>  }        
+<a name="line112">112: </a>  
+
+<a name="line114">114: </a>  TaoFunctionReturn(0);
+<a name="line115">115: </a>  //  PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
+
+<a name="line117">117: </a>}
+
+<a name="line121">121: </a><strong><font color="#4169E1"><a name="TaoSetUp_FD"></a>static int TaoSetUp_FD(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line122">122: </a>{
+<a name="line123">123: </a>  //TAO_FD *fdctx = (TAO_FD*)solver;
+<a name="line124">124: </a>  TaoVec *X, *G;
+<a name="line125">125: </a>  int info;
+<a name="line126">126: </a>  TaoFunctionBegin;
+<a name="line127">127: </a>  info = <A href="../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;X); CHKERRQ(info);
+<a name="line128">128: </a>  info = X-&gt;<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;G); CHKERRQ(info);
+<a name="line129">129: </a>  info = <A href="../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao,G); CHKERRQ(info);
+<a name="line130">130: </a>  info = <A href="../../docs/manualpages/solver/TaoCheckFG.html#TaoCheckFG">TaoCheckFG</A>(tao); CHKERRQ(info);
+<a name="line131">131: </a>  TaoFunctionReturn(0);
+<a name="line132">132: </a>}
+
+<a name="line136">136: </a><strong><font color="#4169E1"><a name="TaoDestroy_FD"></a>static int TaoDestroy_FD(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line137">137: </a>{
+<a name="line138">138: </a>  TaoFunctionBegin;
+<a name="line139">139: </a>  TaoFunctionReturn(0);
+<a name="line140">140: </a>}
+
+<a name="line144">144: </a><strong><font color="#4169E1"><a name="TaoSetOptions_FD"></a>static int TaoSetOptions_FD(TAO_SOLVER tao, void *solver)</font></strong> 
+<a name="line145">145: </a>{
+<a name="line146">146: </a>  TAO_FD *fd = (TAO_FD*)solver;
+<a name="line147">147: </a>  int info;
+<a name="line148">148: </a>  TaoFunctionBegin;
+<a name="line149">149: </a>  info = PetscOptionsHead(<font color="#666666">"Hand-coded gradient/hessian tester options"</font>);CHKERRQ(info);
+<a name="line150">150: </a>  info = PetscOptionsName(<font color="#666666">"-tao_test_display"</font>,<font color="#666666">"Display difference between approximate and handcoded hessian"</font>,<font color="#666666">"None"</font>,&amp;fd-&gt;complete_print);CHKERRQ(info);
+<a name="line151">151: </a>  info = PetscOptionsName(<font color="#666666">"-tao_test_gradient"</font>,<font color="#666666">"Test Hand-coded gradient against finite difference gradient"</font>,<font color="#666666">"None"</font>,&amp;fd-&gt;check_gradient);CHKERRQ(info);
+<a name="line152">152: </a>  info = PetscOptionsName(<font color="#666666">"-tao_test_hessian"</font>,<font color="#666666">"Test Hand-coded hessian against finite difference hessian"</font>,<font color="#666666">"None"</font>,&amp;fd-&gt;check_hessian);CHKERRQ(info);
+<a name="line153">153: </a>  <font color="#4169E1">if</font> (fd-&gt;check_gradient == PETSC_FALSE &amp;&amp; fd-&gt;check_hessian == PETSC_FALSE) {
+<a name="line154">154: </a>    fd-&gt;check_gradient = PETSC_TRUE;
+<a name="line155">155: </a>  }
+<a name="line156">156: </a>    
+<a name="line157">157: </a>  info = PetscOptionsTail();CHKERRQ(info);
+
+<a name="line159">159: </a>  TaoFunctionReturn(0);
+<a name="line160">160: </a>}
+<a name="line164">164: </a><strong><font color="#4169E1"><a name="TaoCreate_FD"></a>int TaoCreate_FD(TAO_SOLVER tao)</font></strong>
+<a name="line165">165: </a>{
+<a name="line166">166: </a>  TAO_FD *fd;
+<a name="line167">167: </a>  int info;
+<a name="line168">168: </a>  TaoFunctionBegin;
+<a name="line169">169: </a>  info = TaoNew(TAO_FD,&amp;fd); CHKERRQ(info);
+<a name="line170">170: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_FD)); CHKERRQ(info);
+<a name="line171">171: </a>  info = <A href="../../docs/manualpages/solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>(tao,TaoSolve_FD, (void*)fd); CHKERRQ(info);
+<a name="line172">172: </a>  info = <A href="../../docs/manualpages/solver/TaoSetTaoSetUpDownRoutines.html#TaoSetTaoSetUpDownRoutines">TaoSetTaoSetUpDownRoutines</A>(tao,TaoSetUp_FD, TaoDestroy_FD); CHKERRQ(info);
+<a name="line173">173: </a>  info = TaoSetTaoOptionsRoutine(tao, TaoSetOptions_FD); CHKERRQ(info);
+<a name="line174">174: </a>  //  info = <A href="../../docs/manualpages/solver/TaoSetTaoViewRoutine.html#TaoSetTaoViewRoutine">TaoSetTaoViewRoutine</A>(tao,TaoView_FD); CHKERRQ(info);
+<a name="line175">175: </a>  fd-&gt;check_gradient=PETSC_TRUE;
+<a name="line176">176: </a>  fd-&gt;check_hessian=PETSC_FALSE;
+<a name="line177">177: </a>  fd-&gt;complete_print=PETSC_FALSE;
+<a name="line178">178: </a>  TaoFunctionReturn(0);
+<a name="line179">179: </a>}
+
+
+<a name="line183">183: </a><font color="#A020F0">#else</font>
+<a name="line187">187: </a><strong><font color="#4169E1">int TaoCreate_FD(TAO_SOLVER tao)</font></strong>
+<a name="line188">188: </a>{
+<a name="line189">189: </a>  TaoFunctionBegin;
+<a name="line190">190: </a>  SETERRQ(1,<font color="#666666">"tao_fd_test solver requires TAO_APPLICATION"</font>);
+<a name="line191">191: </a>}
+
+<a name="line194">194: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

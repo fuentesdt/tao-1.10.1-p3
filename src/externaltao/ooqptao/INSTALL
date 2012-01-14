@@ -1,0 +1,115 @@
+NAME
+    INSTALL -- An installation guide for TaoOoqp.
+
+THE BOTTOM LINE
+    If you have all the prerequisite packages installed on your system
+    (see the section on "PREREQUISITES"), and the variables found in
+    makefile have the correct values (see the section on "EDITING THE
+    MAKEFILE"), you may type
+
+        make
+
+    to build TaoOoqp.
+
+PREREQUISITES
+    The following packages need to be installed on your system before
+    TaoOoqp may be built.
+
+  PETSc
+
+    The TaoOoqp package use the PETSc package from Argonne National
+    Laboratory to perform linear algebra operations. Before the
+    TaoOoqp interface can be build, you must install PETSc on your
+    system. See the PETSc home page at
+    http://www.mcs.anl.gov/petsc/index.html for information.
+
+  TAO
+
+    TAO is the Toolkit for Advanced Optimization. Visit
+    http://www.mcs.anl.gov/tao/ to obtain the latest version of TAO. A
+    installation guide for TAO may be found at
+    http://www.mcs.anl.gov/tao/docs.
+
+  OOQP
+
+    OOQP is a package for solving convex quadratic programming
+    problems. Visit http://www.cs.wisc.edu/~swright/ooqp to obtain the
+    latest version of OOQP. The installation guide for OOQP may be
+    found in the top level directory of the OOQP distribution, in the
+    file named INSTALL. Pay particular attention to instruction on how
+    to build the OOQP-PETSc interface.
+
+  MA27
+
+    MA27 is a code for solving sparse symmetric indefinite linear
+    systems. MA27 is available free for noncommercial use. Instruction
+    on how to obtain MA27 and build the appropriate library are
+    contained in the OOQP Installation Guide.
+
+ENVIRONMENT VARIABLES
+    To build a program using TAO and PETSc, certain environment
+    variables must be set before the make utility is invoked. The
+    following is a list of the most important of these variables. For
+    more information, we refer users to the TAO Users Guide.
+
+    TAO_DIR
+        The location of the TAO distribution.
+
+    PETSC_DIR
+        The location of the PETSc distribution.
+
+
+EDITING THE MAKEFILE
+    We presume the user has at least a passing knowledge of the make
+    utility and makefiles.
+
+    First, make sure that appropriate environment variables are set,
+    as described in the section on "ENVIRONMENT VARIABLES". The value
+    of some of these variables is used in the makefile, even if they
+    don't appear in this file.
+
+    The variables in the makefile that users may wish to edit are as
+    follows.
+
+    OOQPHOME
+        This variable should be set to the location of the OOQP
+        distribution. The default value for OOQPHOME is $(HOME)/OOQP,
+        indicating that OOQP is located in the subdirectory OOQP of
+        the user's home directory.
+
+    MA27LIB
+        The complete pathname of the library containing MA27. The
+        default value of this variable is
+        $(OOQPHOME)/extras/MA27/libMA27.a.
+
+    Rarely, users may wish to modify the following variables:
+
+    OOQPINCLUDEDIR
+        The location of the OOQP header files. The default value of
+        this variable is $(OOQPHOME)/include.
+
+    OOQPLIBDIR
+        The location of the OOQP library files. The default value of
+        this variable is $(OOQPHOME)/lib.
+
+    However, if the value of OOQPHOME is correct and OOQP-PETSc
+    interface has been built according to the instructions in the OOQP
+    Installation Guide, then the default values of OOQPINCLUDEDIR and
+    OOQPLIBDIR may be used.
+
+WHAT WILL BE BUILT
+    The following files will be built.
+
+    libqpgentao.a
+        A static library containing the TaoOoqp interface.
+
+    libqpgentao.so
+        A static library containing the TaoOoqp interface. The
+        contents of this library are the same as the contents of
+        libqpgentao.a.
+
+    qpssolver
+        An executable that can reads a quadratic MPS (QPS) file
+        containing a convex QP and attempts to solve it. For more
+        information on QPS files see the OOQP Users Guide.
+

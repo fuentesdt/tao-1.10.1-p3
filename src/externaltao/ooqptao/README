@@ -1,0 +1,50 @@
+NAME
+    TaoOoqp - A interface between TAO and OOQP, a package for solving
+    convex quadratic programming problems.
+
+SYNOPSIS
+    This directory contains an interface between TAO, the Toolkit for
+    Advanced Optimization, and OOQP, a package for solving convex
+    quadratic programming problems (QP). These are optimization
+    problems in which the objective function is a convex quadratic
+    function and the constraints are linear functions of a vector of
+    real variables. They have the following general form:
+
+        minimize (1/2) * x' * Q * x + c' * x
+        subject to                     A * x  = b
+                                l_c <= C * x <= u_c
+                                l_x <=     x <= u_x
+
+    where Q is a symmetric positive semi-definite n by n matrix, x is
+    a n-vector of variables, A and C are matrices of dimensions m_a by
+    n and m_c by n, respectively, and c, b, l_c, u_c, l_x and u_x are
+    vectors of appropriate dimensions.
+
+OBTAINING TAO
+    Visit http://www.mcs.anl.gov/tao/ to obtain the latest version of
+    TAO.
+
+OBTAINING OOQP
+    Visit http://www.cs.wisc.edu/~swright/ooqp to obtain the latest
+    version of OOQP.
+
+GETTING STARTED
+    The file INSTALL, included in this directory, is the installation
+    guide for the TaoOoqp package. Documentation for the TaoOoqp
+    interface may be found in the TAO manual.
+
+    Additional information about OOQP can be found in the OOQP Users
+    Guide which may be obtained from the OOQP web page
+    http://www.cs.wisc.edu/~swright/ooqp.
+
+CREDITS
+    TaoOoqp is maintained by:
+
+    E. Michael Gertz
+        Mathematics and Computer Science Division, Argonne National
+        Laboratory. http://www.mcs.anl.gov/~gertz/
+
+    Steven Benson
+        Mathematics and Computer Science Division, Argonne National
+        Laboratory. http://www.mcs.anl.gov/~benson
+

@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>SolveTrustRegion</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="SolveTrustRegion"><H1>SolveTrustRegion</H1></A>
+Finds the solution to the trust-region problem  min &lt;x, Ax - b&gt; st  |x| &lt;= r If A is a symmetrix positive definite matrix and r is large enough, then x solves the system of equations Ax = b. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoLinearSolver::SolveTrustRegion(TaoVec *b, TaoVec *x, double r, 
+                                      TaoTruth *t)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<DT><B>b </B> -the right-hand side
+<br>
+<DT><B>r </B> -the trust-region radius
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- the solution
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>flag </B></TD><TD>- TAO_TRUE if successful solve, TAO_FALSE otherwise.
+</TD></TR></TABLE>
+<P>
+
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/lsolver/taolinearsolver.c.html#SolveTrustRegion">src/lsolver/taolinearsolver.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

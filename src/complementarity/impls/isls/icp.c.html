@@ -1,0 +1,594 @@
+<center><a href="icp.c">Actual source code: icp.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:09+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"icp.h"</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><strong><font color="#4169E1">static int TaoSetDown_ICP(TAO_SOLVER, void*)</font></strong>;
+
+<a name="line7">  7: </a><strong><font color="#4169E1"><a name="TaoSetUp_ICP"></a>static int TaoSetUp_ICP(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line8">  8: </a>{
+<a name="line9">  9: </a>  TAO_ICP *qp =(TAO_ICP*)solver;
+<a name="line10"> 10: </a>  int       info;
+<a name="line11"> 11: </a>  TaoInt    n;
+
+<a name="line13"> 13: </a>  TaoFunctionBegin;
+
+<a name="line15"> 15: </a>  <font color="#B22222">/* Set pointers to Data */</font>
+<a name="line16"> 16: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetJacobian.html#TaoGetJacobian">TaoGetJacobian</A>(tao,&amp;qp-&gt;J);CHKERRQ(info);
+<a name="line17"> 17: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;qp-&gt;x);CHKERRQ(info);
+<a name="line18"> 18: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(&amp;qp-&gt;n); CHKERRQ(info);
+
+<a name="line20"> 20: </a>  <font color="#B22222">/* Allocate some arrays */</font>
+<a name="line21"> 21: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;f); CHKERRQ(info);
+<a name="line22"> 22: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;g2); CHKERRQ(info);
+<a name="line23"> 23: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;work); CHKERRQ(info);
+<a name="line24"> 24: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;dx); CHKERRQ(info);
+<a name="line25"> 25: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;JDiag); CHKERRQ(info);
+<a name="line26"> 26: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;diagaxpy); CHKERRQ(info);
+<a name="line27"> 27: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;rhs); CHKERRQ(info);
+<a name="line28"> 28: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;rhs2); CHKERRQ(info);
+<a name="line29"> 29: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;r12); CHKERRQ(info);
+
+<a name="line31"> 31: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;xl); CHKERRQ(info);
+<a name="line32"> 32: </a>  info = qp-&gt;xl-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;g); CHKERRQ(info);
+<a name="line33"> 33: </a>  info = qp-&gt;xl-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;dg); CHKERRQ(info);
+<a name="line34"> 34: </a>  info = qp-&gt;xl-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;z); CHKERRQ(info);
+<a name="line35"> 35: </a>  info = qp-&gt;xl-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;dz); CHKERRQ(info);
+<a name="line36"> 36: </a>  info = qp-&gt;xl-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;gzwork); CHKERRQ(info);
+<a name="line37"> 37: </a>  info = qp-&gt;xl-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;r3); CHKERRQ(info);
+
+<a name="line39"> 39: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;xu); CHKERRQ(info);
+<a name="line40"> 40: </a>  info = qp-&gt;xu-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;t); CHKERRQ(info);
+<a name="line41"> 41: </a>  info = qp-&gt;xu-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;dt); CHKERRQ(info);
+<a name="line42"> 42: </a>  info = qp-&gt;xu-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;s); CHKERRQ(info);
+<a name="line43"> 43: </a>  info = qp-&gt;xu-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;ds); CHKERRQ(info);
+<a name="line44"> 44: </a>  info = qp-&gt;xu-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;tswork); CHKERRQ(info);
+<a name="line45"> 45: </a>  info = qp-&gt;xu-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;qp-&gt;r5); CHKERRQ(info);
+
+<a name="line47"> 47: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetVariableBounds.html#TaoSetVariableBounds">TaoSetVariableBounds</A>(tao,qp-&gt;xl,qp-&gt;xu);CHKERRQ(info);
+<a name="line48"> 48: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao,qp-&gt;dx);CHKERRQ(info);
+<a name="line49"> 49: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao,qp-&gt;g2);CHKERRQ(info);
+
+<a name="line51"> 51: </a>  <font color="#B22222">/* Register the Events */</font>
+<a name="line52"> 52: </a>  info = qp-&gt;x-&gt;<A href="../../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(&amp;qp-&gt;n); CHKERRQ(info);
+
+<a name="line54"> 54: </a>  qp-&gt;m=0;
+<a name="line55"> 55: </a>  info=qp-&gt;g-&gt;<A href="../../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(&amp;n); CHKERRQ(info); qp-&gt;m+=n;
+<a name="line56"> 56: </a>  info=qp-&gt;t-&gt;<A href="../../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(&amp;n); CHKERRQ(info); qp-&gt;m+=n;
+
+<a name="line58"> 58: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateLinearSolver.html#TaoCreateLinearSolver">TaoCreateLinearSolver</A>(tao,qp-&gt;J,300,0); CHKERRQ(info);
+
+<a name="line60"> 60: </a>  TaoFunctionReturn(0);
+<a name="line61"> 61: </a>}
+
+<a name="line65"> 65: </a><strong><font color="#4169E1"><a name="QPIPSetInitialPoint"></a>static int  QPIPSetInitialPoint(TAO_SOLVER tao, TAO_ICP *qp)</font></strong>
+<a name="line66"> 66: </a>{
+<a name="line67"> 67: </a>  int       info;
+<a name="line68"> 68: </a>  double    p01=1.0e-2;
+<a name="line69"> 69: </a>  double    mu;
+<a name="line70"> 70: </a>  double    dd1,dd2;
+<a name="line71"> 71: </a>  TaoVec    *g = qp-&gt;g, *z=qp-&gt;z, *s=qp-&gt;s, *t=qp-&gt;t;
+<a name="line72"> 72: </a>  TaoVec    *gzwork=qp-&gt;gzwork, *tswork=qp-&gt;tswork;
+<a name="line73"> 73: </a>  TaoVec    *rhs=qp-&gt;rhs, *r12=qp-&gt;r12;
+<a name="line74"> 74: </a>  TaoVec    *x = qp-&gt;x, *xl=qp-&gt;xl, *xu=qp-&gt;xu, *f=qp-&gt;f;
+<a name="line75"> 75: </a>  TaoVec    *work=qp-&gt;work;
+
+<a name="line77"> 77: </a>  TaoFunctionBegin;
+
+<a name="line79"> 79: </a>  <font color="#B22222">/* Initialize Primal Vectors */</font>
+<a name="line80"> 80: </a>  info = t-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,xu,-1.0,x);CHKERRQ(info);
+<a name="line81"> 81: </a>  info = g-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,x,-1.0,xl);CHKERRQ(info);
+
+<a name="line83"> 83: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(p01);CHKERRQ(info);
+<a name="line84"> 84: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(p01);CHKERRQ(info);
+
+<a name="line86"> 86: </a>  info = g-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>(g,gzwork); CHKERRQ(info);
+<a name="line87"> 87: </a>  info = t-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>(t,tswork); CHKERRQ(info);
+
+<a name="line89"> 89: </a>  <font color="#B22222">/* Initialize Dual Variable Vectors */</font>
+
+<a name="line91"> 91: </a>  info = z-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(g); CHKERRQ(info);
+<a name="line92"> 92: </a>  info = z-&gt;<A href="../../../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(); CHKERRQ(info);
+
+<a name="line94"> 94: </a>  info = s-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(t); CHKERRQ(info);
+<a name="line95"> 95: </a>  info = s-&gt;<A href="../../../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(); CHKERRQ(info);
+<a name="line96"> 96: </a>  
+<a name="line97"> 97: </a>  info = r12-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,s,-1.0,z);CHKERRQ(info);
+<a name="line98"> 98: </a>  info = rhs-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(f);CHKERRQ(info);
+<a name="line99"> 99: </a>  
+<a name="line100">100: </a>  info = rhs-&gt;<A href="../../../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>(); CHKERRQ(info);
+<a name="line101">101: </a>  info = r12-&gt;<A href="../../../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>(); CHKERRQ(info);
+<a name="line102">102: </a>  info = work-&gt;<A href="../../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(p01);CHKERRQ(info);
+<a name="line103">103: </a>  info = rhs-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>(rhs,work); CHKERRQ(info);
+<a name="line104">104: </a>  info = r12-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>(r12,work); CHKERRQ(info);
+<a name="line105">105: </a>  
+<a name="line106">106: </a>  info = rhs-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(rhs,r12); CHKERRQ(info);
+<a name="line107">107: </a>  
+<a name="line108">108: </a>  info = r12-&gt;<A href="../../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(&amp;qp-&gt;dinfeas); CHKERRQ(info);
+<a name="line109">109: </a>  mu = (qp-&gt;dinfeas)/(qp-&gt;n);
+<a name="line110">110: </a>  
+<a name="line111">111: </a>  info = s-&gt;<A href="../../../../docs/manualpages/vector/Scale.html#Scale">Scale</A>(mu); CHKERRQ(info);
+<a name="line112">112: </a>  info = z-&gt;<A href="../../../../docs/manualpages/vector/Scale.html#Scale">Scale</A>(mu); CHKERRQ(info);
+<a name="line113">113: </a>  
+<a name="line114">114: </a>  info = QPIPComputeResidual(qp); CHKERRQ(info);   
+<a name="line115">115: </a>  info = TAOComputeNormFromCentralPath_ICP(tao,&amp;dd2); CHKERRQ(info);
+<a name="line116">116: </a>  dd1=TaoMax(qp-&gt;pathnorm,1.0e-2);
+<a name="line117">117: </a>  <font color="#4169E1">while</font> ( (qp-&gt;dinfeas+qp-&gt;pinfeas)/(qp-&gt;m+qp-&gt;n) &gt;= qp-&gt;mu ){
+<a name="line118">118: </a>    
+<a name="line119">119: </a>    info=g-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(dd1); CHKERRQ(info);
+<a name="line120">120: </a>    info=z-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(dd1); CHKERRQ(info);
+<a name="line121">121: </a>    info=s-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(dd1); CHKERRQ(info);
+<a name="line122">122: </a>    info=t-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(dd1); CHKERRQ(info);
+
+<a name="line124">124: </a>    info = QPIPComputeResidual(qp); CHKERRQ(info);   
+<a name="line125">125: </a>    info = TAOComputeNormFromCentralPath_ICP(tao,&amp;dd2); CHKERRQ(info);
+<a name="line126">126: </a>    
+<a name="line127">127: </a>    qp-&gt;dobj = qp-&gt;pobj - qp-&gt;gap;
+<a name="line128">128: </a>    qp-&gt;rgap=qp-&gt;gap/( TaoAbsScalar(qp-&gt;dobj) + TaoAbsScalar(qp-&gt;pobj) + 1.0 );
+<a name="line129">129: </a>    dd1=dd1*2;
+<a name="line130">130: </a>  }
+
+<a name="line132">132: </a>  TaoFunctionReturn(0);
+<a name="line133">133: </a>}
+
+
+<a name="line138">138: </a><strong><font color="#4169E1"><a name="TaoSetDown_ICP"></a>static int TaoSetDown_ICP(TAO_SOLVER tao, void*solver)</font></strong>
+<a name="line139">139: </a>{
+<a name="line140">140: </a>  TAO_ICP *qp = (TAO_ICP*)solver;
+<a name="line141">141: </a>  int info;
+
+<a name="line143">143: </a>  <font color="#B22222">/* Free allocated memory in GPCG structure */</font>
+<a name="line144">144: </a>  TaoFunctionBegin;
+
+<a name="line146">146: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;g2);CHKERRQ(info);
+<a name="line147">147: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;g);CHKERRQ(info);
+<a name="line148">148: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;dg);CHKERRQ(info);
+<a name="line149">149: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;z);CHKERRQ(info);
+<a name="line150">150: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;dz);CHKERRQ(info);
+<a name="line151">151: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;gzwork);CHKERRQ(info);
+<a name="line152">152: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;r3);CHKERRQ(info);
+<a name="line153">153: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;xl);CHKERRQ(info);
+<a name="line154">154: </a>  
+<a name="line155">155: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;s);CHKERRQ(info);
+<a name="line156">156: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;ds);CHKERRQ(info);
+<a name="line157">157: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;t);CHKERRQ(info);
+<a name="line158">158: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;dt);CHKERRQ(info);
+<a name="line159">159: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;tswork);CHKERRQ(info);
+<a name="line160">160: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;r5);CHKERRQ(info);
+<a name="line161">161: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;xu);CHKERRQ(info);
+<a name="line162">162: </a>  
+<a name="line163">163: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;f);CHKERRQ(info);
+<a name="line164">164: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;JDiag);CHKERRQ(info);
+<a name="line165">165: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;work);CHKERRQ(info);
+<a name="line166">166: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;diagaxpy);CHKERRQ(info);
+<a name="line167">167: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;rhs);CHKERRQ(info);
+<a name="line168">168: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;rhs2);CHKERRQ(info);
+<a name="line169">169: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;dx);CHKERRQ(info);
+<a name="line170">170: </a>  info=<A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(qp-&gt;r12);CHKERRQ(info);
+<a name="line171">171: </a>  
+<a name="line172">172: </a>  info = <A href="../../../../docs/manualpages/solver/TaoDestroyLinearSolver.html#TaoDestroyLinearSolver">TaoDestroyLinearSolver</A>(tao);CHKERRQ(info);
+
+<a name="line174">174: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetVariableBounds.html#TaoSetVariableBounds">TaoSetVariableBounds</A>(tao,0,0);CHKERRQ(info);
+<a name="line175">175: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao,0);CHKERRQ(info);
+<a name="line176">176: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao,qp-&gt;g2);CHKERRQ(info);
+
+<a name="line178">178: </a>  TaoFunctionReturn(0);
+<a name="line179">179: </a>}
+
+<a name="line183">183: </a><strong><font color="#4169E1"><a name="TaoSolve_ICP"></a>static int TaoSolve_ICP(TAO_SOLVER tao, void *solver)</font></strong>
+<a name="line184">184: </a>{
+<a name="line185">185: </a>  TAO_ICP   *qp = (TAO_ICP*)solver;
+<a name="line186">186: </a>  TaoVec    *x = qp-&gt;x, *xl=qp-&gt;xl, *xu=qp-&gt;xu, *f=qp-&gt;f;
+<a name="line187">187: </a>  TaoVec    *g = qp-&gt;g, *z=qp-&gt;z, *s=qp-&gt;s, *t=qp-&gt;t;
+<a name="line188">188: </a>  TaoVec    *dg=qp-&gt;dg, *dz=qp-&gt;dz, *ds=qp-&gt;ds, *dt=qp-&gt;dt;
+<a name="line189">189: </a>  TaoVec    *gzwork=qp-&gt;gzwork, *tswork=qp-&gt;tswork;
+<a name="line190">190: </a>  TaoVec    *rhs=qp-&gt;rhs, *rhs2=qp-&gt;rhs2;
+<a name="line191">191: </a>  TaoVec    *diagaxpy=qp-&gt;diagaxpy, *dx=qp-&gt;dx;
+<a name="line192">192: </a>  TaoVec    *r3=qp-&gt;r3,*r5=qp-&gt;r5;
+<a name="line193">193: </a>  TaoVec    *JDiag=qp-&gt;JDiag;
+<a name="line194">194: </a>  TaoMat    *J;
+<a name="line195">195: </a>  int       info;
+<a name="line196">196: </a>  TaoInt    iter=0;
+<a name="line197">197: </a>  TaoInt    n;
+<a name="line198">198: </a>  double    d1,ksptol;
+<a name="line199">199: </a>  double    sigmamu;// sigma;
+<a name="line200">200: </a>  double    dstep,pstep,step=0;
+<a name="line201">201: </a>  double    gap[4];
+<a name="line202">202: </a>  TaoTruth  kspsuccess;
+<a name="line203">203: </a>  TaoTerminateReason reason;
+<a name="line204">204: </a>  TaoLinearSolver *qpksp;
+
+<a name="line206">206: </a>  TaoFunctionBegin;
+
+<a name="line208">208: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;x);CHKERRQ(info); qp-&gt;x=x;
+<a name="line209">209: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetJacobian.html#TaoGetJacobian">TaoGetJacobian</A>(tao,&amp;J);CHKERRQ(info); qp-&gt;J=J;
+
+<a name="line211">211: </a>  info = x-&gt;<A href="../../../../docs/manualpages/vector/Median.html#Median">Median</A>(xl,x,xu); CHKERRQ(info);
+<a name="line212">212: </a>  info = <A href="../../../../docs/manualpages/solver/TaoEvaluateVariableBounds.html#TaoEvaluateVariableBounds">TaoEvaluateVariableBounds</A>(tao,xl,xu); CHKERRQ(info);
+<a name="line213">213: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeConstraints.html#TaoComputeConstraints">TaoComputeConstraints</A>(tao, x, f); CHKERRQ(info);
+<a name="line214">214: </a> 
+<a name="line215">215: </a>  info = x-&gt;<A href="../../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(&amp;n);CHKERRQ(info);
+
+<a name="line217">217: </a>  info = QPIPSetInitialPoint(tao,qp); CHKERRQ(info);
+<a name="line218">218: </a>  
+<a name="line219">219: </a>  <font color="#B22222">/* Enter main loop */</font>
+<a name="line220">220: </a>  <font color="#4169E1">while</font> (1){
+
+<a name="line222">222: </a>    info = QPIPComputeResidual(qp); CHKERRQ(info);
+<a name="line223">223: </a>    info = TAOComputeNormFromCentralPath_ICP(tao,&amp;d1); CHKERRQ(info);
+<a name="line224">224: </a>    
+<a name="line225">225: </a>    <font color="#B22222">/* Check Stopping Condition      */</font>
+<a name="line226">226: </a>    info=<A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao,iter++,qp-&gt;gap,(qp-&gt;gap+qp-&gt;dinfeas),qp-&gt;pinfeas,
+<a name="line227">227: </a>                    step,&amp;reason); CHKERRQ(info);
+<a name="line228">228: </a>    <font color="#4169E1">if</font> (reason != TAO_CONTINUE_ITERATING) <font color="#4169E1">break</font>;
+
+<a name="line230">230: </a>    info = rhs-&gt;<A href="../../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(-1.0,f); CHKERRQ(info);
+<a name="line231">231: </a>    
+<a name="line232">232: </a>    info = diagaxpy-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line233">233: </a>    
+<a name="line234">234: </a>    info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(z,g); CHKERRQ(info);
+<a name="line235">235: </a>    info = diagaxpy-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,gzwork); CHKERRQ(info);
+<a name="line236">236: </a>    info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(gzwork,r3); CHKERRQ(info);
+<a name="line237">237: </a>    info = rhs-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0,gzwork); CHKERRQ(info);
+<a name="line238">238: </a>    
+<a name="line239">239: </a>    info = tswork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(s,t); CHKERRQ(info);
+<a name="line240">240: </a>    info = diagaxpy-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,tswork); CHKERRQ(info);
+<a name="line241">241: </a>    info = tswork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(tswork,r5); CHKERRQ(info);
+<a name="line242">242: </a>    info = rhs-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0,tswork); CHKERRQ(info);
+<a name="line243">243: </a>    <font color="#B22222">/*    </font>
+<a name="line244">244: </a><font color="#B22222">    info = dz-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);</font>
+<a name="line245">245: </a><font color="#B22222">    info = dg-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);</font>
+<a name="line246">246: </a><font color="#B22222">    info = ds-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);</font>
+<a name="line247">247: </a><font color="#B22222">    info = dt-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);</font>
+<a name="line248">248: </a><font color="#B22222">    */</font>
+<a name="line249">249: </a>    <font color="#B22222">/* Add centrality part */</font>
+<a name="line250">250: </a>    <font color="#4169E1">if</font> (iter &gt; 0 &amp;&amp; (qp-&gt;rnorm&gt;5*qp-&gt;mu || d1*d1&gt;qp-&gt;m*qp-&gt;mu*qp-&gt;mu) ) {
+<a name="line251">251: </a>      sigmamu=qp-&gt;mu;//sigma=1.0;
+<a name="line252">252: </a>      sigmamu=0;//sigma=0.0;
+<a name="line253">253: </a>    } <font color="#4169E1">else</font> {
+<a name="line254">254: </a>      sigmamu=0;//sigma=0.0;
+<a name="line255">255: </a>    }
+<a name="line256">256: </a>    sigmamu=0.1*qp-&gt;mu;//sigma=0.1;
+<a name="line257">257: </a>    sigmamu=0.0*qp-&gt;mu;//sigma=0.0;
+<a name="line258">258: </a>    info = dz-&gt;<A href="../../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(sigmamu); CHKERRQ(info);
+<a name="line259">259: </a>    info = ds-&gt;<A href="../../../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(sigmamu); CHKERRQ(info);
+<a name="line260">260: </a>    //    printf(<font color="#666666">"TargetMu: %4.2e\n"</font>,sigmamu);
+<a name="line261">261: </a>    <font color="#4169E1">if</font> (sigmamu !=0){
+<a name="line262">262: </a>      info = dz-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(dz,g); CHKERRQ(info);
+<a name="line263">263: </a>      info = ds-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(ds,t); CHKERRQ(info);
+<a name="line264">264: </a>      info = rhs-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,dz); CHKERRQ(info);
+<a name="line265">265: </a>      info = rhs-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0,ds); CHKERRQ(info);
+<a name="line266">266: </a>    } <font color="#4169E1">else</font> {
+<a name="line267">267: </a>      //      info = qp-&gt;RHS2-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line268">268: </a>    }
+
+<a name="line270">270: </a>    qp-&gt;usedcorrector=TAO_FALSE;
+<a name="line271">271: </a>    qp-&gt;sigmamu=sigmamu;
+
+
+
+<a name="line275">275: </a>    <font color="#B22222">/*  Determine the solving tolerance */</font>
+<a name="line276">276: </a>    ksptol = qp-&gt;mu/10.0;
+<a name="line277">277: </a>    ksptol = TaoMin(ksptol,0.00000000001);
+<a name="line278">278: </a>    info = <A href="../../../../docs/manualpages/solver/TaoGetLinearSolver.html#TaoGetLinearSolver">TaoGetLinearSolver</A>(tao,&amp;qpksp); CHKERRQ(info);
+<a name="line279">279: </a>    <font color="#B22222">/*</font>
+<a name="line280">280: </a><font color="#B22222">    info = qpksp-&gt;<A href="../../../../docs/manualpages/lsolver/SetTolerances.html#SetTolerances">SetTolerances</A>(ksptol,1e-30,1e30,2*n); CHKERRQ(info);</font>
+<a name="line281">281: </a><font color="#B22222">    */</font>
+
+<a name="line283">283: </a>    info = <A href="../../../../docs/manualpages/solver/TaoComputeJacobian.html#TaoComputeJacobian">TaoComputeJacobian</A>(tao,x,J); CHKERRQ(info);
+<a name="line284">284: </a>    info = J-&gt;<A href="../../../../docs/manualpages/matrix/GetDiagonal.html#GetDiagonal">GetDiagonal</A>(JDiag); CHKERRQ(info);
+<a name="line285">285: </a>    info = J-&gt;<A href="../../../../docs/manualpages/matrix/AddDiagonal.html#AddDiagonal">AddDiagonal</A>(diagaxpy); CHKERRQ(info);
+
+<a name="line287">287: </a>    info = <A href="../../../../docs/manualpages/solver/TaoPreLinearSolve.html#TaoPreLinearSolve">TaoPreLinearSolve</A>(tao,J);CHKERRQ(info);
+<a name="line288">288: </a>    info = <A href="../../../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>(tao,J,rhs,dx,&amp;kspsuccess);CHKERRQ(info);
+
+<a name="line290">290: </a>    info = QPComputeStepDirection(qp); CHKERRQ(info);
+<a name="line291">291: </a>    info = QPStepLength(qp);  CHKERRQ(info);
+
+<a name="line293">293: </a>    <font color="#B22222">/* Calculate New Residual R1 in Work vector */</font>
+<a name="line294">294: </a>    info=dg-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(dz, gap); CHKERRQ(info);
+<a name="line295">295: </a>    info=dt-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(ds, gap+1); CHKERRQ(info);
+<a name="line296">296: </a> 
+<a name="line297">297: </a>    qp-&gt;rnorm=(qp-&gt;dinfeas+qp-&gt;psteplength*qp-&gt;pinfeas)/(qp-&gt;m+qp-&gt;n);
+<a name="line298">298: </a>    pstep = qp-&gt;psteplength; dstep = qp-&gt;dsteplength;    
+<a name="line299">299: </a>    step = TaoMin(qp-&gt;psteplength,qp-&gt;dsteplength);
+<a name="line300">300: </a>    //    printf(<font color="#666666">"Step: %4.2f\n"</font>,step);
+<a name="line301">301: </a>    step=1-step;
+<a name="line302">302: </a>    sigmamu = step*step*step*qp-&gt;mu;
+<a name="line303">303: </a>    //    sigmamu = 0;
+<a name="line304">304: </a>    qp-&gt;sigmamu=sigmamu;
+<a name="line305">305: </a>    <font color="#B22222">/*</font>
+<a name="line306">306: </a><font color="#B22222">    ( pstep*pstep*(gap[0]+gap[1]) +</font>
+<a name="line307">307: </a><font color="#B22222">               (1 - pstep + pstep*sigma)*qp-&gt;gap  )/qp-&gt;m;</font>
+<a name="line308">308: </a><font color="#B22222">    */</font>
+<a name="line309">309: </a>    <font color="#4169E1">if</font> (1==1 &amp;&amp; <font color="#B22222">/* &amp;&amp; qp-&gt;predcorr &amp;&amp;*/</font> step &lt; 1.99){
+<a name="line310">310: </a>      
+<a name="line311">311: </a>      <font color="#B22222">/*</font>
+<a name="line312">312: </a><font color="#B22222">      if (sigmamu &lt; qp-&gt;mu){ </font>
+<a name="line313">313: </a><font color="#B22222">        sigmamu=sigmamu/qp-&gt;mu;</font>
+<a name="line314">314: </a><font color="#B22222">        sigmamu=sigmamu*sigmamu*sigmamu;</font>
+<a name="line315">315: </a><font color="#B22222">      } else {sigmamu = 1.0;}</font>
+<a name="line316">316: </a><font color="#B22222">      sigmamu = 0.0*qp-&gt;mu;</font>
+<a name="line317">317: </a><font color="#B22222">      */</font>
+<a name="line318">318: </a>      qp-&gt;usedcorrector=TAO_TRUE;
+<a name="line319">319: </a>      <font color="#B22222">/* Compute Corrector Step */</font>
+<a name="line320">320: </a>      info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(dg,dz); CHKERRQ(info);
+<a name="line321">321: </a>      info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line322">322: </a>      info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(sigmamu); CHKERRQ(info);
+<a name="line323">323: </a>      info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(gzwork,g); CHKERRQ(info);
+
+<a name="line325">325: </a>      info = tswork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(ds,dt); CHKERRQ(info);
+<a name="line326">326: </a>      info = tswork-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line327">327: </a>      info = tswork-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(sigmamu); CHKERRQ(info);
+<a name="line328">328: </a>      info = tswork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(tswork,t); CHKERRQ(info);
+<a name="line329">329: </a>      
+<a name="line330">330: </a>      info = rhs2-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,gzwork,-1.0,tswork); CHKERRQ(info);
+<a name="line331">331: </a>      info = rhs2-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,rhs); CHKERRQ(info);
+
+<a name="line333">333: </a>      info = <A href="../../../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>(tao,J,rhs2,dx,&amp;kspsuccess);CHKERRQ(info);
+<a name="line334">334: </a>      
+<a name="line335">335: </a>      info = QPComputeStepDirection(qp); CHKERRQ(info);
+<a name="line336">336: </a>      info = QPStepLength(qp); CHKERRQ(info);
+
+<a name="line338">338: </a>    }  <font color="#B22222">/* End Corrector step */</font>
+
+
+<a name="line341">341: </a>    <font color="#B22222">/* Take the step */</font>
+<a name="line342">342: </a>    pstep = qp-&gt;psteplength; dstep = qp-&gt;dsteplength;
+
+<a name="line344">344: </a>    info = z-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(dstep,dz); CHKERRQ(info);
+<a name="line345">345: </a>    info = s-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(dstep,ds); CHKERRQ(info);
+<a name="line346">346: </a>    info = x-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(dstep,dx); CHKERRQ(info);
+<a name="line347">347: </a>    info = g-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(pstep,dg); CHKERRQ(info);
+<a name="line348">348: </a>    info = t-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(pstep,dt); CHKERRQ(info);
+<a name="line349">349: </a>    
+<a name="line350">350: </a>    info = <A href="../../../../docs/manualpages/solver/TaoComputeConstraints.html#TaoComputeConstraints">TaoComputeConstraints</A>(tao, x, f); CHKERRQ(info);
+
+<a name="line352">352: </a>  }  <font color="#B22222">/* END MAIN LOOP  */</font>
+
+<a name="line354">354: </a>  TaoFunctionReturn(0);
+<a name="line355">355: </a>}
+
+<a name="line359">359: </a><strong><font color="#4169E1"><a name="QPComputeStepDirection"></a>static int QPComputeStepDirection(TAO_ICP *qp)</font></strong>
+<a name="line360">360: </a>{
+<a name="line361">361: </a>  int info;
+<a name="line362">362: </a>  double gap1,gap2;
+<a name="line363">363: </a>  TaoVec    *g = qp-&gt;g, *z=qp-&gt;z, *s=qp-&gt;s, *t=qp-&gt;t;
+<a name="line364">364: </a>  TaoVec    *dg=qp-&gt;dg, *dz=qp-&gt;dz, *ds=qp-&gt;ds, *dt=qp-&gt;dt;
+<a name="line365">365: </a>  TaoVec    *gzwork=qp-&gt;gzwork, *tswork=qp-&gt;tswork;
+<a name="line366">366: </a>  TaoVec    *dx=qp-&gt;dx;
+<a name="line367">367: </a>  TaoVec    *r3=qp-&gt;r3,*r5=qp-&gt;r5;
+
+<a name="line369">369: </a>  TaoFunctionBegin;
+
+<a name="line371">371: </a>  <font color="#4169E1">if</font> (qp-&gt;usedcorrector==TAO_TRUE){
+<a name="line372">372: </a>    info = dz-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(dz,dg); CHKERRQ(info);
+<a name="line373">373: </a>    info = dz-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(dz,g); CHKERRQ(info);
+<a name="line374">374: </a>    info = dz-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line375">375: </a>    
+<a name="line376">376: </a>    info = ds-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(ds,dt); CHKERRQ(info);
+<a name="line377">377: </a>    info = ds-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(ds,t); CHKERRQ(info);
+<a name="line378">378: </a>    info = ds-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line379">379: </a>  } 
+<a name="line380">380: </a>  <font color="#B22222">/*</font>
+<a name="line381">381: </a><font color="#B22222">    info = dz-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);</font>
+<a name="line382">382: </a><font color="#B22222">    info = ds-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);</font>
+<a name="line383">383: </a><font color="#B22222">  */</font>
+<a name="line384">384: </a>   <font color="#B22222">/* Calculate DG */</font>
+<a name="line385">385: </a>  info = dg-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,dx,1.0,r3);CHKERRQ(info);
+
+<a name="line387">387: </a>  <font color="#B22222">/* Calculate DT */</font>
+<a name="line388">388: </a>  info = dt-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(-1.0,dx,-1.0,r5);CHKERRQ(info);
+
+<a name="line390">390: </a>  <font color="#B22222">/* Calculate DZ */</font>
+<a name="line391">391: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(dg,z); CHKERRQ(info);
+<a name="line392">392: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line393">393: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(qp-&gt;sigmamu); CHKERRQ(info);
+<a name="line394">394: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(gzwork,g); CHKERRQ(info);
+<a name="line395">395: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0,z);CHKERRQ(info);
+
+<a name="line397">397: </a>  info = dz-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,gzwork);CHKERRQ(info);
+<a name="line398">398: </a>  //  info = qp-&gt;DZ-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(qp-&gt;GZwork);CHKERRQ(info);
+
+<a name="line400">400: </a>  <font color="#B22222">/* Calculate DS */</font>
+<a name="line401">401: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(dt,s); CHKERRQ(info);
+<a name="line402">402: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line403">403: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(qp-&gt;sigmamu); CHKERRQ(info);
+<a name="line404">404: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(tswork,t); CHKERRQ(info);
+<a name="line405">405: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0,s);CHKERRQ(info);
+<a name="line406">406: </a>  info = ds-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,tswork);CHKERRQ(info);
+<a name="line407">407: </a>  //  info = qp-&gt;DS-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(qp-&gt;TSwork);CHKERRQ(info);
+
+<a name="line409">409: </a>  info = ds-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(dt,&amp;gap1); CHKERRQ(info);
+<a name="line410">410: </a>  info = dg-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(dz,&amp;gap2); CHKERRQ(info);
+<a name="line411">411: </a>  //  printf(<font color="#666666">"Gap Reduce: %4.2e \n"</font>,gap1+gap2);
+<a name="line412">412: </a>  TaoFunctionReturn(0);
+<a name="line413">413: </a>}
+
+<a name="line417">417: </a><strong><font color="#4169E1"><a name="QPIPComputeResidual"></a>static int QPIPComputeResidual(TAO_ICP *qp)</font></strong>
+<a name="line418">418: </a>{
+<a name="line419">419: </a>  int info;
+<a name="line420">420: </a>  double gap1,gap2,dtmp = 1.0 - qp-&gt;psteplength;
+<a name="line421">421: </a>  TaoVec    *x = qp-&gt;x, *xl=qp-&gt;xl, *xu=qp-&gt;xu, *f=qp-&gt;f;
+<a name="line422">422: </a>  TaoVec    *g = qp-&gt;g, *z=qp-&gt;z, *s=qp-&gt;s, *t=qp-&gt;t;
+<a name="line423">423: </a>  TaoVec    *rhs=qp-&gt;rhs;
+<a name="line424">424: </a>  TaoVec    *r12=qp-&gt;r12,*r3=qp-&gt;r3,*r5=qp-&gt;r5;
+
+<a name="line426">426: </a>  TaoFunctionBegin;
+
+<a name="line428">428: </a>  <font color="#B22222">/* Compute R3 and R5 */</font>
+
+<a name="line430">430: </a>  <font color="#4169E1">if</font> (0==1){
+
+<a name="line432">432: </a>    info = r3-&gt;<A href="../../../../docs/manualpages/vector/Scale.html#Scale">Scale</A>(dtmp);
+<a name="line433">433: </a>    info = r5-&gt;<A href="../../../../docs/manualpages/vector/Scale.html#Scale">Scale</A>(dtmp);
+<a name="line434">434: </a>    qp-&gt;pinfeas=dtmp*qp-&gt;pinfeas;
+
+<a name="line436">436: </a>  } <font color="#4169E1">else</font> {
+
+<a name="line438">438: </a>    info = r3-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,x,-1.0,xl);CHKERRQ(info);
+<a name="line439">439: </a>    info = r3-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0,g);CHKERRQ(info);
+
+<a name="line441">441: </a>    info = r5-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,x,-1.0,xu);CHKERRQ(info);
+<a name="line442">442: </a>    info = r5-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,t);CHKERRQ(info);
+
+<a name="line444">444: </a>    info = r3-&gt;<A href="../../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(&amp;gap1);CHKERRQ(info);
+<a name="line445">445: </a>    info = r5-&gt;<A href="../../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(&amp;gap2);CHKERRQ(info);
+
+<a name="line447">447: </a>    qp-&gt;pinfeas=TaoMax(gap1,gap2);
+
+<a name="line449">449: </a>  }
+
+<a name="line451">451: </a>  info = r12-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,s,-1.0,z);CHKERRQ(info);
+
+<a name="line453">453: </a>  info = rhs-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(f);CHKERRQ(info);
+<a name="line454">454: </a>  info = rhs-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>();CHKERRQ(info);
+
+<a name="line456">456: </a>  info = r12-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0,rhs);CHKERRQ(info);
+
+<a name="line458">458: </a>  info = r12-&gt;<A href="../../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(&amp;qp-&gt;dinfeas); CHKERRQ(info);
+<a name="line459">459: </a>  qp-&gt;rnorm=(qp-&gt;dinfeas+qp-&gt;pinfeas)/(qp-&gt;m+qp-&gt;n);
+<a name="line460">460: </a>  qp-&gt;rnorm=TaoMax(qp-&gt;dinfeas,qp-&gt;pinfeas);
+<a name="line461">461: </a>  //  printf(<font color="#666666">"Dual Infeas: %4.2e,  Primal Infeas: %4.2e\n"</font>,qp-&gt;dinfeas,qp-&gt;pinfeas);
+<a name="line462">462: </a>  
+<a name="line463">463: </a>  TaoFunctionReturn(0);
+<a name="line464">464: </a>}
+
+<a name="line468">468: </a><strong><font color="#4169E1"><a name="QPStepLength"></a>static int QPStepLength(TAO_ICP *qp)</font></strong>
+<a name="line469">469: </a>{
+<a name="line470">470: </a>  double tstep1,tstep2,tstep3,tstep4,tstep;
+<a name="line471">471: </a>  int info;
+<a name="line472">472: </a>  TaoVec    *g = qp-&gt;g, *z=qp-&gt;z, *s=qp-&gt;s, *t=qp-&gt;t;
+<a name="line473">473: </a>  TaoVec    *dg=qp-&gt;dg, *dz=qp-&gt;dz, *ds=qp-&gt;ds, *dt=qp-&gt;dt;
+
+<a name="line475">475: </a>  TaoFunctionBegin;
+<a name="line476">476: </a>  <font color="#B22222">/* Compute stepsize to the boundary */</font>
+
+<a name="line478">478: </a>  info = g-&gt;<A href="../../../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>(dg,&amp;tstep1); CHKERRQ(info);
+<a name="line479">479: </a>  info = t-&gt;<A href="../../../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>(dt,&amp;tstep2); CHKERRQ(info);
+<a name="line480">480: </a>  info = s-&gt;<A href="../../../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>(ds,&amp;tstep3); CHKERRQ(info);
+<a name="line481">481: </a>  info = z-&gt;<A href="../../../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>(dz,&amp;tstep4); CHKERRQ(info);
+
+<a name="line483">483: </a>  tstep = TaoMin(tstep1,tstep2);
+<a name="line484">484: </a>  qp-&gt;psteplength = TaoMin(0.999*tstep,1.0);
+
+<a name="line486">486: </a>  tstep = TaoMin(tstep3,tstep4);
+<a name="line487">487: </a>  qp-&gt;dsteplength = TaoMin(0.999*tstep,1.0);
+
+<a name="line489">489: </a>  qp-&gt;psteplength = TaoMin(qp-&gt;psteplength,qp-&gt;dsteplength);
+<a name="line490">490: </a>  qp-&gt;dsteplength = qp-&gt;psteplength;
+<a name="line491">491: </a>  //  printf(<font color="#666666">"StepSize: %4.2e\n"</font>,qp-&gt;dsteplength);
+
+<a name="line493">493: </a>  TaoFunctionReturn(0);
+<a name="line494">494: </a>}
+
+
+<a name="line499">499: </a><strong><font color="#4169E1"><a name="TAOComputeNormFromCentralPath_ICP"></a>int TAOComputeNormFromCentralPath_ICP(TAO_SOLVER tao, double *norm)</font></strong>
+<a name="line500">500: </a>{
+<a name="line501">501: </a>  TAO_ICP *qp;
+<a name="line502">502: </a>  int       info;
+<a name="line503">503: </a>  double    gap[2],mu[2], nmu;
+<a name="line504">504: </a>  
+<a name="line505">505: </a>  TaoFunctionBegin;
+<a name="line506">506: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolverContext.html#TaoGetSolverContext">TaoGetSolverContext</A>(tao,<font color="#666666">"tao_icp"</font>,(void**)&amp;qp); CHKERRQ(info);
+<a name="line507">507: </a>  TaoVec    *g = qp-&gt;g, *z=qp-&gt;z, *s=qp-&gt;s, *t=qp-&gt;t;
+<a name="line508">508: </a>  TaoVec    *gzwork=qp-&gt;gzwork, *tswork=qp-&gt;tswork;
+
+<a name="line510">510: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(g,z); CHKERRQ(info);
+<a name="line511">511: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(t,s); CHKERRQ(info);
+<a name="line512">512: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(&amp;mu[0]); CHKERRQ(info);
+<a name="line513">513: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(&amp;mu[1]); CHKERRQ(info);
+
+<a name="line515">515: </a>  nmu=-(mu[0]+mu[1])/qp-&gt;m;
+<a name="line516">516: </a>  qp-&gt;gap=mu[0]+mu[1];
+<a name="line517">517: </a>  qp-&gt;mu=-nmu;
+
+<a name="line519">519: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(nmu); CHKERRQ(info);
+<a name="line520">520: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(nmu); CHKERRQ(info);
+
+<a name="line522">522: </a>  info = gzwork-&gt;<A href="../../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(&amp;gap[0]); CHKERRQ(info);
+<a name="line523">523: </a>  info = tswork-&gt;<A href="../../../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(&amp;gap[1]); CHKERRQ(info);
+
+<a name="line525">525: </a>  qp-&gt;pathnorm=TaoMax(gap[0],gap[1]);
+<a name="line526">526: </a>  *norm=qp-&gt;pathnorm;
+<a name="line527">527: </a>  //  printf(<font color="#666666">"Gap: %4.2e,  Mu: %4.2e,  Norm: %4.2e\n"</font>,qp-&gt;gap,-nmu,qp-&gt;pathnorm);
+
+<a name="line529">529: </a>  //  printf(<font color="#666666">"Gap: %4.2e,  Mu: %4.2e,  Norm: %4.2e\n"</font>,qp-&gt;gap,qp-&gt;mu,qp-&gt;pathnorm);
+<a name="line530">530: </a>  TaoFunctionReturn(0);
+<a name="line531">531: </a>}
+
+
+<a name="line536">536: </a><strong><font color="#4169E1"><a name="TaoSetOptions_ICP"></a>static int TaoSetOptions_ICP(TAO_SOLVER tao, void *solver)</font></strong>{
+
+<a name="line538">538: </a>  TAO_ICP *qp = (TAO_ICP*)solver;
+<a name="line539">539: </a>  int       info;
+<a name="line540">540: </a>  TaoTruth  flg;
+
+<a name="line542">542: </a>  TaoFunctionBegin;
+<a name="line543">543: </a>  info = TaoOptionsHead(<font color="#666666">"Interior point method for bound constrained quadratic optimization"</font>);CHKERRQ(info);
+<a name="line544">544: </a>  info = TaoOptionInt(<font color="#666666">"-predcorr"</font>,<font color="#666666">"Use a predictor-corrector method"</font>,<font color="#666666">""</font>,qp-&gt;predcorr,&amp;qp-&gt;predcorr,&amp;flg);
+<a name="line545">545: </a>  CHKERRQ(info);
+<a name="line546">546: </a>  info = TaoOptionsTail();CHKERRQ(info);
+
+<a name="line548">548: </a>  <font color="#B22222">/*   info = <A href="../../../../docs/manualpages/solver/TaoSetLinearSolverOptions.html#TaoSetLinearSolverOptions">TaoSetLinearSolverOptions</A>(tao);CHKERRQ(info); */</font>
+
+<a name="line550">550: </a>  TaoFunctionReturn(0);
+<a name="line551">551: </a>}
+
+
+<a name="line556">556: </a><strong><font color="#4169E1"><a name="TaoView_ICP"></a>static int TaoView_ICP(TAO_SOLVER tao,void *solver)</font></strong>{
+<a name="line557">557: </a>  TaoFunctionBegin;
+<a name="line558">558: </a>  TaoFunctionReturn(0);
+<a name="line559">559: </a>}
+
+
+<a name="line562">562: </a><font color="#B22222">/* --------------------------------------------------------- */</font>
+<a name="line566">566: </a><strong><font color="#4169E1"><a name="TaoCreate_ICP"></a>int TaoCreate_ICP(TAO_SOLVER tao)</font></strong>
+<a name="line567">567: </a>{
+<a name="line568">568: </a>  TAO_ICP *qp;
+<a name="line569">569: </a>  int       info;
+
+<a name="line571">571: </a>  TaoFunctionBegin;
+
+<a name="line573">573: </a>  info = TaoNew(TAO_ICP,&amp;qp); CHKERRQ(info);
+<a name="line574">574: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_ICP)); CHKERRQ(info);
+
+<a name="line576">576: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>(tao,TaoSolve_ICP,(void*)qp); CHKERRQ(info);
+<a name="line577">577: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSetUpDownRoutines.html#TaoSetTaoSetUpDownRoutines">TaoSetTaoSetUpDownRoutines</A>(tao,TaoSetUp_ICP,TaoSetDown_ICP); CHKERRQ(info);
+<a name="line578">578: </a>  info=TaoSetTaoOptionsRoutine(tao,TaoSetOptions_ICP); CHKERRQ(info);
+<a name="line579">579: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoViewRoutine.html#TaoSetTaoViewRoutine">TaoSetTaoViewRoutine</A>(tao,TaoView_ICP); CHKERRQ(info);
+
+<a name="line581">581: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(tao,100); CHKERRQ(info);
+<a name="line582">582: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumFunctionEvaluations.html#TaoSetMaximumFunctionEvaluations">TaoSetMaximumFunctionEvaluations</A>(tao,500); CHKERRQ(info);
+<a name="line583">583: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao,1e-10,1e-10,1e-12,0); CHKERRQ(info);
+<a name="line584">584: </a>  <font color="#B22222">/*</font>
+<a name="line585">585: </a><font color="#B22222">  tao-&gt;defaultmonitor     = TaoDefaultMonitor_ICP;</font>
+<a name="line586">586: </a><font color="#B22222">  */</font>
+<a name="line587">587: </a>  <font color="#B22222">/* Initialize pointers and variables */</font>
+<a name="line588">588: </a>  qp-&gt;n              = 0;
+<a name="line589">589: </a>  qp-&gt;m              = 0;
+<a name="line590">590: </a>  qp-&gt;ksp_tol       = 0.1;
+<a name="line591">591: </a>  qp-&gt;dobj           = 0.0;
+<a name="line592">592: </a>  qp-&gt;pobj           = 1.0;
+<a name="line593">593: </a>  qp-&gt;gap            = 10.0;
+<a name="line594">594: </a>  qp-&gt;rgap           = 1.0;
+<a name="line595">595: </a>  qp-&gt;mu             = 1.0;
+<a name="line596">596: </a>  qp-&gt;sigma          = 1.0;
+<a name="line597">597: </a>  qp-&gt;dinfeas        = 1.0;
+<a name="line598">598: </a>  qp-&gt;predcorr       = 1;
+<a name="line599">599: </a>  qp-&gt;psteplength    = 0.0;
+<a name="line600">600: </a>  qp-&gt;dsteplength    = 0.0;
+
+<a name="line602">602: </a>  TaoFunctionReturn(0);
+<a name="line603">603: </a>}
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,241 @@
+<center><a href="rosenbrock1.c">Actual source code: rosenbrock1.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:11+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a><font color="#B22222">/* Program usage: mpirun -np 1 rosenbrock1 [-help] [all TAO options] */</font>
+
+<a name="line5">  5: </a><font color="#B22222">/*  Include "tao.h" so we can use TAO solvers.  */</font>
+
+<a name="line7">  7: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0"></font>
+
+<a name="line9">  9: </a>static  char help[] = <font color="#666666">"This example demonstrates use of the TAO package to \n\</font>
+<a name="line10"> 10: </a><font color="#666666">solve an unconstrained minimization problem on a single processor.  We \n\</font>
+<a name="line11"> 11: </a><font color="#666666">minimize the extended Rosenbrock function: \n\</font>
+<a name="line12"> 12: </a><font color="#666666">   sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n"</font>;
+
+<a name="line14"> 14: </a><font color="#B22222">/*T </font>
+<a name="line15"> 15: </a><font color="#B22222">   Concepts: TAO - Solving an unconstrained minimization problem</font>
+<a name="line16"> 16: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(); <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>();</font>
+<a name="line17"> 17: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>();</font>
+<a name="line18"> 18: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(); <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(); </font>
+<a name="line19"> 19: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>();</font>
+<a name="line20"> 20: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>();</font>
+<a name="line21"> 21: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>();</font>
+<a name="line22"> 22: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>();</font>
+<a name="line23"> 23: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>();</font>
+<a name="line24"> 24: </a><font color="#B22222">   Routines: <A href="../../../../docs/manualpages/solver/TaoGetTerminationReason.html#TaoGetTerminationReason">TaoGetTerminationReason</A>();</font>
+<a name="line25"> 25: </a><font color="#B22222">   Processors: 1</font>
+<a name="line26"> 26: </a><font color="#B22222">T*/</font> 
+
+
+<a name="line29"> 29: </a><font color="#B22222">/* </font>
+<a name="line30"> 30: </a><font color="#B22222">   User-defined application context - contains data needed by the </font>
+<a name="line31"> 31: </a><font color="#B22222">   application-provided call-back routines that evaluate the function,</font>
+<a name="line32"> 32: </a><font color="#B22222">   gradient, and hessian.</font>
+<a name="line33"> 33: </a><font color="#B22222">*/</font>
+<a name="line34"> 34: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line35"> 35: </a>  PetscInt n;          <font color="#B22222">/* dimension */</font>
+<a name="line36"> 36: </a>  PetscReal alpha;   <font color="#B22222">/* condition parameter */</font>
+<a name="line37"> 37: </a>} AppCtx;
+
+<a name="line39"> 39: </a><font color="#B22222">/* -------------- User-defined routines ---------- */</font>
+<a name="line40"> 40: </a><strong><font color="#4169E1">int FormFunctionGradient(TAO_APPLICATION,Vec,double*,Vec,void*)</font></strong>;
+<a name="line41"> 41: </a><strong><font color="#4169E1">int FormHessian(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*)</font></strong>;
+
+<a name="line45"> 45: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line46"> 46: </a>{
+<a name="line47"> 47: </a>  int        info;                  <font color="#B22222">/* used to check for functions returning nonzeros */</font>
+<a name="line48"> 48: </a>  PetscScalar zero=0.0;
+<a name="line49"> 49: </a>  Vec        x;                     <font color="#B22222">/* solution vector */</font>
+<a name="line50"> 50: </a>  Mat        H;                     <font color="#B22222">/* Hessian matrix */</font>
+<a name="line51"> 51: </a>  TAO_SOLVER tao;                   <font color="#B22222">/* TAO_SOLVER solver context */</font>
+<a name="line52"> 52: </a>  TAO_APPLICATION taoapp;           <font color="#B22222">/* TAO application context */</font>
+<a name="line53"> 53: </a>  PetscTruth  flg;
+<a name="line54"> 54: </a>  int        size,rank;                  <font color="#B22222">/* number of processes running */</font>
+<a name="line55"> 55: </a>  TaoTerminateReason reason;
+<a name="line56"> 56: </a>  AppCtx     user;                  <font color="#B22222">/* user-defined application context */</font>
+
+<a name="line58"> 58: </a>  <font color="#B22222">/* Initialize TAO and PETSc */</font>
+<a name="line59"> 59: </a>  PetscInitialize(&amp;argc,&amp;argv,(char *)0,help);
+<a name="line60"> 60: </a>  <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(&amp;argc,&amp;argv,(char *)0,help);
+
+<a name="line62"> 62: </a>  info = MPI_Comm_size(PETSC_COMM_WORLD,&amp;size); CHKERRQ(info);
+<a name="line63"> 63: </a>  info = MPI_Comm_rank(PETSC_COMM_WORLD,&amp;rank); CHKERRQ(info);
+
+<a name="line65"> 65: </a>  <font color="#4169E1">if</font> (size &gt;1) {
+<a name="line66"> 66: </a>    <font color="#4169E1">if</font> (rank == 0)
+<a name="line67"> 67: </a>      PetscPrintf(PETSC_COMM_SELF,<font color="#666666">"This example is intended for single processor use!\n"</font>);
+<a name="line68"> 68: </a>    SETERRQ(1,<font color="#666666">"Incorrect number of processors"</font>);
+<a name="line69"> 69: </a>  }
+
+
+<a name="line72"> 72: </a>  <font color="#B22222">/* Initialize problem parameters */</font>
+<a name="line73"> 73: </a>  user.n = 2; user.alpha = 99.0;
+
+<a name="line75"> 75: </a>  <font color="#B22222">/* Check for command line arguments to override defaults */</font>
+<a name="line76"> 76: </a>  info = PetscOptionsGetInt(PETSC_NULL,<font color="#666666">"-n"</font>,&amp;user.n,&amp;flg); CHKERRQ(info);
+<a name="line77"> 77: </a>  info = PetscOptionsGetReal(PETSC_NULL,<font color="#666666">"-alpha"</font>,&amp;user.alpha,&amp;flg); CHKERRQ(info);
+
+<a name="line79"> 79: </a>  <font color="#B22222">/* Allocate vectors for the solution and gradient */</font>
+<a name="line80"> 80: </a>  info = VecCreateSeq(PETSC_COMM_SELF,user.n,&amp;x); CHKERRQ(info);
+
+<a name="line82"> 82: </a>  <font color="#B22222">/* </font>
+<a name="line83"> 83: </a><font color="#B22222">     Allocate storage space for Hessian matrix; </font>
+<a name="line84"> 84: </a><font color="#B22222">     Hessian information is optional -- unless a Newton method is selected</font>
+<a name="line85"> 85: </a><font color="#B22222">  */</font>
+<a name="line86"> 86: </a>  info = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,PETSC_NULL,&amp;H);CHKERRQ(info);
+<a name="line87"> 87: </a>  info = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(info);
+
+<a name="line89"> 89: </a>  <font color="#B22222">/* The TAO code begins here */</font>
+
+<a name="line91"> 91: </a>  <font color="#B22222">/* Create TAO solver with desired solution method */</font>
+<a name="line92"> 92: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(PETSC_COMM_SELF,<font color="#666666">"tao_lmvm"</font>,&amp;tao); CHKERRQ(info);
+<a name="line93"> 93: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(PETSC_COMM_SELF,&amp;taoapp); CHKERRQ(info);
+
+<a name="line95"> 95: </a>  <font color="#B22222">/* Set solution vec and an initial guess */</font>
+<a name="line96"> 96: </a>  info = VecSet(x, zero); CHKERRQ(info);
+<a name="line97"> 97: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(taoapp,x); CHKERRQ(info); 
+
+<a name="line99"> 99: </a>  <font color="#B22222">/* Set routines for function, gradient, hessian evaluation */</font>
+<a name="line100">100: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(taoapp,FormFunctionGradient,(void *)&amp;user); 
+<a name="line101">101: </a>  CHKERRQ(info);
+<a name="line102">102: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(taoapp,H,H); CHKERRQ(info);
+<a name="line103">103: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(taoapp,FormHessian,(void *)&amp;user); CHKERRQ(info);
+
+<a name="line105">105: </a>  <font color="#B22222">/* Check for TAO command line options */</font>
+<a name="line106">106: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>(taoapp,tao); CHKERRQ(info);
+
+<a name="line108">108: </a>  <font color="#B22222">/* SOLVE THE APPLICATION */</font>
+<a name="line109">109: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>(taoapp,tao); CHKERRQ(info);
+
+<a name="line111">111: </a>  <font color="#B22222">/* Get termination information */</font>
+<a name="line112">112: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetTerminationReason.html#TaoGetTerminationReason">TaoGetTerminationReason</A>(tao,&amp;reason); CHKERRQ(info);
+<a name="line113">113: </a>  <font color="#4169E1">if</font> (reason &lt;= 0)
+<a name="line114">114: </a>    PetscPrintf(MPI_COMM_WORLD,<font color="#666666">"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n"</font>);
+
+
+<a name="line117">117: </a>  <font color="#B22222">/* Free TAO data structures */</font>
+<a name="line118">118: </a>  info = <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(tao); CHKERRQ(info);
+<a name="line119">119: </a>  info = <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>(taoapp); CHKERRQ(info);
+
+<a name="line121">121: </a>  <font color="#B22222">/* Free PETSc data structures */</font>
+<a name="line122">122: </a>  info = VecDestroy(x); CHKERRQ(info);
+<a name="line123">123: </a>  info = MatDestroy(H); CHKERRQ(info);
+
+<a name="line125">125: </a>  <font color="#B22222">/* Finalize TAO */</font>
+<a name="line126">126: </a>  <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>();
+<a name="line127">127: </a>  PetscFinalize();
+
+<a name="line129">129: </a>  <font color="#4169E1">return</font> 0;
+<a name="line130">130: </a>}
+
+<a name="line132">132: </a><font color="#B22222">/* -------------------------------------------------------------------- */</font>
+<a name="line135">135: </a><font color="#B22222">/*  </font>
+<a name="line136">136: </a><font color="#B22222">    FormFunctionGradient - Evaluates the function, f(X), and gradient, G(X). </font>
+
+<a name="line138">138: </a><font color="#B22222">    Input Parameters:</font>
+<a name="line139">139: </a><font color="#B22222">.   taoapp  - the TAO_APPLICATION context</font>
+<a name="line140">140: </a><font color="#B22222">.   X    - input vector</font>
+<a name="line141">141: </a><font color="#B22222">.   ptr  - optional user-defined context, as set by TaoSetFunctionGradient()</font>
+<a name="line142">142: </a><font color="#B22222">    </font>
+<a name="line143">143: </a><font color="#B22222">    Output Parameters:</font>
+<a name="line144">144: </a><font color="#B22222">.   G - vector containing the newly evaluated gradient</font>
+<a name="line145">145: </a><font color="#B22222">.   f - function value</font>
+
+<a name="line147">147: </a><font color="#B22222">    Note:</font>
+<a name="line148">148: </a><font color="#B22222">    Some optimization methods ask for the function and the gradient evaluation</font>
+<a name="line149">149: </a><font color="#B22222">    at the same time.  Evaluating both at once may be more efficient that</font>
+<a name="line150">150: </a><font color="#B22222">    evaluating each separately. </font>
+<a name="line151">151: </a><font color="#B22222">*/</font>
+<a name="line152">152: </a><strong><font color="#4169E1"><a name="FormFunctionGradient"></a>int FormFunctionGradient(TAO_APPLICATION taoapp,Vec X,double *f, Vec G,void *ptr)</font></strong>
+<a name="line153">153: </a>{
+<a name="line154">154: </a>  AppCtx *user = (AppCtx *) ptr;  
+<a name="line155">155: </a>  int    info;
+<a name="line156">156: </a>  PetscInt i,nn=user-&gt;n/2;
+<a name="line157">157: </a>  double ff=0,t1,t2,alpha=user-&gt;alpha;
+<a name="line158">158: </a>  PetscScalar *x,*g;
+
+<a name="line160">160: </a>  <font color="#B22222">/* Get pointers to vector data */</font>
+<a name="line161">161: </a>  info = VecGetArray(X,&amp;x); CHKERRQ(info);
+<a name="line162">162: </a>  info = VecGetArray(G,&amp;g); CHKERRQ(info);
+
+<a name="line164">164: </a>  <font color="#B22222">/* Compute G(X) */</font>
+<a name="line165">165: </a>  <font color="#4169E1">for</font> (i=0; i&lt;nn; i++){
+<a name="line166">166: </a>    t1 = x[2*i+1]-x[2*i]*x[2*i]; t2= 1-x[2*i];
+<a name="line167">167: </a>    ff += alpha*t1*t1 + t2*t2;
+<a name="line168">168: </a>    g[2*i] = -4*alpha*t1*x[2*i]-2.0*t2;
+<a name="line169">169: </a>    g[2*i+1] = 2*alpha*t1;
+<a name="line170">170: </a>  }
+
+<a name="line172">172: </a>  <font color="#B22222">/* Restore vectors */</font>
+<a name="line173">173: </a>  info = VecRestoreArray(X,&amp;x); CHKERRQ(info);
+<a name="line174">174: </a>  info = VecRestoreArray(G,&amp;g); CHKERRQ(info);
+<a name="line175">175: </a>  *f=ff;
+
+<a name="line177">177: </a>  info = PetscLogFlops(nn*15); CHKERRQ(info);
+<a name="line178">178: </a>  <font color="#4169E1">return</font> 0;
+<a name="line179">179: </a>}
+
+<a name="line181">181: </a><font color="#B22222">/* ------------------------------------------------------------------- */</font>
+<a name="line184">184: </a><font color="#B22222">/*</font>
+<a name="line185">185: </a><font color="#B22222">   FormHessian - Evaluates Hessian matrix.</font>
+
+<a name="line187">187: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line188">188: </a><font color="#B22222">.  taoapp   - the TAO_APPLICATION context</font>
+<a name="line189">189: </a><font color="#B22222">.  x     - input vector</font>
+<a name="line190">190: </a><font color="#B22222">.  ptr   - optional user-defined context, as set by TaoSetHessian()</font>
+
+<a name="line192">192: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line193">193: </a><font color="#B22222">.  H     - Hessian matrix</font>
+
+<a name="line195">195: </a><font color="#B22222">   Note:  Providing the Hessian may not be necessary.  Only some solvers</font>
+<a name="line196">196: </a><font color="#B22222">   require this matrix.</font>
+<a name="line197">197: </a><font color="#B22222">*/</font>
+<a name="line198">198: </a><strong><font color="#4169E1"><a name="FormHessian"></a>int FormHessian(TAO_APPLICATION taoapp,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)</font></strong>
+<a name="line199">199: </a>{
+<a name="line200">200: </a>  AppCtx  *user = (AppCtx*)ptr;
+<a name="line201">201: </a>  int     info;
+<a name="line202">202: </a>  PetscInt i, nn=user-&gt;n/2, ind[2];
+<a name="line203">203: </a>  double  alpha=user-&gt;alpha;
+<a name="line204">204: </a>  PetscScalar  v[2][2],*x;
+<a name="line205">205: </a>  Mat H=*HH;
+<a name="line206">206: </a>  PetscTruth assembled;
+
+<a name="line208">208: </a>  <font color="#B22222">/* Zero existing matrix entries */</font>
+<a name="line209">209: </a>  info = MatAssembled(H,&amp;assembled); CHKERRQ(info);
+<a name="line210">210: </a>  <font color="#4169E1">if</font> (assembled){info = MatZeroEntries(H);  CHKERRQ(info);}
+
+
+<a name="line213">213: </a>  <font color="#B22222">/* Get a pointer to vector data */</font>
+<a name="line214">214: </a>  info = VecGetArray(X,&amp;x); CHKERRQ(info);
+
+<a name="line216">216: </a>  <font color="#B22222">/* Compute H(X) entries */</font>
+<a name="line217">217: </a>  <font color="#4169E1">for</font> (i=0; i&lt;user-&gt;n/2; i++){
+<a name="line218">218: </a>    v[1][1] = 2*alpha;
+<a name="line219">219: </a>    v[0][0] = -4*alpha*(x[2*i+1]-3*x[2*i]*x[2*i]) + 2;
+<a name="line220">220: </a>    v[1][0] = v[0][1] = -4.0*alpha*x[2*i];
+<a name="line221">221: </a>    ind[0]=2*i; ind[1]=2*i+1;
+<a name="line222">222: </a>    info = MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES); CHKERRQ(info);
+<a name="line223">223: </a>  }
+<a name="line224">224: </a>  info = VecRestoreArray(X,&amp;x); CHKERRQ(info);
+
+<a name="line226">226: </a>  <font color="#B22222">/* Assemble matrix */</font>
+<a name="line227">227: </a>  info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line228">228: </a>  info = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+<a name="line229">229: </a>  *flag=SAME_NONZERO_PATTERN;
+<a name="line230">230: </a>  
+<a name="line231">231: </a>  info = PetscLogFlops(nn*9); CHKERRQ(info);
+<a name="line232">232: </a>  <font color="#4169E1">return</font> 0;
+<a name="line233">233: </a>}
+</pre>
+</body>
+
+</html>

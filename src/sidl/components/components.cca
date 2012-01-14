@@ -1,0 +1,13 @@
+<xml>
+<componentDeployment
+  name="@COMPONENT@"
+  paletteClassAlias="@COMPONENT@"
+>
+    <environment>
+        <ccaSpec binding="babel" />
+        <library loading="dynamic"
+                 location="@TAO_DIR@/lib/@PETSC_ARCH@/lib@LIBNAME@.scl"
+        />
+    </environment>
+</componentDeployment>
+</xml>

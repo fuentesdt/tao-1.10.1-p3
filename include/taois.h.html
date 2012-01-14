@@ -1,0 +1,59 @@
+<center><a href="taois.h">Actual source code: taois.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:15+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOINDEXSET_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOINDEXSET_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"tao_basictypes.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><font color="#B22222">/** </font>
+<a name="line7">  7: </a><font color="#B22222">    An abstract class representing the implementation of a TAO Index Set.</font>
+<a name="line8">  8: </a><font color="#B22222">*/</font>
+
+<a name="line10"> 10: </a>class TaoVec;
+
+<a name="line12"> 12: </a>class TaoIndexSet {
+
+<a name="line14"> 14: </a><strong><font color="#FF0000">protected:</font></strong>
+<a name="line15"> 15: </a>  
+<a name="line16"> 16: </a><strong><font color="#FF0000">public:</font></strong>
+
+<a name="line18"> 18: </a>  virtual ~TaoIndexSet(void){};
+
+<a name="line20"> 20: </a>  virtual int <A href="../docs/manualpages/indexset/UnionOf.html#UnionOf">UnionOf</A>(TaoIndexSet *, TaoIndexSet*);
+<a name="line21"> 21: </a>  virtual int <A href="../docs/manualpages/indexset/IntersectionOf.html#IntersectionOf">IntersectionOf</A>(TaoIndexSet*, TaoIndexSet*);
+<a name="line22"> 22: </a>  virtual int <A href="../docs/manualpages/indexset/ComplementOf.html#ComplementOf">ComplementOf</A>(TaoIndexSet*);
+
+<a name="line24"> 24: </a>  virtual int <A href="../docs/manualpages/indexset/Duplicate.html#Duplicate">Duplicate</A>(TaoIndexSet**);
+
+<a name="line26"> 26: </a>  virtual int <A href="../docs/manualpages/indexset/IsSame.html#IsSame">IsSame</A>(TaoIndexSet*, TaoTruth*);
+
+<a name="line28"> 28: </a>  <font color="#B22222">/** Get the dimension of the vector spaces */</font>
+<a name="line29"> 29: </a>  virtual int <A href="../docs/manualpages/indexset/WhichEqual.html#WhichEqual">WhichEqual</A>(TaoVec*,TaoVec*);
+
+<a name="line31"> 31: </a>  virtual int WhichLessThan(TaoVec*,TaoVec*);
+
+<a name="line33"> 33: </a>  virtual int WhichGreaterThan(TaoVec*,TaoVec*);
+
+<a name="line35"> 35: </a>  virtual int <A href="../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(TaoVec*,TaoVec*,TaoVec*);
+
+<a name="line37"> 37: </a>  virtual int <A href="../docs/manualpages/indexset/WhichBetweenOrEqual.html#WhichBetweenOrEqual">WhichBetweenOrEqual</A>(TaoVec *,TaoVec *,TaoVec *);
+
+<a name="line39"> 39: </a>  virtual int <A href="../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(TaoInt *);
+
+<a name="line41"> 41: </a>  virtual int <A href="../docs/manualpages/lsolver/View.html#View">View</A>();
+
+<a name="line43"> 43: </a>};
+
+<a name="line45"> 45: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

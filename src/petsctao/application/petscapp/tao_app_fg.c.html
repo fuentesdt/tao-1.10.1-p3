@@ -1,0 +1,595 @@
+<center><a href="tao_app_fg.c">Actual source code: tao_app_fg.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"tao_app_impl.h"</font><font color="#A020F0">     </font><font color="#B22222">/*I  "tao.h"  I*/</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/include/taopetsc.h"</font><font color="#A020F0"></font>
+
+
+<a name="line10"> 10: </a><font color="#B22222">/*@C</font>
+<a name="line11"> 11: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A> - Sets a routine that evaluates the function at</font>
+<a name="line12"> 12: </a><font color="#B22222">the specified point.</font>
+
+<a name="line14"> 14: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line16"> 16: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line17"> 17: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line18"> 18: </a><font color="#B22222">.  func - function evaluation routine</font>
+<a name="line19"> 19: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line20"> 20: </a><font color="#B22222">         function and gradient evaluation routine (may be TAO_NULL)</font>
+
+<a name="line22"> 22: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line23"> 23: </a><font color="#B22222">$     func (TAO_APPLICATION taoapp, Vec x,double *f,void *ctx);</font>
+
+<a name="line25"> 25: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line26"> 26: </a><font color="#B22222">.  x - input vector</font>
+<a name="line27"> 27: </a><font color="#B22222">.  f - objective function value</font>
+<a name="line28"> 28: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line30"> 30: </a><font color="#B22222">   Note:  </font>
+<a name="line31"> 31: </a><font color="#B22222">   Most applications do not need this routine.  The routine</font>
+<a name="line32"> 32: </a><font color="#B22222">   TaoAppSetObjectiveFunctionGradient() is sufficient.</font>
+
+<a name="line34"> 34: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line36"> 36: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, minimization, function</font>
+
+<a name="line38"> 38: </a><font color="#B22222">.seealso:  <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>()</font>
+<a name="line39"> 39: </a><font color="#B22222">@*/</font>
+<a name="line40"> 40: </a><strong><font color="#4169E1"><a name="TaoAppSetObjectiveRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>(TAO_APPLICATION taoapp, int (*func)(TAO_APPLICATION,Vec,double*,void*),void *ctx)</font></strong>{
+<a name="line43"> 43: </a>  taoapp-&gt;computeumfunction=func;
+<a name="line44"> 44: </a>  taoapp-&gt;usrfctx=ctx;
+<a name="line45"> 45: </a>  <font color="#4169E1">return</font>(0);
+<a name="line46"> 46: </a>}
+
+<a name="line50"> 50: </a><font color="#B22222">/*@</font>
+<a name="line51"> 51: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjective.html#TaoAppComputeObjective">TaoAppComputeObjective</A> - Compute the objective function that has been</font>
+<a name="line52"> 52: </a><font color="#B22222">   set with <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>().</font>
+
+<a name="line54"> 54: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line56"> 56: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line57"> 57: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line58"> 58: </a><font color="#B22222">-  X - the point where the objective should be evaluated</font>
+
+<a name="line60"> 60: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line61"> 61: </a><font color="#B22222">.  f - function value</font>
+
+<a name="line63"> 63: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line65"> 65: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line67"> 67: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>()</font>
+<a name="line68"> 68: </a><font color="#B22222">@*/</font>
+<a name="line69"> 69: </a><strong><font color="#4169E1"><a name="TaoAppComputeObjective"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjective.html#TaoAppComputeObjective">TaoAppComputeObjective</A>(TAO_APPLICATION taoapp, Vec X, double *f)</font></strong>{
+<a name="line70"> 70: </a>  int     info;
+<a name="line71"> 71: </a>  Vec G;
+<a name="line72"> 72: </a>  
+<a name="line76"> 76: </a>  PetscStackPush(<font color="#666666">"TAO User minimization function"</font>);
+<a name="line77"> 77: </a>  info = PetscLogEventBegin(Tao_ObjectiveEval,taoapp,X,0,0);
+<a name="line78"> 78: </a>  <font color="#4169E1">if</font> (taoapp-&gt;computeumfunction){
+<a name="line79"> 79: </a>    info = (*taoapp-&gt;computeumfunction)(taoapp,X,f,taoapp-&gt;usrfctx); CHKERRQ(info);
+<a name="line80"> 80: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (taoapp-&gt;computefunctiongradient){
+<a name="line81"> 81: </a>    info = VecDuplicate(X,&amp;G);CHKERRQ(info);
+<a name="line82"> 82: </a>    info = (*taoapp-&gt;computefunctiongradient)(taoapp,X,f,G,taoapp-&gt;usrfgctx);
+<a name="line83"> 83: </a>    CHKERRQ(info);
+<a name="line84"> 84: </a>    info=VecDestroy(G);CHKERRQ(info);
+<a name="line85"> 85: </a>    taoapp-&gt;ngeval++;
+<a name="line86"> 86: </a>  } <font color="#4169E1">else</font> {
+<a name="line87"> 87: </a>    SETERRQ(1,<font color="#666666">"TAO ERROR: Must set Objective function"</font>);
+<a name="line88"> 88: </a>  }
+<a name="line89"> 89: </a>  taoapp-&gt;nfeval++;
+<a name="line90"> 90: </a>  info = PetscLogEventEnd(Tao_ObjectiveEval,taoapp,X,0,0);
+<a name="line91"> 91: </a>  PetscStackPop;
+<a name="line92"> 92: </a>  info = PetscInfo1(taoapp,<font color="#666666">"TAO Function evaluation: %14.12e\n"</font>,*f);CHKERRQ(info);
+<a name="line93"> 93: </a>  <font color="#4169E1">return</font>(0);
+<a name="line94"> 94: </a>}
+
+
+<a name="line99"> 99: </a><font color="#B22222">/*@C</font>
+<a name="line100">100: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A> - Sets the gradient evaluation routine</font>
+<a name="line101">101: </a><font color="#B22222">   for use by the TAO_APPLICATION routines.</font>
+
+<a name="line103">103: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line105">105: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line106">106: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line107">107: </a><font color="#B22222">.  grad - gradient evaluation routine</font>
+<a name="line108">108: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line110">110: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line111">111: </a><font color="#B22222">$     grad (TAO_APPLICATION taoapp,Vec x,Vec g,void *ctx);</font>
+
+<a name="line113">113: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION  context</font>
+<a name="line114">114: </a><font color="#B22222">.  x - input vector</font>
+<a name="line115">115: </a><font color="#B22222">.  g - gradient vector</font>
+<a name="line116">116: </a><font color="#B22222">-  ctx - user-defined function gradient context set from <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>()</font>
+
+<a name="line118">118: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line120">120: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line121">121: </a><font color="#B22222">.  -tao_view_gradient - view the gradient after each evaluation using PETSC_VIEWER_STDOUT_WORLD</font>
+
+<a name="line123">123: </a><font color="#B22222">   Note:</font>
+<a name="line124">124: </a><font color="#B22222">   In most cases, the routine <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>() is more appropriate.  However,</font>
+<a name="line125">125: </a><font color="#B22222">   when using finite differences to compute the Hessian, setting this routine can  be</font>
+<a name="line126">126: </a><font color="#B22222">   beneficial.</font>
+
+<a name="line128">128: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, gradient</font>
+
+<a name="line130">130: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppGetGradientVec.html#TaoAppGetGradientVec">TaoAppGetGradientVec</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>()</font>
+
+<a name="line132">132: </a><font color="#B22222">@*/</font>
+<a name="line133">133: </a><strong><font color="#4169E1"><a name="TaoAppSetGradientRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>(TAO_APPLICATION taoapp, int (*grad)(TAO_APPLICATION,Vec,Vec,void*),void *ctx)</font></strong>{
+<a name="line136">136: </a>  taoapp-&gt;computegradient=grad;
+<a name="line137">137: </a>  taoapp-&gt;usrgctx=ctx;
+<a name="line138">138: </a>  <font color="#4169E1">return</font>(0);
+<a name="line139">139: </a>}
+
+
+<a name="line144">144: </a><font color="#B22222">/*@</font>
+<a name="line145">145: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A> - Compute the gradient of the objective function using the</font>
+<a name="line146">146: </a><font color="#B22222">   routine set by TaoApplicationSetGradientRoutine().</font>
+
+<a name="line148">148: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line150">150: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line151">151: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line152">152: </a><font color="#B22222">-  X - the point where the objective should be evaluated</font>
+
+<a name="line154">154: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line155">155: </a><font color="#B22222">.  f - function value</font>
+
+<a name="line157">157: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line159">159: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line161">161: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>()</font>
+<a name="line162">162: </a><font color="#B22222">@*/</font>
+<a name="line163">163: </a><strong><font color="#4169E1"><a name="TaoAppComputeGradient"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(TAO_APPLICATION taoapp, Vec X, Vec G)</font></strong>{
+<a name="line164">164: </a>  int     info;
+<a name="line165">165: </a>  double ff;
+
+<a name="line171">171: </a>  PetscStackPush(<font color="#666666">"TAO User Gradient Evaluation"</font>);
+<a name="line172">172: </a>  info = PetscLogEventBegin(Tao_GradientEval,taoapp,X,G,0);
+<a name="line173">173: </a>  <font color="#4169E1">if</font> (taoapp-&gt;computegradient){
+<a name="line174">174: </a>    info = (*taoapp-&gt;computegradient)(taoapp,X,G,taoapp-&gt;usrgctx);
+<a name="line175">175: </a>    CHKERRQ(info);
+<a name="line176">176: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ( taoapp-&gt;computefunctiongradient ) {
+<a name="line177">177: </a>    info = (*taoapp-&gt;computefunctiongradient)(taoapp,X,&amp;ff,G,taoapp-&gt;usrfgctx);
+<a name="line178">178: </a>    CHKERRQ(info);
+<a name="line179">179: </a>    taoapp-&gt;nfeval++;
+<a name="line180">180: </a>  } <font color="#4169E1">else</font> {
+<a name="line181">181: </a>    SETERRQ(1,<font color="#666666">"TAO ERROR: Must set gradient"</font>);
+<a name="line182">182: </a>  }
+<a name="line183">183: </a>  taoapp-&gt;ngeval++;
+<a name="line184">184: </a>  info = PetscLogEventEnd(Tao_GradientEval,taoapp,X,G,0);
+<a name="line185">185: </a>  PetscStackPop;
+<a name="line186">186: </a>  <font color="#4169E1">return</font>(0);
+<a name="line187">187: </a>}
+
+
+
+<a name="line193">193: </a><font color="#B22222">/*@</font>
+<a name="line194">194: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A> - Compute the gradient of the objective function using the</font>
+<a name="line195">195: </a><font color="#B22222">   routine set by TaoApplicationSetGradientRoutine().</font>
+
+<a name="line197">197: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line199">199: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line200">200: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line201">201: </a><font color="#B22222">-  X - the point where the objective should be evaluated</font>
+
+<a name="line203">203: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line204">204: </a><font color="#B22222">+  f - function value</font>
+<a name="line205">205: </a><font color="#B22222">-  G - the gradient vector.</font>
+
+<a name="line207">207: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line209">209: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line211">211: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeGradient.html#TaoAppComputeGradient">TaoAppComputeGradient</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>()</font>
+<a name="line212">212: </a><font color="#B22222">@*/</font>
+<a name="line213">213: </a><strong><font color="#4169E1"><a name="TaoAppComputeObjectiveAndGradient"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>(TAO_APPLICATION taoapp, Vec X, double *f, Vec G)</font></strong>{
+<a name="line214">214: </a>  int     info;
+<a name="line219">219: </a>  PetscStackPush(<font color="#666666">"TAO User Objective and gradient function"</font>);
+<a name="line220">220: </a>  <font color="#4169E1">if</font> (taoapp-&gt;computefunctiongradient){
+<a name="line221">221: </a>    info = PetscLogEventBegin(Tao_GradientEval,taoapp,X,G,0);CHKERRQ(info);
+<a name="line222">222: </a>    info = PetscLogEventBegin(Tao_ObjectiveEval,taoapp,X,G,0);
+<a name="line223">223: </a>    info = (*taoapp-&gt;computefunctiongradient)(taoapp,X,f,G,taoapp-&gt;usrfgctx);
+<a name="line224">224: </a>    CHKERRQ(info);
+<a name="line225">225: </a>    info = PetscLogEventEnd(Tao_ObjectiveEval,taoapp,X,G,0);CHKERRQ(info);
+
+<a name="line227">227: </a>    <font color="#4169E1">if</font> (taoapp-&gt;computegradient) {
+<a name="line228">228: </a>      info = PetscInfo(taoapp,<font color="#666666">"Computing gradient routine separately, ignoring gradient calculated in function/gradient evaluation routine."</font>); CHKERRQ(info);
+<a name="line229">229: </a>      info = (*taoapp-&gt;computegradient)(taoapp,X,G,taoapp-&gt;usrfgctx); 
+<a name="line230">230: </a>      CHKERRQ(info);
+<a name="line231">231: </a>    }
+<a name="line232">232: </a>    info = PetscLogEventEnd(Tao_GradientEval,taoapp,X,G,0);CHKERRQ(info);
+<a name="line233">233: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ( taoapp-&gt;computeumfunction &amp;&amp; taoapp-&gt;computegradient ) {
+<a name="line234">234: </a>    info = PetscLogEventBegin(Tao_ObjectiveEval,taoapp,X,G,0);
+<a name="line235">235: </a>    info = (*taoapp-&gt;computeumfunction)(taoapp,X,f,taoapp-&gt;usrfctx);
+<a name="line236">236: </a>    CHKERRQ(info);
+<a name="line237">237: </a>    info = PetscLogEventEnd(Tao_ObjectiveEval,taoapp,X,G,0);CHKERRQ(info);
+<a name="line238">238: </a>    info = PetscLogEventBegin(Tao_GradientEval,taoapp,X,G,0);CHKERRQ(info);
+<a name="line239">239: </a>    info = (*taoapp-&gt;computegradient)(taoapp,X,G,taoapp-&gt;usrgctx);
+<a name="line240">240: </a>    CHKERRQ(info);
+<a name="line241">241: </a>    info = PetscLogEventEnd(Tao_GradientEval,taoapp,X,G,0);CHKERRQ(info);
+<a name="line242">242: </a>  } <font color="#4169E1">else</font> {
+<a name="line243">243: </a>    SETERRQ(1,<font color="#666666">"TAO ERROR: Must set objective function and gradient."</font>);
+<a name="line244">244: </a>  }
+<a name="line245">245: </a>  info = PetscInfo1(taoapp,<font color="#666666">"TAO Function evaluation: %14.12e\n"</font>,*f);CHKERRQ(info);
+<a name="line246">246: </a>  taoapp-&gt;nfeval++;
+<a name="line247">247: </a>  taoapp-&gt;ngeval++;
+
+<a name="line249">249: </a>  PetscStackPop;
+<a name="line250">250: </a>  <font color="#4169E1">return</font>(0);
+<a name="line251">251: </a>}
+
+<a name="line253">253: </a> 
+
+<a name="line257">257: </a><font color="#B22222">/*@C</font>
+<a name="line258">258: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A> - Sets a routine for function and gradient evaluation.</font>
+
+<a name="line260">260: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line262">262: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line263">263: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line264">264: </a><font color="#B22222">.  funcgrad - routine for evaluating the function and gradient</font>
+<a name="line265">265: </a><font color="#B22222">-  ctx - optional user-defined context for private data for the </font>
+<a name="line266">266: </a><font color="#B22222">         function and gradient evaluation routine (may be TAO_NULL)</font>
+
+<a name="line268">268: </a><font color="#B22222">   Calling sequence of funcgrad:</font>
+<a name="line269">269: </a><font color="#B22222">$     funcgrad (TAO_APPLICATION tao,Vec x,double *f,Vec g,void *ctx);</font>
+
+<a name="line271">271: </a><font color="#B22222">+  tao - TAO_APPLICATION  context</font>
+<a name="line272">272: </a><font color="#B22222">.  x - input vector</font>
+<a name="line273">273: </a><font color="#B22222">.  f - function value</font>
+<a name="line274">274: </a><font color="#B22222">.  g - gradient vector</font>
+<a name="line275">275: </a><font color="#B22222">-  ctx - optional user-defined context </font>
+
+<a name="line277">277: </a><font color="#B22222">   Notes:</font>
+<a name="line278">278: </a><font color="#B22222">   The user may call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>() to set a routine</font>
+<a name="line279">279: </a><font color="#B22222">   that evaluates both the function and gradient.  Alternatively, the</font>
+<a name="line280">280: </a><font color="#B22222">   user may call both <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>() and <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>() to set</font>
+<a name="line281">281: </a><font color="#B22222">   separate routines for function and gradient evaluation.  </font>
+
+<a name="line283">283: </a><font color="#B22222">   Using a single routine to compute the function and gradient, as</font>
+<a name="line284">284: </a><font color="#B22222">   specified via <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), may enable better performance</font>
+<a name="line285">285: </a><font color="#B22222">   for applications in which many of the function and gradient computations</font>
+<a name="line286">286: </a><font color="#B22222">   are identical.</font>
+
+<a name="line288">288: </a><font color="#B22222">   Fortran Note:</font>
+<a name="line289">289: </a><font color="#B22222">   If your Fortran compiler does not recognize symbols over 31 characters in length, then</font>
+<a name="line290">290: </a><font color="#B22222">   use the identical routine with the shortened name TaoAppSetObjectiveAndGradientRo()</font>
+
+
+<a name="line293">293: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line295">295: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line296">296: </a><font color="#B22222">.   -tao_view_gradient - view the gradient after each iteration using PETSC_VIEWER_STDOUT_WORLD</font>
+
+<a name="line298">298: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, objective, gradient</font>
+
+<a name="line300">300: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>()</font>
+
+<a name="line302">302: </a><font color="#B22222">@*/</font>
+<a name="line303">303: </a><strong><font color="#4169E1"><a name="TaoAppSetObjectiveAndGradientRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(TAO_APPLICATION taoapp, int (*funcgrad)(TAO_APPLICATION,Vec,double*,Vec, void*),void *ctx)</font></strong>{
+<a name="line306">306: </a>  taoapp-&gt;computefunctiongradient=funcgrad;
+<a name="line307">307: </a>  taoapp-&gt;usrfgctx=ctx;
+<a name="line308">308: </a>  <font color="#4169E1">return</font>(0);
+<a name="line309">309: </a>}
+
+
+
+<a name="line315">315: </a><font color="#B22222">/*@C</font>
+<a name="line316">316: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeHessian.html#TaoAppComputeHessian">TaoAppComputeHessian</A> - Compute the Hessian of the objective function using the</font>
+<a name="line317">317: </a><font color="#B22222">   routine set by TaoApplicationSetGradientRoutine().</font>
+
+<a name="line319">319: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line321">321: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line322">322: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line323">323: </a><font color="#B22222">.  X - the variable vector</font>
+<a name="line324">324: </a><font color="#B22222">.  H - the Hessian matrix</font>
+<a name="line325">325: </a><font color="#B22222">.  HP - the preconditioner for the Hessian matrix.</font>
+<a name="line326">326: </a><font color="#B22222">-  flag - flag used in KSPSetOperators()</font>
+
+<a name="line328">328: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line329">329: </a><font color="#B22222">+  H - the Hessian matrix</font>
+<a name="line330">330: </a><font color="#B22222">.  HP - the preconditioner for the Hessian matrix.</font>
+<a name="line331">331: </a><font color="#B22222">-  flag - flag used in KSPSetOperators()</font>
+
+<a name="line333">333: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line335">335: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line337">337: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeObjectiveAndGradient.html#TaoAppComputeObjectiveAndGradient">TaoAppComputeObjectiveAndGradient</A>()</font>
+<a name="line338">338: </a><font color="#B22222">@*/</font>
+<a name="line339">339: </a><strong><font color="#4169E1"><a name="TaoAppComputeHessian"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeHessian.html#TaoAppComputeHessian">TaoAppComputeHessian</A>(TAO_APPLICATION taoapp, Vec X, Mat *HH, Mat *HHPre, MatStructure *flag)</font></strong>{
+<a name="line340">340: </a>  int     info;
+<a name="line341">341: </a>  Mat H=*HH,HPre=*HHPre;
+<a name="line342">342: </a>  MatStructure pflag=*flag;
+
+<a name="line349">349: </a>  info = PetscLogEventBegin(Tao_HessianEval,X,H,0,0);CHKERRQ(info);
+<a name="line350">350: </a>  PetscStackPush(<font color="#666666">"TAO User Hessian Routine"</font>);
+<a name="line351">351: </a>  <font color="#4169E1">if</font> (taoapp-&gt;computehessian){
+<a name="line352">352: </a>    info = (*taoapp-&gt;computehessian)(taoapp,X,&amp;H,&amp;HPre,&amp;pflag,taoapp-&gt;usrhctx);
+<a name="line353">353: </a>    CHKERRQ(info);
+<a name="line354">354: </a>  } <font color="#4169E1">else</font> {
+<a name="line355">355: </a>    SETERRQ(1,<font color="#666666">"TAO Error: No Hessian Routine Available"</font>);
+<a name="line356">356: </a>  }
+<a name="line357">357: </a>  *HH=H;*HHPre=HPre;*flag=pflag;
+<a name="line358">358: </a>  taoapp-&gt;nheval++;
+<a name="line359">359: </a>  info = PetscLogEventEnd(Tao_HessianEval,X,H,0,0);CHKERRQ(info);
+<a name="line360">360: </a>  PetscStackPop;
+<a name="line361">361: </a>  <font color="#4169E1">return</font>(0);
+<a name="line362">362: </a>}
+
+
+<a name="line367">367: </a><font color="#B22222">/*@C</font>
+<a name="line368">368: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A> - Sets the function to compute the Hessian as well as the</font>
+<a name="line369">369: </a><font color="#B22222">   location to store the matrix.</font>
+
+<a name="line371">371: </a><font color="#B22222">   Collective on TAO_APPLICATION and Mat</font>
+
+<a name="line373">373: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line374">374: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line375">375: </a><font color="#B22222">.  hess - Hessian evaluation routine</font>
+<a name="line376">376: </a><font color="#B22222">-  ctx - [optional] user-defined context for private data for the </font>
+<a name="line377">377: </a><font color="#B22222">         Hessian evaluation routine (may be TAO_NULL)</font>
+
+<a name="line379">379: </a><font color="#B22222">   Calling sequence of hess:</font>
+<a name="line380">380: </a><font color="#B22222">$    hess (TAO_APPLICATION taoapp,Vec x,Mat *H,Mat *Hpre,int *flag,void *ctx);</font>
+
+<a name="line382">382: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION  context</font>
+<a name="line383">383: </a><font color="#B22222">.  x - input vector</font>
+<a name="line384">384: </a><font color="#B22222">.  H - Hessian matrix</font>
+<a name="line385">385: </a><font color="#B22222">.  Hpre - preconditioner matrix, usually the same as A</font>
+<a name="line386">386: </a><font color="#B22222">.  flag - flag indicating information about the preconditioner matrix</font>
+<a name="line387">387: </a><font color="#B22222">   structure (see below)</font>
+<a name="line388">388: </a><font color="#B22222">-  ctx - [optional] user-defined Hessian context</font>
+
+<a name="line390">390: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line391">391: </a><font color="#B22222">.  -tao_view_hessian - view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD</font>
+
+<a name="line393">393: </a><font color="#B22222">   Notes: </font>
+
+<a name="line395">395: </a><font color="#B22222">   The function hess() takes Mat * as the matrix arguments rather than Mat.  </font>
+<a name="line396">396: </a><font color="#B22222">   This allows the Hessian evaluation routine to replace A and/or B with a </font>
+<a name="line397">397: </a><font color="#B22222">   completely new new matrix structure (not just different matrix elements)</font>
+<a name="line398">398: </a><font color="#B22222">   when appropriate, for instance, if the nonzero structure is changing</font>
+<a name="line399">399: </a><font color="#B22222">   throughout the global iterations.</font>
+
+<a name="line401">401: </a><font color="#B22222">   The flag can be used to eliminate unnecessary work in the preconditioner </font>
+<a name="line402">402: </a><font color="#B22222">   during the repeated solution of linear systems of the same size.  The</font>
+<a name="line403">403: </a><font color="#B22222">   available options are</font>
+<a name="line404">404: </a><font color="#B22222">$    SAME_PRECONDITIONER -</font>
+<a name="line405">405: </a><font color="#B22222">$      B is identical during successive linear solves.</font>
+<a name="line406">406: </a><font color="#B22222">$      This option is intended for folks who are using</font>
+<a name="line407">407: </a><font color="#B22222">$      different Amat and Pmat matrices and want to reuse the</font>
+<a name="line408">408: </a><font color="#B22222">$      same preconditioner matrix.  For example, this option</font>
+<a name="line409">409: </a><font color="#B22222">$      saves work by not recomputing incomplete factorization</font>
+<a name="line410">410: </a><font color="#B22222">$      for ILU/ICC preconditioners.</font>
+<a name="line411">411: </a><font color="#B22222">$    SAME_NONZERO_PATTERN -</font>
+<a name="line412">412: </a><font color="#B22222">$      B has the same nonzero structure during</font>
+<a name="line413">413: </a><font color="#B22222">$      successive linear solves. </font>
+<a name="line414">414: </a><font color="#B22222">$    DIFFERENT_NONZERO_PATTERN -</font>
+<a name="line415">415: </a><font color="#B22222">$      B does not have the same nonzero structure.</font>
+
+<a name="line417">417: </a><font color="#B22222">   Caution:</font>
+<a name="line418">418: </a><font color="#B22222">   If you specify SAME_NONZERO_PATTERN, the software believes your assertion</font>
+<a name="line419">419: </a><font color="#B22222">   and does not check the structure of the matrix.  If you erroneously</font>
+<a name="line420">420: </a><font color="#B22222">   claim that the structure is the same when it actually is not, the new</font>
+<a name="line421">421: </a><font color="#B22222">   preconditioner will not function correctly.  Thus, use this optimization</font>
+<a name="line422">422: </a><font color="#B22222">   feature carefully!</font>
+
+<a name="line424">424: </a><font color="#B22222">   If in doubt about whether your preconditioner matrix has changed</font>
+<a name="line425">425: </a><font color="#B22222">   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.</font>
+
+<a name="line427">427: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line429">429: </a><font color="#B22222">.keywords: TAO_APPLICATION, Hessian</font>
+
+<a name="line431">431: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(), KSPSetOperators()</font>
+<a name="line432">432: </a><font color="#B22222">@*/</font>
+<a name="line433">433: </a><strong><font color="#4169E1"><a name="TaoAppSetHessianRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(TAO_APPLICATION taoapp, int (*hess)(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)</font></strong>{
+<a name="line436">436: </a>  taoapp-&gt;computehessian=hess;
+<a name="line437">437: </a>  taoapp-&gt;usrhctx=ctx;
+<a name="line438">438: </a>  <font color="#4169E1">return</font>(0);
+<a name="line439">439: </a>}
+
+
+<a name="line444">444: </a><font color="#B22222">/*@</font>
+<a name="line445">445: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A> - Sets the matrix representing the Hessian</font>
+<a name="line446">446: </a><font color="#B22222">   and the matrix used to precondition it.</font>
+
+<a name="line448">448: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line450">450: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line451">451: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line452">452: </a><font color="#B22222">.  H - the matrix used for the Hessian</font>
+<a name="line453">453: </a><font color="#B22222">-  HP - the matrix used to precondition the Hessian matrix.</font>
+
+<a name="line455">455: </a><font color="#B22222">   Note:</font>
+<a name="line456">456: </a><font color="#B22222">   Usually H and HP are the same matrix</font>
+
+<a name="line458">458: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line460">460: </a><font color="#B22222">.seealso:  <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>()</font>
+<a name="line461">461: </a><font color="#B22222">@*/</font>
+<a name="line462">462: </a><strong><font color="#4169E1"><a name="TaoAppSetHessianMat"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(TAO_APPLICATION taoapp, Mat H, Mat HP )</font></strong>{
+<a name="line463">463: </a>  int info;
+
+<a name="line467">467: </a>  <font color="#4169E1">if</font> (H) {
+<a name="line470">470: </a>    PetscObjectReference((PetscObject)H);
+<a name="line471">471: </a>    PetscObjectReference((PetscObject)HP);
+<a name="line472">472: </a>  }
+<a name="line473">473: </a>  <font color="#4169E1">if</font> (taoapp-&gt;H) {
+<a name="line474">474: </a>    info=MatDestroy(taoapp-&gt;H);CHKERRQ(info); 
+<a name="line475">475: </a>    info=MatDestroy(taoapp-&gt;HP);CHKERRQ(info); 
+<a name="line476">476: </a>  }  
+
+<a name="line478">478: </a>  taoapp-&gt;H=H;
+<a name="line479">479: </a>  taoapp-&gt;HP=HP;
+<a name="line480">480: </a>  <font color="#4169E1">return</font>(0);
+<a name="line481">481: </a>}
+
+<a name="line485">485: </a><font color="#B22222">/*@</font>
+<a name="line486">486: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppGetHessianMat.html#TaoAppGetHessianMat">TaoAppGetHessianMat</A> - Sets the matrix representing the Hessian</font>
+<a name="line487">487: </a><font color="#B22222">   and the matrix used to precondition it.</font>
+
+<a name="line489">489: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line491">491: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line492">492: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line493">493: </a><font color="#B22222">.  H - the matrix used for the Hessian</font>
+<a name="line494">494: </a><font color="#B22222">-  HP - the matrix used to precondition the Hessian matrix.</font>
+
+<a name="line496">496: </a><font color="#B22222">   Note:</font>
+<a name="line497">497: </a><font color="#B22222">   Usually H and HP are the same matrix</font>
+
+<a name="line499">499: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line501">501: </a><font color="#B22222">.seealso:  <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>()</font>
+<a name="line502">502: </a><font color="#B22222">@*/</font>
+<a name="line503">503: </a><strong><font color="#4169E1"><a name="TaoAppGetHessianMat"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppGetHessianMat.html#TaoAppGetHessianMat">TaoAppGetHessianMat</A>(TAO_APPLICATION taoapp, Mat *H, Mat *HP )</font></strong>{
+<a name="line506">506: </a>  <font color="#4169E1">if</font> (H) { *H=taoapp-&gt;H;}
+<a name="line507">507: </a>  <font color="#4169E1">if</font> (HP){ *HP=taoapp-&gt;HP;}
+<a name="line508">508: </a>  <font color="#4169E1">return</font>(0);
+<a name="line509">509: </a>}
+
+
+<a name="line514">514: </a><font color="#B22222">/*@C</font>
+<a name="line515">515: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianSolveRoutine.html#TaoAppSetHessianSolveRoutine">TaoAppSetHessianSolveRoutine</A> - Sets the routine that solves a linear</font>
+<a name="line516">516: </a><font color="#B22222">system involving the Hessian operator, (or approximate Hessian).</font>
+
+<a name="line518">518: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line520">520: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line521">521: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION context</font>
+<a name="line522">522: </a><font color="#B22222">.  ah - gradient evaluation routine</font>
+<a name="line523">523: </a><font color="#B22222">-  ctx - [optional] user-defined function context </font>
+
+<a name="line525">525: </a><font color="#B22222">   Calling sequence of func:</font>
+<a name="line526">526: </a><font color="#B22222">$     ah (TAO_APPLICATION taoapp,Vec vin,Vec vout, PetscTruth* success, void *ctx);</font>
+
+<a name="line528">528: </a><font color="#B22222">+  taoapp - the TAO_APPLICATION  context</font>
+<a name="line529">529: </a><font color="#B22222">.  v - input vector</font>
+<a name="line530">530: </a><font color="#B22222">-  ctx - user-defined function gradient context set from <A href="../../../../docs/manualpages/ptaopages/TaoAppSetGradientRoutine.html#TaoAppSetGradientRoutine">TaoAppSetGradientRoutine</A>()</font>
+
+<a name="line532">532: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line534">534: </a><font color="#B22222">   Note:</font>
+<a name="line535">535: </a><font color="#B22222">   This routine is to be used only with the LMVM and BLMVM solvers.  These solvers do not use Hessian information, but can incorporate very approximate Hessian information into the routine.</font>
+
+<a name="line537">537: </a><font color="#B22222">.keywords: TAO_APPLICATION, set, hessian</font>
+
+<a name="line539">539: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>()</font>
+
+<a name="line541">541: </a><font color="#B22222">@*/</font>
+<a name="line542">542: </a><strong><font color="#4169E1"><a name="TaoAppSetHessianSolveRoutine"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianSolveRoutine.html#TaoAppSetHessianSolveRoutine">TaoAppSetHessianSolveRoutine</A>(TAO_APPLICATION taoapp, int (*ah)(TAO_APPLICATION,Vec,Vec,PetscTruth*,void*),void *ctx)</font></strong>{
+<a name="line545">545: </a>  taoapp-&gt;hessiansolve=ah;
+<a name="line546">546: </a>  taoapp-&gt;usrhhhctx=ctx;
+<a name="line547">547: </a>  <font color="#4169E1">return</font>(0);
+<a name="line548">548: </a>}
+
+
+<a name="line553">553: </a><font color="#B22222">/*@</font>
+<a name="line554">554: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppHessianSolve.html#TaoAppHessianSolve">TaoAppHessianSolve</A> - Apply an</font>
+<a name="line555">555: </a><font color="#B22222">   inverse Hessian operator to the vector, or solve a linear</font>
+<a name="line556">556: </a><font color="#B22222">   system involving the Hessian.   It uses the</font>
+<a name="line557">557: </a><font color="#B22222">   routine set by TaoApplicationSetHessianSolveRoutine().</font>
+
+<a name="line559">559: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line561">561: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line562">562: </a><font color="#B22222">+  taopp - the TAO_APPLICATION context</font>
+<a name="line563">563: </a><font color="#B22222">-  Vin - the vector to be applied to the approximate inverse Hessian operator.</font>
+
+<a name="line565">565: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line566">566: </a><font color="#B22222">+  Vout - the inverse Hessian times the input vector.</font>
+<a name="line567">567: </a><font color="#B22222">-  success - flag indicating whether a solution was found.</font>
+
+<a name="line569">569: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line571">571: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line573">573: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeHessian.html#TaoAppComputeHessian">TaoAppComputeHessian</A>(), TaoLMVMSetSize()</font>
+<a name="line574">574: </a><font color="#B22222">@*/</font>
+<a name="line575">575: </a><strong><font color="#4169E1"><a name="TaoAppHessianSolve"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppHessianSolve.html#TaoAppHessianSolve">TaoAppHessianSolve</A>(TAO_APPLICATION taoapp, Vec Vin, Vec Vout, PetscTruth *success)</font></strong>{
+<a name="line576">576: </a>  int     info;
+
+<a name="line582">582: </a>  PetscStackPush(<font color="#666666">"TAO Apply User Approximate Hessian"</font>);
+<a name="line583">583: </a>  info = PetscLogEventBegin(Tao_HessianEval,taoapp,Vin,Vout,0);
+<a name="line584">584: </a>  <font color="#4169E1">if</font> (taoapp-&gt;hessiansolve){
+<a name="line585">585: </a>    info = (*taoapp-&gt;hessiansolve)(taoapp,Vin,Vout,success,taoapp-&gt;usrhhhctx);
+<a name="line586">586: </a>    CHKERRQ(info);
+<a name="line587">587: </a>  }
+<a name="line588">588: </a>  info = PetscLogEventEnd(Tao_HessianEval,taoapp,Vin,Vout,0);
+<a name="line589">589: </a>  taoapp-&gt;nlsolve++;
+<a name="line590">590: </a>  PetscStackPop;
+<a name="line591">591: </a>  <font color="#4169E1">return</font>(0);
+<a name="line592">592: </a>}
+
+<a name="line596">596: </a><font color="#B22222">/*@</font>
+<a name="line597">597: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppResetCounters.html#TaoAppResetCounters">TaoAppResetCounters</A> - Resent function evaluations counters to zero.</font>
+
+<a name="line599">599: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line601">601: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line602">602: </a><font color="#B22222">.  taopp - the TAO_APPLICATION context</font>
+
+<a name="line604">604: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line606">606: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line608">608: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeHessian.html#TaoAppComputeHessian">TaoAppComputeHessian</A></font>
+<a name="line609">609: </a><font color="#B22222">@*/</font>
+<a name="line610">610: </a><strong><font color="#4169E1"><a name="TaoAppResetCounters"></a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppResetCounters.html#TaoAppResetCounters">TaoAppResetCounters</A>(TAO_APPLICATION taoapp)</font></strong>{
+<a name="line613">613: </a>  taoapp-&gt;nfeval=0;
+<a name="line614">614: </a>  taoapp-&gt;ngeval=0;
+<a name="line615">615: </a>  taoapp-&gt;nheval=0;
+<a name="line616">616: </a>  taoapp-&gt;nlsolve=0;
+<a name="line617">617: </a>  <font color="#4169E1">return</font>(0);
+<a name="line618">618: </a>}
+
+<a name="line622">622: </a><font color="#B22222">/*@</font>
+<a name="line623">623: </a><font color="#B22222">   <A href="../../../../docs/manualpages/ptaopages/TaoAppCounters.html#TaoAppCounters">TaoAppCounters</A> - Count the number of function, gradient, and</font>
+<a name="line624">624: </a><font color="#B22222">   Hessian evaluations, and the number of linear solves.</font>
+
+<a name="line626">626: </a><font color="#B22222">   Collective on TAO_APPLICATION</font>
+
+<a name="line628">628: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line629">629: </a><font color="#B22222">.  taopp - the TAO_APPLICATION context</font>
+
+<a name="line631">631: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line632">632: </a><font color="#B22222">   stat[4] ,the number of function, gradient, and Hessian evaluations. And</font>
+<a name="line633">633: </a><font color="#B22222">    the number of linear solves.</font>
+
+<a name="line635">635: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line637">637: </a><font color="#B22222">.keywords: TAO_APPLICATION, objective</font>
+
+<a name="line639">639: </a><font color="#B22222">.seealso: <A href="../../../../docs/manualpages/ptaopages/TaoAppComputeHessian.html#TaoAppComputeHessian">TaoAppComputeHessian</A></font>
+<a name="line640">640: </a><font color="#B22222">@*/</font>
+<a name="line641">641: </a>int <A href="../../../../docs/manualpages/ptaopages/TaoAppCounters.html#TaoAppCounters">TaoAppCounters</A>(TAO_APPLICATION taoapp,TaoInt stats[4]){
+<a name="line644">644: </a>  stats[0]=taoapp-&gt;nfeval;
+<a name="line645">645: </a>  stats[1]=taoapp-&gt;ngeval;
+<a name="line646">646: </a>  stats[2]=taoapp-&gt;nheval;
+<a name="line647">647: </a>  stats[3]=taoapp-&gt;nlsolve;
+<a name="line648">648: </a>  <font color="#4169E1">return</font>(0);
+<a name="line649">649: </a>}
+
+
+</pre>
+</body>
+
+</html>

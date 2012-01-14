@@ -1,0 +1,19 @@
+# $Id: crontab,v 1.16 2001/04/16 20:10:28 curfman Exp $ 
+#
+#  Crontab for TAO nightly build
+#
+# This file is run every night on 'rockies.mcs.anl.gov' by user
+# 'aotools'.  Run "crontab crontab" to install the nightly build; use
+# "crontab -r" to remove it. The nightly builds are done by 'petsc' in
+# a separate crontab in petsc account
+#
+# Update the bk repository to do nightly builds in sync with PETSc nightly builds
+#
+50 23 * * * /usr/ucb/rsh rockies "/sandbox/aotools/tao-test/maint/updatetaotestbk >&! /home/aotools/nightlylogs/updatetaotestbk.log"
+# 
+#  The timing between these runs IS important.
+#
+10 2 * * * /bin/rm -rf /home/aotools/nightlylogs/*.log
+#
+#10 2 * * * /usr/ucb/rsh fire "cd /home/aotools/nightlylogs; /bin/rm -rf tao; cvs -d /home/benson/cvs_Master checkout tao >& /dev/null;   cd tao; make TAO_DIR=/home/aotools/nightlylogs/tao PETSC_ARCH=solaris PETSC_DIR=/home/petsc/petsc-2.1.1 ACTION=tao_fortranstubs tree >& /dev/null;   cd ../; tar -cf tao.tar tao"
+#

@@ -1,0 +1,37 @@
+<center><a href="dagridctx.h">Actual source code: dagridctx.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef PETSCDAGRIDCTX_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define PETSCDAGRIDCTX_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"petscmat.h"</font><font color="#A020F0"></font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"petscda.h"</font><font color="#A020F0"></font>
+
+<a name="line7">  7: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+
+<a name="line9">  9: </a>  DA  da;           <font color="#B22222">/* The Structure Grid on which this problem is defined          */</font>
+<a name="line10"> 10: </a>  Vec X;            <font color="#B22222">/* The Variable Vector for this problem                         */</font>
+<a name="line11"> 11: </a>  Vec XL,XU;        <font color="#B22222">/* Lower and upper bounds on the variables                      */</font>
+<a name="line12"> 12: </a>  Mat H;            <font color="#B22222">/* The Hessian Matrix for this problem                          */</font>
+<a name="line13"> 13: </a>  Vec R;            <font color="#B22222">/* Work vector                                                  */</font>
+<a name="line14"> 14: </a>  Vec RHS;          <font color="#B22222">/* Work vector                                                  */</font>
+<a name="line15"> 15: </a>  Vec W3;           <font color="#B22222">/* Work vector                                                  */</font>
+<a name="line16"> 16: </a>  Mat Interpolate;  <font color="#B22222">/* The Interplation Matrix from a coarser grid to this grid     */</font>
+<a name="line17"> 17: </a>  Vec CScale;       <font color="#B22222">/* The Scaling Vector needed to restrict the solution on this grid to a coarser grid */</font>
+<a name="line18"> 18: </a>  ISColoring coloring; <font color="#B22222">/* Matrix Coloring for finite differences                    */</font>
+<a name="line19"> 19: </a>  PetscInt mgrid;        <font color="#B22222">/* true if multigrid preconditioner setup */</font>
+<a name="line20"> 20: </a>  KSP ksp;          <font color="#B22222">/* KSP object for this level */</font>
+<a name="line21"> 21: </a>} GridCtx;
+
+<a name="line23"> 23: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

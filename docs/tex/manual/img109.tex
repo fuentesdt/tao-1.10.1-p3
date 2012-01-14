@@ -1,0 +1,43 @@
+% part2b.tex near line 729
+\documentclass[dvipdfm,11pt,openright]{book}\usepackage{}\usepackage{amssymb}\usepackage{moreverb}\usepackage{epsf}\usepackage{float}\usepackage{}\usepackage{afterpage}
+\pagestyle{empty}
+\thispagestyle{empty}
+\vsize=20in\setlength{\textheight}{20in}
+\begin{document}
+{\catcode`\_=\active\gdef_{{\tt\char`\_}}}
+{\catcode`\_=\active\gdef\makeustext{\def_{{\tt\char`\_}}}}
+{\catcode`\&=\active\gdef\makeamptext{\catcode`\&=\active\def&{{\tt\char`\&}}}}
+\def\eatcode{\catcode`\_=\active\makeustext\makeamptext\eatnext}
+\def\eatfile{\catcode`\_=\active\makeustext\makeamptext\eatnextfile}
+\def\eatnext#1{{\tt #1}\endgroup}
+\def\eatnextfile#1{`{\tt #1}'\endgroup}
+\def\file{\begingroup\eatfile}
+\def\code{\begingroup\eatcode}
+\setcounter{section}{1}
+\setcounter{figure}{6}
+\setcounter{table}{5}
+\setcounter{equation}{-1}
+% User definitions begin here
+\def\F{\mbox{\boldmath \(F\)}}
+\def\R{\mathbb R}
+\def\x{\mbox{\boldmath \(x\)}}
+\def\findex#1{\index{#1}}
+\def\sindex#1{\index{#1}}
+\def\Re{\R}
+\def\Comment#1{}
+\def\rr{\mbox{\boldmath \(r\)}}
+\def\half{{\textstyle{\frac{1}{2}}}}
+% User definitions end here
+% Disable other commands
+\def\index#1{\relax}
+% Beginning of Environment to be handled
+\begin{eqnarray*}
+\begin{array}{ll} 
+F_i(x^*) \geq 0 & \mbox{if } x^*_i = \ell_i \\ 
+F_i(x^*) = 0 & \mbox{if } \ell_i < x^*_i < u_i \\ 
+F_i(x^*) \leq 0 & \mbox{if } x^*_i = u_i. 
+\end{array}
+ 
+\end{eqnarray*}
+% End of Environment to be handled
+\end{document}

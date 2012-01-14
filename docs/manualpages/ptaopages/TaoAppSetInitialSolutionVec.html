@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetInitialSolutionVec</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetInitialSolutionVec"><H1>TaoAppSetInitialSolutionVec</H1></A>
+Sets the vector representing the variables and an initial guess. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetInitialSolutionVec(TAO_APPLICATION taoapp, Vec xx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>xx </B></TD><TD>- variable vector that stores the solution
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This vector will be used by the solver, so do not use it
+for other purposes.  The user should destroy this vector after
+solving the application.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+If the user is unaware of a decent initial solution,
+the vector should be set to zero.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+The TAO solvers will not use the contents of this
+Vec until the <A HREF="../solver/TaoSolve.html#TaoSolve">TaoSolve</A>() is called.  Therefore the user
+may compute an initial solution in this vector after this
+routine -- but before <A HREF="../solver/TaoSolve.html#TaoSolve">TaoSolve</A>().
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+  <A HREF="../ptaopages/TaoAppGetSolutionVec.html#TaoAppGetSolutionVec">TaoAppGetSolutionVec</A>(), <A HREF="../ptaopages/TaoAppSetObjectiveRoutine.html#TaoAppSetObjectiveRoutine">TaoAppSetObjectiveRoutine</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app.c.html#TaoAppSetInitialSolutionVec">src/petsctao/application/petscapp/tao_app.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/bound/examples/tutorials/plate2.c.html">src/bound/examples/tutorials/plate2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/jbearing2.c.html">src/bound/examples/tutorials/jbearing2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/plate2f.F.html">src/bound/examples/tutorials/plate2f.F.html</A><BR>
+<A HREF="../../../src/complementarity/examples/tutorials/minsurf1.c.html">src/complementarity/examples/tutorials/minsurf1.c.html</A><BR>
+<A HREF="../../../src/complementarity/examples/tutorials/blackscholes.c.html">src/complementarity/examples/tutorials/blackscholes.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion1.c.html">src/unconstrained/examples/tutorials/eptorsion1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2.c.html">src/unconstrained/examples/tutorials/eptorsion2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1.c.html">src/unconstrained/examples/tutorials/rosenbrock1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2f.F.html">src/unconstrained/examples/tutorials/eptorsion2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1f.F.html">src/unconstrained/examples/tutorials/rosenbrock1f.F.html</A><BR>
+</BODY></HTML>

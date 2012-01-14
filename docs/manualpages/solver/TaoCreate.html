@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoCreate</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoCreate"><H1>TaoCreate</H1></A>
+Creates a TAO_SOLVER context. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoCreate(MPI_Comm comm, TaoMethod method, TAO_SOLVER *newsolver)
+</PRE>
+Collective on MPI_Comm
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>comm </B></TD><TD>- MPI communicator
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>method </B></TD><TD>- A TAO method.  
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<DT><B>newsolver </B> -the new TAO_SOLVER context
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<DT><B>-tao_method </B> -select which method TAO should use
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Available methods include</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_nls </B></TD><TD>- Newton's method with line search for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ntr </B></TD><TD>- Newton's method with trust region for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ntl </B></TD><TD>- Newton's method with trust region, line search for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_lmvm </B></TD><TD>- Limited memory variable metric method for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_cg </B></TD><TD>- Nonlinear conjugate gradient method for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_nm </B></TD><TD>- Nelder-Mead algorithm for derivate-free unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_tron </B></TD><TD>- Newton Trust Region method for bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_gpcg </B></TD><TD>- Newton Trust Region method for quadratic bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_blmvm </B></TD><TD>- Limited memory variable metric method for bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_kt </B></TD><TD>- Formulate a bound constrained problem as a complementarity problem
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_bqpip </B></TD><TD>- Interior point method for quadratic bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ssils </B></TD><TD>- Infeasible semismooth method with a linesearch for complementarity problems
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ssfls </B></TD><TD>- Feasible semismooth method with a linesearch for complementarity problems
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+If the second argument specifies a TaoMethod, quotation marks should
+surround the method.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+The TaoMethod can be TAO_NULL (C/C++) or
+TAO_NULL_CHARACTER (Fortran), in which case the
+method will be specified by the runtime option -tao_method
+<P>
+If a particular optimization method is specified at runtime by
+the option '-tao_method', this choice will be used instead of
+any default that may have been specified as the input parameter
+"method" to this routine.
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ Create, solver, method, context
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoSolve.html#TaoSolve">TaoSolve</A>(), <A HREF="../solver/TaoSetMethod.html#TaoSetMethod">TaoSetMethod</A>(), <A HREF="../solver/TaoSetApplication.html#TaoSetApplication">TaoSetApplication</A>(), <A HREF="../solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/newsolver.c.html#TaoCreate">src/interface/newsolver.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/bound/examples/tutorials/plate2.c.html">src/bound/examples/tutorials/plate2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/jbearing2.c.html">src/bound/examples/tutorials/jbearing2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/plate2f.F.html">src/bound/examples/tutorials/plate2f.F.html</A><BR>
+<A HREF="../../../src/complementarity/examples/tutorials/minsurf1.c.html">src/complementarity/examples/tutorials/minsurf1.c.html</A><BR>
+<A HREF="../../../src/complementarity/examples/tutorials/blackscholes.c.html">src/complementarity/examples/tutorials/blackscholes.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion1.c.html">src/unconstrained/examples/tutorials/eptorsion1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2.c.html">src/unconstrained/examples/tutorials/eptorsion2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1.c.html">src/unconstrained/examples/tutorials/rosenbrock1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2f.F.html">src/unconstrained/examples/tutorials/eptorsion2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1f.F.html">src/unconstrained/examples/tutorials/rosenbrock1f.F.html</A><BR>
+</BODY></HTML>

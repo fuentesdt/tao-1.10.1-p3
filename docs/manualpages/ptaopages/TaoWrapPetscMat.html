@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoWrapPetscMat</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoWrapPetscMat"><H1>TaoWrapPetscMat</H1></A>
+Creates a new TaoMat object using a PETSc matrix. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int TaoWrapPetscMat( Mat M, TaoMatPetsc* *MM)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>M </B></TD><TD>- a PETSc matrix
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>MM </B></TD><TD>- the address of a pointer to a TaoMatPetsc
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<DT><B>MM </B> -the address of a pointer to new TaoMat
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+A TaoMatPetsc is an object with the methods of an abstract
+TaoMat object.  A TaoMatPetsc contains an implementation of the TaoMat
+methods.  Routines using these vectors should declare a pointer to
+a TaoMat, assign this pointer to the address of a TaoMat object,
+use the pointer to invoke methods on the object, and use this pointer
+as an argument when calling other routines.  This usage is different
+from the usage of a PETSc Mat.  In PETSc, applications will typically
+declare a Mat, and pass it as an argument into routines.  That is,
+applications will typically declare a pointer to a TaoMat and use the
+pointer, or declare a Mat and use it directly.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+The user is repsonsible for destroying the Mat M, in addition to
+to TaoMatPetsc vector MM.  The Mat can be destroyed immediately
+after this routine.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+TaoMatGetPetscMat(), <A HREF="../matrix/TaoMatDestroy.html#TaoMatDestroy">TaoMatDestroy</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/matrix/taomat_petsc.c.html#TaoWrapPetscMat">src/petsctao/matrix/taomat_petsc.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

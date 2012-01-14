@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppUseMultigrid</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppUseMultigrid"><H1>DAAppUseMultigrid</H1></A>
+Set the preconditioner for the linear solver to be an algebraic multigrid. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int DAAppUseMultigrid(TAO_APPLICATION daapplication, PetscInt coarselevel)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapplication </B></TD><TD>- the DA Application object
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>coarselevel </B></TD><TD>- the coarsest grid to be used in the multigrid preconditioner. (Grid 0 is the coarsest grid.
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Key</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_da_multigrid </B></TD><TD>- use multigrid linear solver
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-ksp_view </B></TD><TD>- view the linear solver
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This function should be called after <A HREF="../daapp/DAAppSetHessianRoutine.html#DAAppSetHessianRoutine">DAAppSetHessianRoutine</A>();
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This function should be called before each optimization solver as part of the DAAppMonitor
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+Multigrid functionality is still under developement for good performance.
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppGetKSP.html#TaoAppGetKSP">TaoAppGetKSP</A>(), <A HREF="../daapp/DAAppSetupMultigrid.html#DAAppSetupMultigrid">DAAppSetupMultigrid</A>()
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Key</FONT></H2>
+<DT><B>-tao_da_multigrid</B> -
+<br>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ Linear Solver, Multigrid, DA, KSP
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/multigrid/daapp_mgrid.c.html#DAAppUseMultigrid">src/petsctao/gridapplication/multigrid/daapp_mgrid.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

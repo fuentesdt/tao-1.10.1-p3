@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetMethod</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetMethod"><H1>TaoSetMethod</H1></A>
+Sets the method for the unconstrained minimization solver.   
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetMethod(TAO_SOLVER solver,TaoMethod type)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>solver </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>type </B></TD><TD>- a known method
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Key</FONT></H2>
+<DT><B>-tao_method &lt;type&gt; </B> -Sets the method; use -help for a list
+of available methods (for instance, "-tao_method tao_lmvm" or 
+"-tao_method tao_tron")
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Available methods include</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_nls </B></TD><TD>- Newton's method with line search for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ntr </B></TD><TD>- Newton's method with trust region for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ntl </B></TD><TD>- Newton's method with trust region, line search for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_lmvm </B></TD><TD>- Limited memory variable metric method for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_cg </B></TD><TD>- Nonlinear conjugate gradient method for unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_nm </B></TD><TD>- Nelder-Mead algorithm for derivate-free unconstrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_tron </B></TD><TD>- Newton Trust Region method for bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_gpcg </B></TD><TD>- Newton Trust Region method for quadratic bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_blmvm </B></TD><TD>- Limited memory variable metric method for bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_kt </B></TD><TD>- Formulate a bound constrained problem as a complementarity problem
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_bqpip </B></TD><TD>- Interior point method for quadratic bound constrained minimization
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ssils </B></TD><TD>- Infeasible semismooth method with a linesearch for complementarity problems
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao_ssfls </B></TD><TD>- Feasible semismooth method with a linesearch for complementarity problems
+</TD></TR></TABLE>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ method, Create, solve
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoCreate.html#TaoCreate">TaoCreate</A>(), <A HREF="../solver/TaoGetMethod.html#TaoGetMethod">TaoGetMethod</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/newsolver.c.html#TaoSetMethod">src/interface/newsolver.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

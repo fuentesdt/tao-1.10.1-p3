@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>RestoreArray</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="RestoreArray"><H1>RestoreArray</H1></A>
+Returns a pointer to the first element in the vector array. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoVec::RestoreArray(TaoScalar **dptr, TaoInt *n)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>dptr </B></TD><TD>- pointer an the array of numbers obtained from TaoVec::<A HREF="../vector/GetArray.html#GetArray">GetArray</A>
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>n </B></TD><TD>- the length of the array
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine is not used within TAO solvers.  Rather, it is used to
+implement other routines.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+TaoVec::<A HREF="../vector/GetArray.html#GetArray">GetArray</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/vector/taovec.c.html#RestoreArray">src/vector/taovec.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

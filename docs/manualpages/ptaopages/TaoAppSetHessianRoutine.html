@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoAppSetHessianRoutine</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoAppSetHessianRoutine"><H1>TaoAppSetHessianRoutine</H1></A>
+Sets the function to compute the Hessian as well as the location to store the matrix. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h"  
+int TaoAppSetHessianRoutine(TAO_APPLICATION taoapp, int (*hess)(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)</PRE>
+Collective on TAO_APPLICATION and Mat
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>hess </B></TD><TD>- Hessian evaluation routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined context for private data for the 
+Hessian evaluation routine (may be TAO_NULL)
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of hess</FONT></H2>
+<pre>
+   hess (TAO_APPLICATION taoapp,Vec x,Mat *H,Mat *Hpre,int *flag,void *ctx);
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>taoapp </B></TD><TD>- the TAO_APPLICATION  context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- input vector
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>H </B></TD><TD>- Hessian matrix
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>Hpre </B></TD><TD>- preconditioner matrix, usually the same as A
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>flag </B></TD><TD>- flag indicating information about the preconditioner matrix
+structure (see below)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- [optional] user-defined Hessian context
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<DT><B>-tao_view_hessian </B> -view the hessian after each evaluation using PETSC_VIEWER_STDOUT_WORLD
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+<P>
+The function hess() takes Mat * as the matrix arguments rather than Mat.
+This allows the Hessian evaluation routine to replace A and/or B with a
+completely new new matrix structure (not just different matrix elements)
+when appropriate, for instance, if the nonzero structure is changing
+throughout the global iterations.
+<P>
+The flag can be used to eliminate unnecessary work in the preconditioner
+during the repeated solution of linear systems of the same size.  The
+available options are
+<pre>
+   SAME_PRECONDITIONER -
+</pre>
+<pre>
+     B is identical during successive linear solves.
+</pre>
+<pre>
+     This option is intended for folks who are using
+</pre>
+<pre>
+     different Amat and Pmat matrices and want to reuse the
+</pre>
+<pre>
+     same preconditioner matrix.  For example, this option
+</pre>
+<pre>
+     saves work by not recomputing incomplete factorization
+</pre>
+<pre>
+     for ILU/ICC preconditioners.
+</pre>
+<pre>
+   SAME_NONZERO_PATTERN -
+</pre>
+<pre>
+     B has the same nonzero structure during
+</pre>
+<pre>
+     successive linear solves. 
+</pre>
+<pre>
+   DIFFERENT_NONZERO_PATTERN -
+</pre>
+<pre>
+     B does not have the same nonzero structure.
+</pre>
+<P>
+<H2><FONT COLOR="#CC3333">Caution</FONT></H2>
+If you specify SAME_NONZERO_PATTERN, the software believes your assertion
+and does not check the structure of the matrix.  If you erroneously
+claim that the structure is the same when it actually is not, the new
+preconditioner will not function correctly.  Thus, use this optimization
+feature carefully!
+<P>
+If in doubt about whether your preconditioner matrix has changed
+structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ TAO_APPLICATION, Hessian
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(), <A HREF="../ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(), KSPSetOperators()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/application/petscapp/tao_app_fg.c.html#TaoAppSetHessianRoutine">src/petsctao/application/petscapp/tao_app_fg.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/bound/examples/tutorials/plate2.c.html">src/bound/examples/tutorials/plate2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/jbearing2.c.html">src/bound/examples/tutorials/jbearing2.c.html</A><BR>
+<A HREF="../../../src/bound/examples/tutorials/plate2f.F.html">src/bound/examples/tutorials/plate2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion1.c.html">src/unconstrained/examples/tutorials/eptorsion1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2.c.html">src/unconstrained/examples/tutorials/eptorsion2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/minsurf2.c.html">src/unconstrained/examples/tutorials/minsurf2.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1.c.html">src/unconstrained/examples/tutorials/rosenbrock1.c.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/eptorsion2f.F.html">src/unconstrained/examples/tutorials/eptorsion2f.F.html</A><BR>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1f.F.html">src/unconstrained/examples/tutorials/rosenbrock1f.F.html</A><BR>
+</BODY></HTML>

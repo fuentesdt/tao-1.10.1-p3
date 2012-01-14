@@ -1,0 +1,53 @@
+# makefile for tao's esi examples
+
+#To run an esi example, you must have an esi implementation.
+#We have chosen TRILINOS
+
+####### TRILINOS SPECIFIC variables
+TRILINOS_HOME = /home/benson/Trilinos-2.0a
+TRILINOS_ARCH = LINUX
+TRILINOS_COMM = MPI
+
+
+LIBEPETRA= $(TRILINOS_HOME)/lib/$(TRILINOS_TARGET)/libepetra.a
+LIBAZTEC=$(TRILINOS_HOME)/lib/$(TRILINOS_TARGET)/libaztecoo.a
+
+TRILINOS_TARGET = $(TRILINOS_ARCH).$(TRILINOS_COMM)$(TRILINOS_ID)
+
+TRILINOS_LIBS = -L$(TRILINOS_HOME)/lib/$(TRILINOS_TARGET) -lepetra_esi -laztecoo -lepetra
+LIBY12M=$(TRILINOS_HOME)/external/y12m/lib/$(TRILINOS_TARGET)/liby12m.a
+
+TRILINOS_INCLUDE = -I$(TRILINOS_HOME)/packages/epetra/src
+EPETRA_ESI_INCLUDE = -I$(TRILINOS_HOME)/adaptors/epetra_esi/src
+AZTEC_PATH_INCLUDE = -I$(TRILINOS_HOME)/packages/aztecoo/src
+
+EPETRA_COMM_SERIAL	= SERIAL
+EPETRA_COMM_MPI		= EPETRA_MPI
+EPETRA_COMM		= $(EPETRA_COMM_$(TRILINOS_COMM))
+
+
+DEFINES= -D$(TRILINOS_ARCH) $(EPETRA_ARCH_DEFINES) -D$(EPETRA_COMM)
+INCLUDES = $(ARCH_INCLUDES) $(TRILINOS_INCLUDE) $(EPETRA_ESI_INCLUDE) $(AZTEC_PATH_INCLUDE)
+
+CFLAGS=$(ARCH_CFLAGS) $(DEFINES) $(INCLUDES)
+FFLAGS=$(ARCH_FFLAGS) $(DEFINES) $(INCLUDES)
+CXXFLAGS=$(ARCH_CXXFLAGS) $(DEFINES) $(INCLUDES)
+CCFLAGS=$(CXXFLAGS)
+
+LIB_PATHS= $(TRILINOS_LIBS) $(LIBY12M)
+
+##### End TRILINOS SPECIFIC variables **************
+
+include ${TAO_DIR}/bmake/tao_common
+
+
+minsurf: minsurf3.o  tao_chkopts
+	-${CLINKER}  -o minsurf minsurf3.o ${LIB_PATHS} ${TAO_ESI_LIB} ${PETSC_SLES_LIB}
+	${RM} minsurf3.o
+
+
+
+
+
+
+

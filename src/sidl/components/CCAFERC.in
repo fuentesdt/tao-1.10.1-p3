@@ -1,0 +1,24 @@
+#!ccaffeine bootstrap file. 
+# ------- don't change anything ABOVE this line.-------------
+path set @TAO_DIR@/lib/@PETSC_ARCH@
+
+repository get-global TaoDriver.Component
+repository get-global TaoSolver.Component
+repository get-global Minsurf.Component
+repository get-global PetscLA.Factory
+
+create TaoDriver.Component driver
+create TaoSolver.Component solver
+create Minsurf.Component minsurf
+create PetscLA.Factory factory
+
+parameter solver CONFIG tao_gatol 0.0001
+
+
+connect driver OptimizationSolver solver OptimizationSolver
+connect solver OptimizationModel minsurf OptimizationModel
+connect solver LAFactory factory LAFactory
+
+go driver go
+
+quit

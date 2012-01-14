@@ -1,0 +1,736 @@
+<center><a href="tvecsingle.c">Actual source code: tvecsingle.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tvecsingle.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"stdio.h"</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><strong><font color="#FF0000">TaoVecFloatArray:</font></strong>:TaoVecFloatArray(TaoInt nn):TaoVec(),n(nn){
+<a name="line6">  6: </a>  v=new float[nn];
+<a name="line7">  7: </a>  fallocated=1;
+<a name="line8">  8: </a>  <font color="#4169E1">return</font>;
+<a name="line9">  9: </a>}
+
+<a name="line11"> 11: </a><strong><font color="#FF0000">TaoVecFloatArray:</font></strong>:TaoVecFloatArray(TaoInt nn, float *ff):TaoVec(),n(nn){
+<a name="line12"> 12: </a>  v=ff;
+<a name="line13"> 13: </a>  fallocated=0;
+<a name="line14"> 14: </a>  <font color="#4169E1">return</font>;
+<a name="line15"> 15: </a>}
+
+<a name="line17"> 17: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>( TaoVec** tv ){
+
+<a name="line19"> 19: </a>  *tv = new TaoVecFloatArray(this-&gt;n);
+<a name="line20"> 20: </a>  int info = (*tv)-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(this);CHKERRQ(info);
+<a name="line21"> 21: </a>  <font color="#4169E1">return</font> 0;
+<a name="line22"> 22: </a>}
+
+<a name="line24"> 24: </a>int TaoVecFloatArray::GetFloats(float **fptr, TaoInt *nn){
+<a name="line25"> 25: </a>  *fptr=v;
+<a name="line26"> 26: </a>  *nn=n;
+<a name="line27"> 27: </a>  <font color="#4169E1">return</font> 0;
+<a name="line28"> 28: </a>}
+
+<a name="line30"> 30: </a>int TaoVecFloatArray::RestoreFloats(float **fptr, TaoInt *nn){
+<a name="line31"> 31: </a>  *fptr=0;
+<a name="line32"> 32: </a>  *nn=0;
+<a name="line33"> 33: </a>  <font color="#4169E1">return</font> 0;
+<a name="line34"> 34: </a>}
+
+<a name="line36"> 36: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(TaoInt *nn){
+<a name="line37"> 37: </a>  *nn=n;
+<a name="line38"> 38: </a>  <font color="#4169E1">return</font> 0;
+<a name="line39"> 39: </a>}
+
+<a name="line41"> 41: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A>(TaoVec *tv, TaoTruth *flag){
+<a name="line42"> 42: </a>  TaoInt nn;
+<a name="line43"> 43: </a>  int info;
+<a name="line44"> 44: </a>  float *fptr;
+<a name="line45"> 45: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+
+<a name="line47"> 47: </a>  info = vv-&gt;GetData(&amp;fptr,&amp;nn);
+<a name="line48"> 48: </a>  <font color="#4169E1">if</font> (info==0 &amp;&amp; nn == n) *flag=TAO_TRUE;
+<a name="line49"> 49: </a>  <font color="#4169E1">else</font> *flag=TAO_FALSE;
+<a name="line50"> 50: </a>  <font color="#4169E1">return</font> 0;
+<a name="line51"> 51: </a>}
+
+<a name="line53"> 53: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/lsolver/View.html#View">View</A>(){
+<a name="line54"> 54: </a>  <font color="#4169E1">for</font> (TaoInt i=0;i&lt;n;++i)
+<a name="line55"> 55: </a>    printf(<font color="#666666">" %4.2e \n "</font>,v[i]);
+<a name="line56"> 56: </a>  <font color="#4169E1">return</font> 0;
+<a name="line57"> 57: </a>}
+
+
+<a name="line62"> 62: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>( double c ){
+<a name="line63"> 63: </a>  TaoInt i,nn;
+<a name="line64"> 64: </a>  int info;
+<a name="line65"> 65: </a>  float *tptr;
+
+<a name="line67"> 67: </a>  TaoFunctionBegin;
+<a name="line68"> 68: </a>  info = this-&gt;GetFloats(&amp;tptr,&amp;nn);CHKERRQ(info);
+<a name="line69"> 69: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ tptr[i]=c; }
+<a name="line70"> 70: </a>  info = this-&gt;RestoreFloats(&amp;tptr,&amp;nn);CHKERRQ(info);
+<a name="line71"> 71: </a>  TaoFunctionReturn(0);
+<a name="line72"> 72: </a>}
+
+<a name="line76"> 76: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(){
+<a name="line77"> 77: </a>  TaoInt i,nn;
+<a name="line78"> 78: </a>  int info;
+<a name="line79"> 79: </a>  float *tptr;
+
+<a name="line81"> 81: </a>  TaoFunctionBegin;
+<a name="line82"> 82: </a>  info = this-&gt;GetFloats(&amp;tptr,&amp;nn);CHKERRQ(info);
+<a name="line83"> 83: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ tptr[i]=0; }
+<a name="line84"> 84: </a>  info = this-&gt;RestoreFloats(&amp;tptr,&amp;nn);CHKERRQ(info);
+<a name="line85"> 85: </a>  TaoFunctionReturn(0);
+<a name="line86"> 86: </a>}
+
+<a name="line90"> 90: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>( TaoVec* tv ){
+<a name="line91"> 91: </a>  TaoInt i,nn1,nn2;
+<a name="line92"> 92: </a>  int info;
+<a name="line93"> 93: </a>  float *tptr1,*tptr2;
+<a name="line94"> 94: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+
+<a name="line96"> 96: </a>  TaoFunctionBegin;
+<a name="line97"> 97: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line98"> 98: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+
+<a name="line100">100: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){ tptr1[i]=tptr2[i]; }
+
+<a name="line102">102: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line103">103: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line104">104: </a>  TaoFunctionReturn(0);
+<a name="line105">105: </a>}
+
+<a name="line109">109: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>( double a, TaoVec* tv ){
+<a name="line110">110: </a>  TaoInt i,nn1,nn2;
+<a name="line111">111: </a>  int info;
+<a name="line112">112: </a>  float *tptr1,*tptr2;
+<a name="line113">113: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+
+<a name="line115">115: </a>  TaoFunctionBegin;
+<a name="line116">116: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line117">117: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line118">118: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){ tptr1[i]=a*tptr2[i]; }
+<a name="line119">119: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line120">120: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line121">121: </a>  TaoFunctionReturn(0);
+<a name="line122">122: </a>}
+
+<a name="line126">126: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>(double *vnorm){
+<a name="line127">127: </a>  TaoInt i,nn;
+<a name="line128">128: </a>  int info;
+<a name="line129">129: </a>  float dd=0, *vv;
+
+<a name="line131">131: </a>  TaoFunctionBegin;
+<a name="line132">132: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line133">133: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){
+<a name="line134">134: </a>    <font color="#4169E1">if</font> (vv[i]&lt;0 &amp;&amp; vv[i]&lt;-dd) dd=-vv[i];
+<a name="line135">135: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (vv[i]&gt;0 &amp;&amp; vv[i]&gt;dd) dd=vv[i];
+<a name="line136">136: </a>  }
+<a name="line137">137: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line138">138: </a>  *vnorm=dd;
+<a name="line139">139: </a>  TaoFunctionReturn(0);
+<a name="line140">140: </a>}
+
+<a name="line144">144: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>(double *vnorm){
+<a name="line145">145: </a>  TaoInt i,nn;
+<a name="line146">146: </a>  int info;
+<a name="line147">147: </a>  float dd=0, *vv;
+
+<a name="line149">149: </a>  TaoFunctionBegin;
+<a name="line150">150: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line151">151: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ 
+<a name="line152">152: </a>    <font color="#4169E1">if</font> (vv[i]&lt;0) dd-=vv[i]; 
+<a name="line153">153: </a>    <font color="#4169E1">else</font> dd+=vv[i];
+<a name="line154">154: </a>  }
+<a name="line155">155: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line156">156: </a>  TaoFunctionReturn(0);
+<a name="line157">157: </a>}
+
+<a name="line161">161: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(double *vnorm){
+<a name="line162">162: </a>  TaoInt i,nn;
+<a name="line163">163: </a>  int info;
+<a name="line164">164: </a>  float dd=0, *vv;
+
+<a name="line166">166: </a>  TaoFunctionBegin;
+<a name="line167">167: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line168">168: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++) dd+=vv[i]*vv[i];
+<a name="line169">169: </a>  *vnorm=sqrt(dd);
+<a name="line170">170: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line171">171: </a>  TaoFunctionReturn(0);
+<a name="line172">172: </a>}
+
+<a name="line176">176: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Norm2squared.html#Norm2squared">Norm2squared</A>(double *vnorm2){
+<a name="line177">177: </a>  TaoInt i,nn;
+<a name="line178">178: </a>  int info;
+<a name="line179">179: </a>  float dd=0, *vv;
+
+<a name="line181">181: </a>  TaoFunctionBegin;
+<a name="line182">182: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line183">183: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++) dd+=vv[i]*vv[i];
+<a name="line184">184: </a>  *vnorm2=dd;
+<a name="line185">185: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line186">186: </a>  TaoFunctionReturn(0);
+<a name="line187">187: </a>}
+
+<a name="line191">191: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Scale.html#Scale">Scale</A>( double alpha ){
+<a name="line192">192: </a>  TaoInt i,nn;
+<a name="line193">193: </a>  int info;
+<a name="line194">194: </a>  float *vv;
+
+<a name="line196">196: </a>  TaoFunctionBegin;
+<a name="line197">197: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line198">198: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++) vv[i]*=alpha;
+<a name="line199">199: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line200">200: </a>  TaoFunctionReturn(0);
+<a name="line201">201: </a>}
+
+<a name="line205">205: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>( double alpha, TaoVec* tv ){
+<a name="line206">206: </a>  TaoInt i,nn1,nn2;
+<a name="line207">207: </a>  int info;
+<a name="line208">208: </a>  float *tptr1,*tptr2;
+<a name="line209">209: </a>  TaoVecFloatArray* xx =  (TaoVecFloatArray*)(tv);
+
+<a name="line211">211: </a>  TaoFunctionBegin;
+<a name="line212">212: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line213">213: </a>  info = xx-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line214">214: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){ tptr1[i]+= alpha * tptr2[i]; }
+<a name="line215">215: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line216">216: </a>  info = xx-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line217">217: </a>  TaoFunctionReturn(0);
+<a name="line218">218: </a>}
+
+<a name="line222">222: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Axpby.html#Axpby">Axpby</A>( double alpha, TaoVec* tv, double beta ){
+<a name="line223">223: </a>  TaoInt i,nn1,nn2;
+<a name="line224">224: </a>  int info;
+<a name="line225">225: </a>  float *tptr1,*tptr2;
+<a name="line226">226: </a>  TaoVecFloatArray* xx =  (TaoVecFloatArray*)(tv);
+
+<a name="line228">228: </a>  TaoFunctionBegin;
+<a name="line229">229: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line230">230: </a>  info = xx-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line231">231: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){ tptr1[i] = beta * tptr1[i] + alpha * tptr2[i]; }
+<a name="line232">232: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line233">233: </a>  info = xx-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line234">234: </a>  TaoFunctionReturn(0);
+<a name="line235">235: </a>}
+
+<a name="line239">239: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A>( double alpha, TaoVec* tv ){
+<a name="line240">240: </a>  TaoInt i,nn1,nn2;
+<a name="line241">241: </a>  int info;
+<a name="line242">242: </a>  float *tptr1,*tptr2;
+<a name="line243">243: </a>  TaoVecFloatArray* xx =  (TaoVecFloatArray*)(tv);
+
+<a name="line245">245: </a>  TaoFunctionBegin;
+<a name="line246">246: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line247">247: </a>  info = xx-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line248">248: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){ tptr1[i] = alpha * tptr1[i] + tptr2[i]; }
+<a name="line249">249: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line250">250: </a>  info = xx-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line251">251: </a>  TaoFunctionReturn(0);
+<a name="line252">252: </a>}
+<a name="line253">253: </a> 
+<a name="line256">256: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>( double alpha ){
+<a name="line257">257: </a>  TaoInt i,nn;
+<a name="line258">258: </a>  int info;
+<a name="line259">259: </a>  float *vv;
+
+<a name="line261">261: </a>  TaoFunctionBegin;
+<a name="line262">262: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line263">263: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++) vv[i]+=alpha;
+<a name="line264">264: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line265">265: </a>  TaoFunctionReturn(0);
+<a name="line266">266: </a>}
+
+<a name="line270">270: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>( TaoVec* tv, double *vDotv ){
+<a name="line271">271: </a>  TaoInt i,nn1,nn2;
+<a name="line272">272: </a>  int info;
+<a name="line273">273: </a>  float dd=0,*tptr1,*tptr2;
+<a name="line274">274: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+
+<a name="line276">276: </a>  TaoFunctionBegin;
+<a name="line277">277: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line278">278: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line279">279: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++) dd+=tptr1[i]*tptr2[i];
+<a name="line280">280: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line281">281: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line282">282: </a>  *vDotv=dd;
+<a name="line283">283: </a>  TaoFunctionReturn(0);
+<a name="line284">284: </a>}
+
+<a name="line288">288: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(){ 
+<a name="line289">289: </a>  TaoInt i,nn;
+<a name="line290">290: </a>  int info;
+<a name="line291">291: </a>  float *vv;
+
+<a name="line293">293: </a>  TaoFunctionBegin;
+<a name="line294">294: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line295">295: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++) vv[i]=-vv[i];
+<a name="line296">296: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line297">297: </a>  TaoFunctionReturn(0);
+<a name="line298">298: </a>}
+
+<a name="line302">302: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(){ 
+<a name="line303">303: </a>  TaoInt i,nn;
+<a name="line304">304: </a>  int info;
+<a name="line305">305: </a>  float *vv;
+
+<a name="line307">307: </a>  TaoFunctionBegin;
+<a name="line308">308: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line309">309: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ 
+<a name="line310">310: </a>    <font color="#4169E1">if</font> (vv[i]!=0)  vv[i]= 1.0/vv[i];
+<a name="line311">311: </a>    <font color="#4169E1">else</font> vv[i]=TAO_INFINITY;
+<a name="line312">312: </a>  }
+<a name="line313">313: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line314">314: </a>  TaoFunctionReturn(0);
+<a name="line315">315: </a>}
+
+<a name="line319">319: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Sqrt.html#Sqrt">Sqrt</A>(){ 
+<a name="line320">320: </a>  TaoInt i,nn;
+<a name="line321">321: </a>  int info;
+<a name="line322">322: </a>  float *vv;
+
+<a name="line324">324: </a>  TaoFunctionBegin;
+<a name="line325">325: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line326">326: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ 
+<a name="line327">327: </a>    <font color="#4169E1">if</font> (vv[i] &gt;= 0)  vv[i]= sqrt(vv[i]);
+<a name="line328">328: </a>    <font color="#4169E1">else</font> vv[i]=TAO_INFINITY;
+<a name="line329">329: </a>  }
+<a name="line330">330: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line331">331: </a>  TaoFunctionReturn(0);
+<a name="line332">332: </a>}
+
+<a name="line336">336: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Pow.html#Pow">Pow</A>(double p){ 
+<a name="line337">337: </a>  TaoInt i,nn;
+<a name="line338">338: </a>  int info;
+<a name="line339">339: </a>  float *vv;
+
+<a name="line341">341: </a>  TaoFunctionBegin;
+<a name="line342">342: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line343">343: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ 
+<a name="line344">344: </a>    <font color="#4169E1">if</font> (vv[i] &gt;= 0)  vv[i]= pow((float)vv[i], (float)p);
+<a name="line345">345: </a>    <font color="#4169E1">else</font> vv[i]=TAO_INFINITY;
+<a name="line346">346: </a>  }
+<a name="line347">347: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line348">348: </a>  TaoFunctionReturn(0);
+<a name="line349">349: </a>}
+
+<a name="line353">353: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>( TaoVec* tv, TaoVec* tw ){
+<a name="line354">354: </a>  TaoInt i,nn1,nn2,nn3;
+<a name="line355">355: </a>  int info;
+<a name="line356">356: </a>  float *tptr1,*tptr2,*tptr3;
+<a name="line357">357: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+<a name="line358">358: </a>  TaoVecFloatArray* ww =  (TaoVecFloatArray*)(tw);
+
+<a name="line360">360: </a>  TaoFunctionBegin;
+<a name="line361">361: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line362">362: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line363">363: </a>  info = ww-&gt;GetFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+<a name="line364">364: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++) tptr1[i]=tptr2[i] * tptr3[i];
+<a name="line365">365: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line366">366: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line367">367: </a>  info = ww-&gt;RestoreFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+
+<a name="line369">369: </a>  TaoFunctionReturn(0);
+<a name="line370">370: </a>}
+
+<a name="line374">374: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>( TaoVec* tv , TaoVec* tw){
+<a name="line375">375: </a>  TaoInt i,nn1,nn2,nn3;
+<a name="line376">376: </a>  int info;
+<a name="line377">377: </a>  float *tptr1,*tptr2,*tptr3;
+<a name="line378">378: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+<a name="line379">379: </a>  TaoVecFloatArray* ww =  (TaoVecFloatArray*)(tw);
+
+<a name="line381">381: </a>  TaoFunctionBegin;
+<a name="line382">382: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line383">383: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line384">384: </a>  info = ww-&gt;GetFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+
+<a name="line386">386: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++) tptr1[i]=tptr2[i] / tptr3[i];
+<a name="line387">387: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line388">388: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line389">389: </a>  info = ww-&gt;RestoreFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+
+<a name="line391">391: </a>  TaoFunctionReturn(0);
+<a name="line392">392: </a>}
+
+<a name="line396">396: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Median.html#Median">Median</A>( TaoVec* tv, TaoVec* tw, TaoVec* tx){
+<a name="line397">397: </a>  TaoInt i,nn1,nn2,nn3,nn4;
+<a name="line398">398: </a>  int info;
+<a name="line399">399: </a>  float *tptr1,*tptr2,*tptr3,*tptr4;
+<a name="line400">400: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+<a name="line401">401: </a>  TaoVecFloatArray* ww =  (TaoVecFloatArray*)(tw);
+<a name="line402">402: </a>  TaoVecFloatArray* xx =  (TaoVecFloatArray*)(tx);
+
+<a name="line404">404: </a>  TaoFunctionBegin;
+<a name="line405">405: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line406">406: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line407">407: </a>  info = ww-&gt;GetFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+<a name="line408">408: </a>  info = xx-&gt;GetFloats(&amp;tptr4,&amp;nn4);CHKERRQ(info);
+
+<a name="line410">410: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){
+<a name="line411">411: </a>    <font color="#4169E1">if</font> (tptr2[i]&lt;=tptr3[i] &amp;&amp; tptr3[i] &lt;= tptr4[i]){
+<a name="line412">412: </a>      tptr1[i]=tptr3[i];
+<a name="line413">413: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tptr4[i]&lt;=tptr3[i] &amp;&amp; tptr3[i] &lt;= tptr2[i]){
+<a name="line414">414: </a>      tptr1[i]=tptr3[i];
+<a name="line415">415: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tptr3[i]&lt;=tptr2[i] &amp;&amp; tptr2[i] &lt;= tptr4[i]){
+<a name="line416">416: </a>      tptr1[i]=tptr2[i];
+<a name="line417">417: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (tptr4[i]&lt;=tptr2[i] &amp;&amp; tptr2[i] &lt;= tptr3[i]){
+<a name="line418">418: </a>      tptr1[i]=tptr2[i];
+<a name="line419">419: </a>    } <font color="#4169E1">else</font> {
+<a name="line420">420: </a>      tptr1[i]=tptr4[i];
+<a name="line421">421: </a>    }
+<a name="line422">422: </a>  }
+<a name="line423">423: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line424">424: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line425">425: </a>  info = ww-&gt;RestoreFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+<a name="line426">426: </a>  info = xx-&gt;RestoreFloats(&amp;tptr4,&amp;nn4);CHKERRQ(info);
+
+<a name="line428">428: </a>  TaoFunctionReturn(0);
+<a name="line429">429: </a>}
+
+<a name="line433">433: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A>( TaoVec* tv, TaoVec* tw){
+<a name="line434">434: </a>  TaoInt i,nn1,nn2,nn3;
+<a name="line435">435: </a>  int info;
+<a name="line436">436: </a>  float *tptr1,*tptr2,*tptr3;
+<a name="line437">437: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+<a name="line438">438: </a>  TaoVecFloatArray* ww =  (TaoVecFloatArray*)(tw);
+
+<a name="line440">440: </a>  TaoFunctionBegin;
+<a name="line441">441: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line442">442: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line443">443: </a>  info = ww-&gt;GetFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+
+<a name="line445">445: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++) tptr1[i] = TaoMin( tptr2[i] , tptr3[i]);
+
+<a name="line447">447: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line448">448: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line449">449: </a>  info = ww-&gt;RestoreFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+
+<a name="line451">451: </a>  TaoFunctionReturn(0);
+<a name="line452">452: </a>}
+
+<a name="line456">456: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>( TaoVec* tv, TaoVec* tw){
+<a name="line457">457: </a>  TaoInt i,nn1,nn2,nn3;
+<a name="line458">458: </a>  int info;
+<a name="line459">459: </a>  float *tptr1,*tptr2,*tptr3;
+<a name="line460">460: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+<a name="line461">461: </a>  TaoVecFloatArray* ww =  (TaoVecFloatArray*)(tw);
+
+<a name="line463">463: </a>  TaoFunctionBegin;
+<a name="line464">464: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line465">465: </a>  info = vv-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line466">466: </a>  info = ww-&gt;GetFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+
+<a name="line468">468: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++) tptr1[i] = TaoMax( tptr2[i] , tptr3[i]);
+
+<a name="line470">470: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line471">471: </a>  info = vv-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line472">472: </a>  info = ww-&gt;RestoreFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+
+<a name="line474">474: </a>  TaoFunctionReturn(0);
+<a name="line475">475: </a>}
+
+<a name="line479">479: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>  ( double a, TaoVec* tx, double b, TaoVec* ty){
+<a name="line480">480: </a>  TaoInt i,nn1,nn2,nn3;
+<a name="line481">481: </a>  int info;
+<a name="line482">482: </a>  float *tptr1,*tptr2,*tptr3;
+<a name="line483">483: </a>  TaoVecFloatArray* xx =  (TaoVecFloatArray*)(tx);
+<a name="line484">484: </a>  TaoVecFloatArray* yy =  (TaoVecFloatArray*)(ty);
+
+<a name="line486">486: </a>  TaoFunctionBegin;
+<a name="line487">487: </a>  info = this-&gt;GetFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line488">488: </a>  info = xx-&gt;GetFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line489">489: </a>  info = yy-&gt;GetFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+<a name="line490">490: </a>  <font color="#4169E1">if</font> (nn1!=nn2 || nn2!=nn3) {TaoFunctionReturn(1);}
+<a name="line491">491: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){ tptr1[i] = a * tptr2[i] + b * tptr3[i]; }
+<a name="line492">492: </a>  info = this-&gt;RestoreFloats(&amp;tptr1,&amp;nn1);CHKERRQ(info);
+<a name="line493">493: </a>  info = xx-&gt;RestoreFloats(&amp;tptr2,&amp;nn2);CHKERRQ(info);
+<a name="line494">494: </a>  info = yy-&gt;RestoreFloats(&amp;tptr3,&amp;nn3);CHKERRQ(info);
+<a name="line495">495: </a>  TaoFunctionReturn(0);
+<a name="line496">496: </a>}
+
+<a name="line500">500: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>(){
+<a name="line501">501: </a>  TaoInt i,nn;
+<a name="line502">502: </a>  int info;
+<a name="line503">503: </a>  float *vv;
+
+<a name="line505">505: </a>  TaoFunctionBegin;
+<a name="line506">506: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line507">507: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ 
+<a name="line508">508: </a>    vv[i]= TaoAbsScalar(vv[i]);
+<a name="line509">509: </a>  }
+<a name="line510">510: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line511">511: </a>  TaoFunctionReturn(0);
+<a name="line512">512: </a>}
+
+<a name="line516">516: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/MinElement.html#MinElement">MinElement</A>(double*val){
+<a name="line517">517: </a>  TaoInt i,nn;
+<a name="line518">518: </a>  int info;
+<a name="line519">519: </a>  float dd=TAO_INFINITY,*vv;
+
+<a name="line521">521: </a>  TaoFunctionBegin;
+<a name="line522">522: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line523">523: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){ 
+<a name="line524">524: </a>    <font color="#4169E1">if</font> (vv[i]&lt;dd) dd=vv[i];
+<a name="line525">525: </a>  }
+<a name="line526">526: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn);CHKERRQ(info);
+<a name="line527">527: </a>  *val = dd;
+<a name="line528">528: </a>  TaoFunctionReturn(0);
+<a name="line529">529: </a>}
+
+<a name="line533">533: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>(TaoVec*tv,double*step1){
+<a name="line534">534: </a>  TaoInt i,nn1,nn2;
+<a name="line535">535: </a>  int info;
+<a name="line536">536: </a>  float *xx,*dx;
+<a name="line537">537: </a>  float stepmax1=TAO_INFINITY;
+<a name="line538">538: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+
+<a name="line540">540: </a>  TaoFunctionBegin;
+<a name="line541">541: </a>  info = this-&gt;GetFloats(&amp;xx,&amp;nn1);CHKERRQ(info);
+<a name="line542">542: </a>  info = vv-&gt;GetFloats(&amp;dx,&amp;nn2);CHKERRQ(info);
+<a name="line543">543: </a>  
+<a name="line544">544: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){
+<a name="line545">545: </a>    <font color="#4169E1">if</font> (xx[i] &lt; 0){
+<a name="line546">546: </a>      TaoFunctionReturn(1);
+<a name="line547">547: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dx[i]&lt;0){ 
+<a name="line548">548: </a>      stepmax1=TaoMin(stepmax1,-xx[i]/dx[i]);
+<a name="line549">549: </a>    }
+<a name="line550">550: </a>  }
+<a name="line551">551: </a>  *step1=stepmax1;
+
+<a name="line553">553: </a>  info = vv-&gt;RestoreFloats(&amp;dx,&amp;nn2);CHKERRQ(info);
+<a name="line554">554: </a>  info = this-&gt;RestoreFloats(&amp;xx,&amp;nn1);CHKERRQ(info);
+<a name="line555">555: </a>  TaoFunctionReturn(0);
+<a name="line556">556: </a>}
+
+<a name="line560">560: </a>int TaoVecFloatArray::StepMax2(TaoVec*tv,TaoVec*txl,TaoVec*txu, double*step2){
+<a name="line561">561: </a>  TaoInt i,nn1,nn2;
+<a name="line562">562: </a>  int info;
+<a name="line563">563: </a>  float *xx,*dx,*xl,*xu;
+<a name="line564">564: </a>  float stepmax2=0;
+<a name="line565">565: </a>  TaoVecFloatArray* vv =  (TaoVecFloatArray*)(tv);
+<a name="line566">566: </a>  TaoVecFloatArray* xxll =  (TaoVecFloatArray*)(txl);
+<a name="line567">567: </a>  TaoVecFloatArray* xxuu =  (TaoVecFloatArray*)(txu);
+
+<a name="line569">569: </a>  TaoFunctionBegin;
+<a name="line570">570: </a>  info = this-&gt;GetFloats(&amp;xx,&amp;nn1);CHKERRQ(info);
+<a name="line571">571: </a>  info = vv-&gt;GetFloats(&amp;dx,&amp;nn2);CHKERRQ(info);
+<a name="line572">572: </a>  info = xxll-&gt;GetFloats(&amp;xl,&amp;nn2);CHKERRQ(info);
+<a name="line573">573: </a>  info = xxuu-&gt;GetFloats(&amp;xu,&amp;nn2);CHKERRQ(info);
+<a name="line574">574: </a>  
+<a name="line575">575: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++){
+<a name="line576">576: </a>    <font color="#4169E1">if</font> (dx[i] &gt; 0){
+<a name="line577">577: </a>      stepmax2=TaoMax(stepmax2,(xu[i]-xx[i])/dx[i]);      
+<a name="line578">578: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dx[i]&lt;0){ 
+<a name="line579">579: </a>      stepmax2=TaoMax(stepmax2,(xl[i]-xx[i])/dx[i]);
+<a name="line580">580: </a>    }
+<a name="line581">581: </a>  }
+<a name="line582">582: </a>  info = this-&gt;RestoreFloats(&amp;xx,&amp;nn1);CHKERRQ(info);
+<a name="line583">583: </a>  info = vv-&gt;RestoreFloats(&amp;dx,&amp;nn2);CHKERRQ(info);
+<a name="line584">584: </a>  info = xxll-&gt;RestoreFloats(&amp;xl,&amp;nn2);CHKERRQ(info);
+<a name="line585">585: </a>  info = xxuu-&gt;RestoreFloats(&amp;xu,&amp;nn2);CHKERRQ(info);
+<a name="line586">586: </a>  
+<a name="line587">587: </a>  *step2=stepmax2;
+<a name="line588">588: </a>  TaoFunctionReturn(0);
+<a name="line589">589: </a>}
+
+
+<a name="line594">594: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(TaoVec*tg,TaoVec*txl,TaoVec*tx, TaoVec*txu){
+<a name="line595">595: </a>  TaoInt i,nn1,nn2,nn3,nn4,nn5;
+<a name="line596">596: </a>  int info;
+<a name="line597">597: </a>  float *xptr,*xlptr,*xuptr,*gptr,*gpptr;
+<a name="line598">598: </a>  TaoVecFloatArray* gg =  (TaoVecFloatArray*)(tg);
+<a name="line599">599: </a>  TaoVecFloatArray* xxll =  (TaoVecFloatArray*)(txl);
+<a name="line600">600: </a>  TaoVecFloatArray* xx =  (TaoVecFloatArray*)(tx);
+<a name="line601">601: </a>  TaoVecFloatArray* xxuu =  (TaoVecFloatArray*)(txu);
+
+<a name="line603">603: </a>  TaoFunctionBegin;
+<a name="line604">604: </a>  info = this-&gt;GetFloats(&amp;gpptr,&amp;nn1);CHKERRQ(info);
+<a name="line605">605: </a>  info = gg-&gt;GetFloats(&amp;gptr,&amp;nn2);CHKERRQ(info);
+<a name="line606">606: </a>  info = xxll-&gt;GetFloats(&amp;xlptr,&amp;nn3);CHKERRQ(info);
+<a name="line607">607: </a>  info = xx-&gt;GetFloats(&amp;xptr,&amp;nn4);CHKERRQ(info);
+<a name="line608">608: </a>  info = xxuu-&gt;GetFloats(&amp;xuptr,&amp;nn5);CHKERRQ(info);
+<a name="line609">609: </a>  <font color="#4169E1">if</font> (nn1!=nn2 || nn2!=nn3 || nn3!=nn4 || nn4!=nn5) {TaoFunctionReturn(1);}
+
+<a name="line611">611: </a>  <font color="#4169E1">for</font> (i=0; i&lt;nn1; i++){
+
+<a name="line613">613: </a>    gpptr[i] = gptr[i];
+<a name="line614">614: </a>    <font color="#4169E1">if</font> (gpptr[i]&gt;0 &amp;&amp; xptr[i]&lt;=xlptr[i]){
+<a name="line615">615: </a>      gpptr[i] = 0;
+<a name="line616">616: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (gpptr[i]&lt;0 &amp;&amp; xptr[i]&gt;=xuptr[i]){
+<a name="line617">617: </a>      gpptr[i] = 0;
+<a name="line618">618: </a>    }
+<a name="line619">619: </a>  }
+<a name="line620">620: </a>  info = this-&gt;RestoreFloats(&amp;gpptr,&amp;nn1);CHKERRQ(info);
+<a name="line621">621: </a>  info = gg-&gt;RestoreFloats(&amp;gptr,&amp;nn2);CHKERRQ(info);
+<a name="line622">622: </a>  info = xxll-&gt;RestoreFloats(&amp;xlptr,&amp;nn3);CHKERRQ(info);
+<a name="line623">623: </a>  info = xx-&gt;RestoreFloats(&amp;xptr,&amp;nn4);CHKERRQ(info);
+<a name="line624">624: </a>  info = xxuu-&gt;RestoreFloats(&amp;xuptr,&amp;nn5);CHKERRQ(info);
+
+<a name="line626">626: </a>  TaoFunctionReturn(0);
+<a name="line627">627: </a>}
+
+<a name="line629">629: </a><strong><font color="#4169E1"><a name="fischer"></a>inline static float fischer(float a, float b)</font></strong> 
+<a name="line630">630: </a>{
+
+<a name="line632">632: </a><font color="#A020F0">#ifdef TODD</font>
+
+<a name="line634">634: </a>  <font color="#4169E1">if</font> (TaoAbsScalar(a) &gt; TaoAbsScalar(b)) {
+<a name="line635">635: </a>    <font color="#4169E1">return</font> sqrt(a*a + b*b) - a - b;
+<a name="line636">636: </a>  }
+<a name="line637">637: </a>  <font color="#4169E1">return</font> sqrt(a*a + b*b) - b - a;
+
+<a name="line639">639: </a><font color="#A020F0">#else</font>
+
+<a name="line641">641: </a>   // Method suggested by Bob Vanderbei
+
+<a name="line643">643: </a>   <font color="#4169E1">if</font> (a + b &lt;= 0) {
+<a name="line644">644: </a>     <font color="#4169E1">return</font> sqrt(a*a + b*b) - (a + b);
+<a name="line645">645: </a>   }
+<a name="line646">646: </a>   <font color="#4169E1">return</font> -2.0*a*b / (sqrt(a*a + b*b) + (a + b));
+
+<a name="line648">648: </a><font color="#A020F0">#endif</font>
+
+<a name="line650">650: </a>}
+
+<a name="line654">654: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(TaoVec *tx, TaoVec *tf, TaoVec *tl, TaoVec *tu)
+<a name="line655">655: </a>{
+<a name="line656">656: </a>  TaoInt i,nn1,nn2,nn3,nn4,nn5;
+<a name="line657">657: </a>  int info;
+<a name="line658">658: </a>  float *vv,*x,*f,*l,*u;
+
+<a name="line660">660: </a>  TaoVecFloatArray* xx =  (TaoVecFloatArray*)(tx);
+<a name="line661">661: </a>  TaoVecFloatArray* ff =  (TaoVecFloatArray*)(tf);
+<a name="line662">662: </a>  TaoVecFloatArray* ll =  (TaoVecFloatArray*)(tl);
+<a name="line663">663: </a>  TaoVecFloatArray* uu =  (TaoVecFloatArray*)(tu);
+
+<a name="line665">665: </a>  TaoFunctionBegin;
+<a name="line666">666: </a>  info = this-&gt;GetFloats(&amp;vv,&amp;nn1);CHKERRQ(info);
+<a name="line667">667: </a>  info = xx-&gt;GetFloats(&amp;x,&amp;nn2);CHKERRQ(info);
+<a name="line668">668: </a>  info = ff-&gt;GetFloats(&amp;f,&amp;nn3);CHKERRQ(info);
+<a name="line669">669: </a>  info = ll-&gt;GetFloats(&amp;l,&amp;nn4);CHKERRQ(info);
+<a name="line670">670: </a>  info = uu-&gt;GetFloats(&amp;u,&amp;nn5);CHKERRQ(info);
+<a name="line671">671: </a>  <font color="#4169E1">if</font> (nn1!=nn2 || nn2!=nn3 || nn3!=nn4 || nn4!=nn5) {
+<a name="line672">672: </a>    TaoFunctionReturn(1);
+<a name="line673">673: </a>  }
+
+<a name="line675">675: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn1;i++) {
+
+<a name="line677">677: </a>    <font color="#4169E1">if</font> ((l[i] &lt;= -TAO_INFINITY) &amp;&amp; (u[i] &gt;= TAO_INFINITY)) {
+<a name="line678">678: </a>      vv[i] = -f[i];
+<a name="line679">679: </a>    } 
+<a name="line680">680: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] &lt;= -TAO_INFINITY) {
+<a name="line681">681: </a>      vv[i] = -fischer(u[i] - x[i], -f[i]);
+<a name="line682">682: </a>    } 
+<a name="line683">683: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (u[i] &gt;=  TAO_INFINITY) {
+<a name="line684">684: </a>      vv[i] =  fischer(x[i] - l[i],  f[i]);
+<a name="line685">685: </a>    } 
+<a name="line686">686: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] == u[i]) {
+<a name="line687">687: </a>      vv[i] = l[i] - x[i];
+<a name="line688">688: </a>    }
+<a name="line689">689: </a>    <font color="#4169E1">else</font> {
+<a name="line690">690: </a>      vv[i] =  fischer(u[i] - x[i], -f[i]);
+<a name="line691">691: </a>      vv[i] =  fischer(x[i] - l[i],  vv[i]);
+<a name="line692">692: </a>    }
+
+<a name="line694">694: </a>  }
+
+<a name="line696">696: </a>  info = this-&gt;RestoreFloats(&amp;vv,&amp;nn1);CHKERRQ(info);
+<a name="line697">697: </a>  info = xx-&gt;RestoreFloats(&amp;x,&amp;nn2);CHKERRQ(info);
+<a name="line698">698: </a>  info = ff-&gt;RestoreFloats(&amp;f,&amp;nn3);CHKERRQ(info);
+<a name="line699">699: </a>  info = ll-&gt;RestoreFloats(&amp;l,&amp;nn4);CHKERRQ(info);
+<a name="line700">700: </a>  info = uu-&gt;RestoreFloats(&amp;u,&amp;nn5);CHKERRQ(info);
+
+<a name="line702">702: </a>  TaoFunctionReturn(0);
+<a name="line703">703: </a>}
+
+<a name="line705">705: </a><strong><font color="#4169E1"><a name="sfischer"></a>inline static float sfischer(float a, float b, float c)</font></strong>
+<a name="line706">706: </a>{
+
+<a name="line708">708: </a><font color="#A020F0">#ifdef TODD</font>
+
+<a name="line710">710: </a>  <font color="#4169E1">if</font> (TaoAbsScalar(a) &gt; TaoAbsScalar(b)) {
+<a name="line711">711: </a>    <font color="#4169E1">return</font> sqrt(a*a + b*b + 2.0*c*c) - a - b;
+<a name="line712">712: </a>  }
+<a name="line713">713: </a>  <font color="#4169E1">return</font> sqrt(a*a + b*b + 2.0*c*c) - b - a;
+
+<a name="line715">715: </a><font color="#A020F0">#else</font>
+
+<a name="line717">717: </a>   // Method suggested by Bob Vanderbei
+
+<a name="line719">719: </a>   <font color="#4169E1">if</font> (a + b &lt;= 0) {
+<a name="line720">720: </a>     <font color="#4169E1">return</font> sqrt(a*a + b*b + 2.0*c*c) - (a + b);
+<a name="line721">721: </a>   }
+<a name="line722">722: </a>   <font color="#4169E1">return</font> 2.0*(c*c - a*b) / (sqrt(a*a + b*b + 2.0*c*c) + (a + b));
+
+<a name="line724">724: </a><font color="#A020F0">#endif</font>
+
+<a name="line726">726: </a>}
+
+<a name="line730">730: </a>int TaoVecFloatArray::<A href="../../docs/manualpages/vector/SFischer.html#SFischer">SFischer</A>(TaoVec *tx, TaoVec *tf, TaoVec *tl, TaoVec *tu, double mu)
+<a name="line731">731: </a>{
+<a name="line732">732: </a>  TaoInt i, nn1, nn2, nn3, nn4, nn5;
+<a name="line733">733: </a>  int info;
+<a name="line734">734: </a>  float *vv, *x, *f, *l, *u;
+
+<a name="line736">736: </a>  TaoVecFloatArray *xx = (TaoVecFloatArray *)(tx);
+<a name="line737">737: </a>  TaoVecFloatArray *ff = (TaoVecFloatArray *)(tf);
+<a name="line738">738: </a>  TaoVecFloatArray *ll = (TaoVecFloatArray *)(tl);
+<a name="line739">739: </a>  TaoVecFloatArray *uu = (TaoVecFloatArray *)(tu);
+
+<a name="line741">741: </a>  TaoFunctionBegin;
+
+<a name="line743">743: </a>  <font color="#4169E1">if</font> ((mu &gt;= -TAO_EPSILON) &amp;&amp; (mu &lt;= TAO_EPSILON)) {
+<a name="line744">744: </a>    <A href="../../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(tx, tf, tl, tu);
+<a name="line745">745: </a>  }
+<a name="line746">746: </a>  <font color="#4169E1">else</font> {
+<a name="line747">747: </a>    info = this-&gt;GetFloats(&amp;vv, &amp;nn1); CHKERRQ(info);
+<a name="line748">748: </a>    info = xx-&gt;GetFloats(&amp;x, &amp;nn2); CHKERRQ(info);
+<a name="line749">749: </a>    info = ff-&gt;GetFloats(&amp;f, &amp;nn3); CHKERRQ(info);
+<a name="line750">750: </a>    info = ll-&gt;GetFloats(&amp;l, &amp;nn4); CHKERRQ(info);
+<a name="line751">751: </a>    info = uu-&gt;GetFloats(&amp;u, &amp;nn5); CHKERRQ(info);
+
+<a name="line753">753: </a>    <font color="#4169E1">if</font> (nn1!=nn2 || nn2!=nn3 || nn3!=nn4 || nn4!=nn5) {
+<a name="line754">754: </a>      TaoFunctionReturn(1);
+<a name="line755">755: </a>    }
+
+<a name="line757">757: </a>    <font color="#4169E1">for</font> (i = 0; i &lt; nn1; ++i) {
+<a name="line758">758: </a>      <font color="#4169E1">if</font> ((l[i] &lt;= -TAO_INFINITY) &amp;&amp; (u[i] &gt;= TAO_INFINITY)) {
+<a name="line759">759: </a>        vv[i] = -f[i] - mu*x[i];
+<a name="line760">760: </a>      }
+<a name="line761">761: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] &lt;= -TAO_INFINITY) {
+<a name="line762">762: </a>        vv[i] = -sfischer(u[i] - x[i], -f[i], mu);
+<a name="line763">763: </a>      }
+<a name="line764">764: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (u[i] &gt;=  TAO_INFINITY) {
+<a name="line765">765: </a>        vv[i] =  sfischer(x[i] - l[i],  f[i], mu);
+<a name="line766">766: </a>      }
+<a name="line767">767: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (l[i] == u[i]) {
+<a name="line768">768: </a>        vv[i] = l[i] - x[i];
+<a name="line769">769: </a>      }
+<a name="line770">770: </a>      <font color="#4169E1">else</font> {
+<a name="line771">771: </a>        vv[i] =  sfischer(u[i] - x[i], -f[i], mu);
+<a name="line772">772: </a>        vv[i] =  sfischer(x[i] - l[i],  vv[i], mu);
+<a name="line773">773: </a>      }
+<a name="line774">774: </a>    }
+
+<a name="line776">776: </a>    info = this-&gt;RestoreFloats(&amp;vv, &amp;nn1); CHKERRQ(info);
+<a name="line777">777: </a>    info = xx-&gt;RestoreFloats(&amp;x, &amp;nn2); CHKERRQ(info);
+<a name="line778">778: </a>    info = ff-&gt;RestoreFloats(&amp;f, &amp;nn3); CHKERRQ(info);
+<a name="line779">779: </a>    info = ll-&gt;RestoreFloats(&amp;l, &amp;nn4); CHKERRQ(info);
+<a name="line780">780: </a>    info = uu-&gt;RestoreFloats(&amp;u, &amp;nn5); CHKERRQ(info);
+<a name="line781">781: </a>  }
+<a name="line782">782: </a>  TaoFunctionReturn(0);
+<a name="line783">783: </a>}
+
+</pre>
+</body>
+
+</html>

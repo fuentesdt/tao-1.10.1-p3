@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>StepMax</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="StepMax"><H1>StepMax</H1></A>
+Calculates the largest multiple of a vector that can be added to this vector while keeping each element of this vector nonnegative. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoVec::StepMax(TaoVec* vv,double *step1)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>vv </B> -the step direction
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<DT><B>step1 </B> -the maximum stepsize
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This vector should contain all positive elements.
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+If there is no maximum steplength, the output scalar may be set
+to TAO_INFINITY.
+<P>
+
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/vector/taovec.c.html#StepMax">src/vector/taovec.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

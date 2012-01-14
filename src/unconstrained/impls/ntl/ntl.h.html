@@ -1,0 +1,140 @@
+<center><a href="ntl.h">Actual source code: ntl.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:10+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id: ntl.h,v 1.2 2008-08-18 19:50:51 sarich Exp $*/</font>
+
+<a name="line3">  3: </a>// Context <font color="#4169E1">for</font> a Newton trust-region, line-search method <font color="#4169E1">for</font> unconstrained 
+<a name="line4">  4: </a>// minimization
+
+<a name="line6">  6: </a><font color="#A020F0">#ifndef __TAO_NTL_H</font>
+<a name="line8">  8: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+<a name="line9">  9: </a><font color="#A020F0">#include </font><font color="#666666">"src/matrix/lmvmmat.h"</font><font color="#A020F0"></font>
+
+<a name="line11"> 11: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line12"> 12: </a>  TaoLMVMMat *M;
+
+<a name="line14"> 14: </a>  TaoVec *G;
+<a name="line15"> 15: </a>  TaoVec *D;
+<a name="line16"> 16: </a>  TaoVec *W;
+
+<a name="line18"> 18: </a>  TaoVec *Xold;
+<a name="line19"> 19: </a>  TaoVec *Gold;
+<a name="line20"> 20: </a>  TaoVec *Diag;
+
+<a name="line22"> 22: </a>  // Parameters when updating the trust-region radius based on steplength
+<a name="line23"> 23: </a>  double nu1;                // used to compute trust-region radius
+<a name="line24"> 24: </a>  double nu2;                // used to compute trust-region radius
+<a name="line25"> 25: </a>  double nu3;                // used to compute trust-region radius
+<a name="line26"> 26: </a>  double nu4;                // used to compute trust-region radius
+
+<a name="line28"> 28: </a>  double omega1;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line29"> 29: </a>  double omega2;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line30"> 30: </a>  double omega3;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line31"> 31: </a>  double omega4;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line32"> 32: </a>  double omega5;        // factor used <font color="#4169E1">for</font> trust-region update
+
+<a name="line34"> 34: </a>  // <font color="#4169E1">if</font>   step &lt; nu1                  (very bad step)
+<a name="line35"> 35: </a>  //   radius = omega1 * min(norm(d), radius)
+<a name="line36"> 36: </a>  // elif step &lt; nu2                (bad step)
+<a name="line37"> 37: </a>  //   radius = omega2 * min(norm(d), radius)
+<a name="line38"> 38: </a>  // elif step &lt; nu3                (okay step)
+<a name="line39"> 39: </a>  //   radius = omega3 * radius;
+<a name="line40"> 40: </a>  // elif step &lt; nu4                (good step)
+<a name="line41"> 41: </a>  //   radius = max(omega4 * norm(d), radius)
+<a name="line42"> 42: </a>  // <font color="#4169E1">else</font>                         (very good step)
+<a name="line43"> 43: </a>  //   radius = max(omega5 * norm(d), radius)
+<a name="line44"> 44: </a>  // fi
+<a name="line45"> 45: </a> 
+<a name="line46"> 46: </a>  // Parameters when updating the trust-region radius based on reduction
+<a name="line47"> 47: </a>  double eta1;                // used to compute trust-region radius
+<a name="line48"> 48: </a>  double eta2;                // used to compute trust-region radius
+<a name="line49"> 49: </a>  double eta3;                // used to compute trust-region radius
+<a name="line50"> 50: </a>  double eta4;                // used to compute trust-region radius
+
+<a name="line52"> 52: </a>  double alpha1;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line53"> 53: </a>  double alpha2;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line54"> 54: </a>  double alpha3;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line55"> 55: </a>  double alpha4;        // factor used <font color="#4169E1">for</font> trust-region update
+<a name="line56"> 56: </a>  double alpha5;        // factor used <font color="#4169E1">for</font> trust-region update
+
+<a name="line58"> 58: </a>  // kappa = ared / pred
+<a name="line59"> 59: </a>  // <font color="#4169E1">if</font>   kappa &lt; eta1                 (very bad step)
+<a name="line60"> 60: </a>  //   radius = alpha1 * min(norm(d), radius)
+<a name="line61"> 61: </a>  // elif kappa &lt; eta2                (bad step)
+<a name="line62"> 62: </a>  //   radius = alpha2 * min(norm(d), radius)
+<a name="line63"> 63: </a>  // elif kappa &lt; eta3                (okay step)
+<a name="line64"> 64: </a>  //   radius = alpha3 * radius;
+<a name="line65"> 65: </a>  // elif kappa &lt; eta4                (good step)
+<a name="line66"> 66: </a>  //   radius = max(alpha4 * norm(d), radius)
+<a name="line67"> 67: </a>  // <font color="#4169E1">else</font>                         (very good step)
+<a name="line68"> 68: </a>  //   radius = max(alpha5 * norm(d), radius)
+<a name="line69"> 69: </a>  // fi
+<a name="line70"> 70: </a> 
+<a name="line71"> 71: </a>  // Parameters when updating the trust-region radius based on interpolation
+<a name="line72"> 72: </a>  double mu1;                // used <font color="#4169E1">for</font> model agreement in interpolation
+<a name="line73"> 73: </a>  double mu2;                // used <font color="#4169E1">for</font> model agreement in interpolation
+
+<a name="line75"> 75: </a>  double gamma1;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line76"> 76: </a>  double gamma2;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line77"> 77: </a>  double gamma3;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line78"> 78: </a>  double gamma4;        // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line80"> 80: </a>  double theta;                // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line82"> 82: </a>  // kappa = ared / pred
+<a name="line83"> 83: </a>  // <font color="#4169E1">if</font>   kappa &gt;= 1.0 - mu1        (very good step)
+<a name="line84"> 84: </a>  //   choose tau in [gamma3, gamma4]
+<a name="line85"> 85: </a>  //   radius = max(tau * norm(d), radius)
+<a name="line86"> 86: </a>  // elif kappa &gt;= 1.0 - mu2    (good step)
+<a name="line87"> 87: </a>  //   choose tau in [gamma2, gamma3]
+<a name="line88"> 88: </a>  //   <font color="#4169E1">if</font> (tau &gt;= 1.0)
+<a name="line89"> 89: </a>  //     radius = max(tau * norm(d), radius)
+<a name="line90"> 90: </a>  //   <font color="#4169E1">else</font>
+<a name="line91"> 91: </a>  //     radius = tau * min(norm(d), radius)
+<a name="line92"> 92: </a>  //   fi
+<a name="line93"> 93: </a>  // <font color="#4169E1">else</font>                         (bad step)
+<a name="line94"> 94: </a>  //   choose tau in [gamma1, 1.0]
+<a name="line95"> 95: </a>  //   radius = tau * min(norm(d), radius)
+<a name="line96"> 96: </a>  // fi
+<a name="line97"> 97: </a> 
+<a name="line98"> 98: </a>  // Parameters when initializing trust-region radius based on interpolation
+<a name="line99"> 99: </a>  double mu1_i;                // used <font color="#4169E1">for</font> model agreement in interpolation
+<a name="line100">100: </a>  double mu2_i;                // used <font color="#4169E1">for</font> model agreement in interpolation
+
+<a name="line102">102: </a>  double gamma1_i;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line103">103: </a>  double gamma2_i;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line104">104: </a>  double gamma3_i;        // factor used <font color="#4169E1">for</font> interpolation
+<a name="line105">105: </a>  double gamma4_i;        // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line107">107: </a>  double theta_i;        // factor used <font color="#4169E1">for</font> interpolation
+
+<a name="line109">109: </a>  // Other parameters
+<a name="line110">110: </a>  double min_radius;    // lower bound on initial radius value
+<a name="line111">111: </a>  double max_radius;    // upper bound on trust region radius
+<a name="line112">112: </a>  double epsilon;       // tolerance used when computing ared/pred
+
+<a name="line114">114: </a>  TaoInt trust;                // Trust-region steps accepted
+<a name="line115">115: </a>  TaoInt newt;                // Newton directions attempted
+<a name="line116">116: </a>  TaoInt bfgs;                // BFGS directions attempted
+<a name="line117">117: </a>  TaoInt sgrad;                // Scaled gradient directions attempted
+<a name="line118">118: </a>  TaoInt grad;                // Gradient directions attempted
+
+<a name="line120">120: </a>  TaoInt ksp_type;                // KSP method <font color="#4169E1">for</font> the code
+<a name="line121">121: </a>  TaoInt pc_type;                // Preconditioner <font color="#4169E1">for</font> the code
+<a name="line122">122: </a>  TaoInt bfgs_scale_type;        // Scaling matrix to used <font color="#4169E1">for</font> the bfgs preconditioner
+<a name="line123">123: </a>  TaoInt init_type;        // Trust-region initialization method
+<a name="line124">124: </a>  TaoInt update_type;      // Trust-region update method
+<a name="line125">125: </a>} TAO_NTL;
+
+<a name="line127">127: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

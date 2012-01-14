@@ -1,0 +1,59 @@
+% part1.tex near line 386
+\documentclass[dvipdfm,11pt,openright]{book}\usepackage{}\usepackage{amssymb}\usepackage{moreverb}\usepackage{epsf}\usepackage{float}\usepackage{}\usepackage{afterpage}
+\pagestyle{empty}
+\thispagestyle{empty}
+\vsize=20in\setlength{\textheight}{20in}
+\begin{document}
+{\catcode`\_=\active\gdef_{{\tt\char`\_}}}
+{\catcode`\_=\active\gdef\makeustext{\def_{{\tt\char`\_}}}}
+{\catcode`\&=\active\gdef\makeamptext{\catcode`\&=\active\def&{{\tt\char`\&}}}}
+\def\eatcode{\catcode`\_=\active\makeustext\makeamptext\eatnext}
+\def\eatfile{\catcode`\_=\active\makeustext\makeamptext\eatnextfile}
+\def\eatnext#1{{\tt #1}\endgroup}
+\def\eatnextfile#1{`{\tt #1}'\endgroup}
+\def\file{\begingroup\eatfile}
+\def\code{\begingroup\eatcode}
+\setcounter{section}{1}
+\setcounter{figure}{4}
+\setcounter{table}{1}
+\setcounter{equation}{-1}
+% User definitions begin here
+\def\F{\mbox{\boldmath \(F\)}}
+\def\R{\mathbb R}
+\def\x{\mbox{\boldmath \(x\)}}
+\def\findex#1{\index{#1}}
+\def\sindex#1{\index{#1}}
+\def\Re{\R}
+\def\Comment#1{}
+\def\rr{\mbox{\boldmath \(r\)}}
+\def\half{{\textstyle{\frac{1}{2}}}}
+% User definitions end here
+% Disable other commands
+\def\index#1{\relax}
+% Beginning of Environment to be handled
+\begin{comment}
+\begin{figure}[htb] 
+{\footnotesize 
+\begin{verbatim} 
+[ember] ex2 -tao_method tao_nls -tao_monitor 
+iter = 0, Function value: -0.330579, Residual: 0.728961 
+iter = 1, Function value: -0.427745, Residual: 3.64242e-07 
+iter = 2, Function value: -0.427745, Residual: 2.03244e-12 
+ 
+[ember] mpirun -np 2 ex2 -tao_method tao_nls -tao_monitor 
+iter = 0, Function value: -0.330579, Residual: 0.728961 
+iter = 1, Function value: -0.427745, Residual: 3.63647e-07 
+iter = 2, Function value: -0.427745, Residual: 2.18415e-12 
+ 
+\end{verbatim}
+ 
+} 
+\nobreak 
+{Running a TAO Program} 
+\label{eq-foo} 
+\end{figure}
+ 
+   
+\end{comment}
+% End of Environment to be handled
+\end{document}

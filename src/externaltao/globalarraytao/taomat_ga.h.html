@@ -1,0 +1,131 @@
+<center><a href="taomat_ga.h">Actual source code: taomat_ga.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a>//File: taomat_ga.h
+<a name="line2">  2: </a><font color="#B22222">/**************************************************************</font>
+
+<a name="line4">  4: </a><font color="#B22222">Author: Limin Zhang, Ph.D.</font>
+<a name="line5">  5: </a><font color="#B22222">        Mathematics Department</font>
+<a name="line6">  6: </a><font color="#B22222">        Columbia Basin College</font>
+<a name="line7">  7: </a><font color="#B22222">        Pasco, WA 99301</font>
+<a name="line8">  8: </a><font color="#B22222">        Limin.Zhang@cbc2.org</font>
+
+<a name="line10"> 10: </a><font color="#B22222">Mentor: Jarek Naplocha, Ph.D.</font>
+<a name="line11"> 11: </a><font color="#B22222">        Environmental Molecular Science Laboratory</font>
+<a name="line12"> 12: </a><font color="#B22222">        Pacific Northwest National Laboratory</font>
+<a name="line13"> 13: </a><font color="#B22222">        Richland, WA 99352</font>
+
+<a name="line15"> 15: </a><font color="#B22222">Date: 7/11/2002</font>
+
+<a name="line17"> 17: </a><font color="#B22222">Purpose:</font>
+<a name="line18"> 18: </a><font color="#B22222">      to design and implement TaoMatrix using </font>
+<a name="line19"> 19: </a><font color="#B22222">      global arrays.</font>
+
+<a name="line21"> 21: </a><font color="#B22222">Revise history:</font>
+
+<a name="line23"> 23: </a><font color="#B22222">8/8/02 </font>
+<a name="line24"> 24: </a><font color="#B22222">        To clean Petsc function calls and marcos.</font>
+
+<a name="line26"> 26: </a><font color="#B22222">**************************************************************/</font>
+
+
+
+<a name="line30"> 30: </a><font color="#A020F0">#ifndef TAOGAMAT_H</font>
+<a name="line31"> 31: </a><strong><font color="#228B22">#define TAOGAMAT_H</font></strong>
+
+<a name="line33"> 33: </a><font color="#4169E1">typedef int GAMat;</font>
+
+<a name="line35"> 35: </a>//ga header files
+<a name="line36"> 36: </a><font color="#A020F0">#include </font><font color="#666666">"taovec_ga.h"</font><font color="#A020F0"> //to define tao/ga vector class</font>
+<a name="line37"> 37: </a><font color="#A020F0">#include </font><font color="#666666">"ga.h"</font><font color="#A020F0">        //to define GA lib functions</font>
+
+<a name="line39"> 39: </a>//tao header files
+<a name="line40"> 40: </a><font color="#A020F0">#include </font><font color="#666666">"taolinearsolver.h"</font><font color="#A020F0"></font>
+<a name="line41"> 41: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+<a name="line42"> 42: </a><font color="#A020F0">#include </font><font color="#666666">"taomat.h"</font><font color="#A020F0"></font>
+
+<a name="line44"> 44: </a>class TaoMatGa:public TaoMat
+<a name="line45"> 45: </a>{
+
+<a name="line47"> 47: </a><strong><font color="#FF0000">protected:</font></strong>
+
+<a name="line49"> 49: </a>  GAMat pm;
+<a name="line50"> 50: </a>  GAMat pm_pre;
+
+<a name="line52"> 52: </a><strong><font color="#FF0000">public:</font></strong>
+
+<a name="line54"> 54: </a>    TaoMatGa (GAMat M);
+<a name="line55"> 55: </a>   ~TaoMatGa ()
+<a name="line56"> 56: </a>  {
+<a name="line57"> 57: </a>    <font color="#4169E1">if</font> (this-&gt;pm)
+<a name="line58"> 58: </a>      GA_Destroy (this-&gt;pm);
+<a name="line59"> 59: </a>  }
+
+<a name="line61"> 61: </a>  inline GAMat GetMat ()
+<a name="line62"> 62: </a>  {
+<a name="line63"> 63: </a>    <font color="#4169E1">return</font> this-&gt;pm;
+<a name="line64"> 64: </a>  }
+
+<a name="line66"> 66: </a><font color="#B22222">/*The user of this function is responsible to free the memory of "this" </font>
+<a name="line67"> 67: </a><font color="#B22222">before resplace it with a different vector. i</font>
+<a name="line68"> 68: </a><font color="#B22222">Otherwise, there is a possible memory leak.</font>
+<a name="line69"> 69: </a><font color="#B22222">*/</font>
+<a name="line70"> 70: </a>  inline int replaceMat (GAMat M)
+<a name="line71"> 71: </a>  {
+<a name="line72"> 72: </a>    this-&gt;pm = M;
+<a name="line73"> 73: </a>    <font color="#4169E1">return</font> 0;
+<a name="line74"> 74: </a>  }
+
+<a name="line76"> 76: </a>  int <A href="../../../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A> (TaoVec *, TaoVec *, TaoTruth*);
+<a name="line77"> 77: </a>  int <A href="../../../docs/manualpages/vector/Clone.html#Clone">Clone</A> (TaoMat **);
+<a name="line78"> 78: </a>  int <A href="../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A> (TaoMat *);
+
+<a name="line80"> 80: </a>  int Fill (TaoScalar);
+<a name="line81"> 81: </a>  int Zero ();
+<a name="line82"> 82: </a>  int <A href="../../../docs/manualpages/matrix/GetDimensions.html#GetDimensions">GetDimensions</A> (int *, int *);
+
+<a name="line84"> 84: </a>  int <A href="../../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A> (TaoVec *, TaoVec *);
+<a name="line85"> 85: </a>  int MultiplyAdd (TaoVec *, TaoVec *, TaoVec *);
+<a name="line86"> 86: </a>  int <A href="../../../docs/manualpages/matrix/MultiplyTranspose.html#MultiplyTranspose">MultiplyTranspose</A> (TaoVec *, TaoVec *);
+<a name="line87"> 87: </a>  int MultiplyTransposeAdd (TaoVec *, TaoVec *, TaoVec *);
+
+<a name="line89"> 89: </a>  int <A href="../../../docs/manualpages/matrix/SetDiagonal.html#SetDiagonal">SetDiagonal</A> (TaoVec *);
+<a name="line90"> 90: </a>  int <A href="../../../docs/manualpages/matrix/AddDiagonal.html#AddDiagonal">AddDiagonal</A> (TaoVec *);
+<a name="line91"> 91: </a>  int <A href="../../../docs/manualpages/matrix/GetDiagonal.html#GetDiagonal">GetDiagonal</A> (TaoVec *);
+<a name="line92"> 92: </a>  int <A href="../../../docs/manualpages/matrix/ShiftDiagonal.html#ShiftDiagonal">ShiftDiagonal</A> (double);
+
+<a name="line94"> 94: </a>  int <A href="../../../docs/manualpages/lsolver/View.html#View">View</A> ();
+
+<a name="line96"> 96: </a>  <font color="#B22222">/* These routines not implemented */</font>
+<a name="line97"> 97: </a>  int <A href="../../../docs/manualpages/matrix/RowScale.html#RowScale">RowScale</A> (TaoVec *);
+<a name="line98"> 98: </a>  int <A href="../../../docs/manualpages/matrix/ColScale.html#ColScale">ColScale</A> (TaoVec *);
+
+<a name="line100">100: </a>  int <A href="../../../docs/manualpages/matrix/Presolve.html#Presolve">Presolve</A> ();
+<a name="line101">101: </a>  int <A href="../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> (TaoVec *, TaoVec *, TaoTruth *);
+
+<a name="line103">103: </a>  int <A href="../../../docs/manualpages/matrix/CreateReducedMatrix.html#CreateReducedMatrix">CreateReducedMatrix</A> (TaoIndexSet *, TaoIndexSet *, TaoMat **);
+<a name="line104">104: </a>  int <A href="../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A> (TaoMat *, TaoIndexSet *, TaoIndexSet *);
+
+<a name="line106">106: </a>  int <A href="../../../docs/manualpages/matrix/D_Fischer.html#D_Fischer">D_Fischer</A> (TaoVec *, TaoVec *, TaoVec *, TaoVec *,
+<a name="line107">107: </a>                 TaoVec *, TaoVec *, TaoVec *, TaoVec *);
+
+<a name="line109">109: </a>  int <A href="../../../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A> (double *);
+
+<a name="line111">111: </a>  friend class TaoGAApplication;
+
+<a name="line113">113: </a>};
+
+<a name="line115">115: </a><strong><font color="#4169E1">int <A href="../../../docs/manualpages/gaapp/TaoWrapGaMat.html#TaoWrapGaMat">TaoWrapGaMat</A> (GAMat, TaoMatGa **)</font></strong>;
+
+<a name="line117">117: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

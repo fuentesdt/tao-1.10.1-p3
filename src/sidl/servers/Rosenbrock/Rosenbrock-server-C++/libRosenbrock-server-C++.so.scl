@@ -1,0 +1,8 @@
+<?xml version="1.0"?> 
+<scl>
+  <library uri="@TAO_DIR@/lib/@PETSC_ARCH@/libRosenbrock-server-C++.so" 
+	scope="global" 
+	resolution="now" > 
+    <class name="Rosenbrock.RosenbrockModel" desc="ior/impl" />
+  </library>
+</scl>

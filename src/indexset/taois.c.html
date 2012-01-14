@@ -1,0 +1,199 @@
+<center><a href="taois.c">Actual source code: taois.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"taois.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><font color="#B22222">/*@C</font>
+<a name="line7">  7: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/TaoIndexSetDestroy.html#TaoIndexSetDestroy">TaoIndexSetDestroy</A> - Destroys the TaoIndexSet object.</font>
+
+<a name="line9">  9: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line10"> 10: </a><font color="#B22222">.  SS - the vector</font>
+
+<a name="line12"> 12: </a><font color="#B22222">   Level: beginner</font>
+<a name="line13"> 13: </a><font color="#B22222">@*/</font>
+<a name="line14"> 14: </a><strong><font color="#4169E1"><a name="TaoIndexSetDestroy"></a>int <A href="../../docs/manualpages/indexset/TaoIndexSetDestroy.html#TaoIndexSetDestroy">TaoIndexSetDestroy</A>( TaoIndexSet * SS)</font></strong>{
+<a name="line15"> 15: </a>  TaoFunctionBegin;
+<a name="line16"> 16: </a>  <font color="#4169E1">if</font> (SS) delete SS;
+<a name="line17"> 17: </a>  TaoFunctionReturn(0);
+<a name="line18"> 18: </a>}
+
+<a name="line22"> 22: </a><font color="#B22222">/*@C</font>
+<a name="line23"> 23: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/Duplicate.html#Duplicate">Duplicate</A> - Creates a new TaoIndexSet object with the same structure as this one.</font>
+
+<a name="line25"> 25: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line26"> 26: </a><font color="#B22222">.  SS -  new TaoIndexSet object</font>
+
+<a name="line28"> 28: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line29"> 29: </a><font color="#B22222">@*/</font>
+<a name="line30"> 30: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/Duplicate.html#Duplicate">Duplicate</A>(TaoIndexSet** SS){
+<a name="line31"> 31: </a>  TaoFunctionBegin;
+<a name="line32"> 32: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line33"> 33: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line34"> 34: </a>}
+
+
+<a name="line39"> 39: </a><font color="#B22222">/*@C</font>
+<a name="line40"> 40: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/IsSame.html#IsSame">IsSame</A> - Determines whether this index set is the same as another.</font>
+
+<a name="line42"> 42: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line43"> 43: </a><font color="#B22222">.  ss -  an index set</font>
+
+<a name="line45"> 45: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line46"> 46: </a><font color="#B22222">.  flg -  set to TAO_TRUE if the two index sets are the same and TAO_FALSE otherwise</font>
+
+<a name="line48"> 48: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line49"> 49: </a><font color="#B22222">@*/</font>
+<a name="line50"> 50: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/IsSame.html#IsSame">IsSame</A>(TaoIndexSet* ss, TaoTruth* flg){
+<a name="line51"> 51: </a>  TaoFunctionBegin;
+<a name="line52"> 52: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line53"> 53: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line54"> 54: </a>}
+
+<a name="line58"> 58: </a><font color="#B22222">/*@C</font>
+<a name="line59"> 59: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/ComplementOf.html#ComplementOf">ComplementOf</A> - Let this index set be the complement of the input index set.</font>
+
+<a name="line61"> 61: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line62"> 62: </a><font color="#B22222">.  ss -  an index set</font>
+
+<a name="line64"> 64: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line65"> 65: </a><font color="#B22222">@*/</font>
+<a name="line66"> 66: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/ComplementOf.html#ComplementOf">ComplementOf</A>(TaoIndexSet* ss){
+<a name="line67"> 67: </a>  TaoFunctionBegin;
+<a name="line68"> 68: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line69"> 69: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line70"> 70: </a>}
+
+<a name="line74"> 74: </a><font color="#B22222">/*@C</font>
+<a name="line75"> 75: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/IntersectionOf.html#IntersectionOf">IntersectionOf</A> - Let this index set be the intersection of the given two index sets.</font>
+
+<a name="line77"> 77: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line78"> 78: </a><font color="#B22222">+  ss1 -  an index set</font>
+<a name="line79"> 79: </a><font color="#B22222">-  ss2 -  an index set</font>
+
+<a name="line81"> 81: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line82"> 82: </a><font color="#B22222">@*/</font>
+<a name="line83"> 83: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/IntersectionOf.html#IntersectionOf">IntersectionOf</A>(TaoIndexSet* ss1, TaoIndexSet* ss2){
+<a name="line84"> 84: </a>  TaoFunctionBegin;
+<a name="line85"> 85: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line86"> 86: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line87"> 87: </a>}
+
+<a name="line91"> 91: </a><font color="#B22222">/*@C</font>
+<a name="line92"> 92: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/UnionOf.html#UnionOf">UnionOf</A> - Let this index set be the union of the given two index sets.</font>
+
+<a name="line94"> 94: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line95"> 95: </a><font color="#B22222">+  ss1 -  an index set</font>
+<a name="line96"> 96: </a><font color="#B22222">-  ss2 -  an index set</font>
+
+<a name="line98"> 98: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line99"> 99: </a><font color="#B22222">@*/</font>
+<a name="line100">100: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/UnionOf.html#UnionOf">UnionOf</A>(TaoIndexSet* ss1, TaoIndexSet* ss2){
+<a name="line101">101: </a>  TaoFunctionBegin;
+<a name="line102">102: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line103">103: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line104">104: </a>}
+
+<a name="line108">108: </a><font color="#B22222">/*@C</font>
+<a name="line109">109: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/WhichEqual.html#WhichEqual">WhichEqual</A> - Describes which elements of the vectors equal one another.</font>
+
+<a name="line111">111: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line112">112: </a><font color="#B22222">.  vv1, vv2 -  the vectors</font>
+
+<a name="line114">114: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line115">115: </a><font color="#B22222">@*/</font>
+<a name="line116">116: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/WhichEqual.html#WhichEqual">WhichEqual</A>(TaoVec* vv1,TaoVec* vv2){
+<a name="line117">117: </a>  TaoFunctionBegin;
+<a name="line118">118: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line119">119: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line120">120: </a>}
+
+<a name="line122">122: </a>int TaoIndexSet::WhichLessThan(TaoVec* tv1,TaoVec* tv2){
+<a name="line123">123: </a>  TaoFunctionBegin;
+<a name="line124">124: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line125">125: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line126">126: </a>}
+
+<a name="line128">128: </a>int TaoIndexSet::WhichGreaterThan(TaoVec* tv1,TaoVec* tv2){
+<a name="line129">129: </a>  TaoFunctionBegin;
+<a name="line130">130: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line131">131: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line132">132: </a>}
+
+<a name="line136">136: </a><font color="#B22222">/*@C</font>
+<a name="line137">137: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A> - Describes which elements of vector tv are greater than</font>
+<a name="line138">138: </a><font color="#B22222">   the corresponding element of vector low and less than corresponding element</font>
+<a name="line139">139: </a><font color="#B22222">   of vector high.</font>
+
+<a name="line141">141: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line142">142: </a><font color="#B22222">+  xxll -  the vector representing lower bounds on the vector tv</font>
+<a name="line143">143: </a><font color="#B22222">.  vv - the TAO vector</font>
+<a name="line144">144: </a><font color="#B22222">-  xxuu - the vector of upper bounds</font>
+
+<a name="line146">146: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line147">147: </a><font color="#B22222">@*/</font>
+<a name="line148">148: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(TaoVec* xxll,TaoVec* vv ,TaoVec* xxuu){
+<a name="line149">149: </a>  TaoFunctionBegin;
+<a name="line150">150: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line151">151: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line152">152: </a>}
+
+<a name="line156">156: </a><font color="#B22222">/*@C</font>
+<a name="line157">157: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/WhichBetweenOrEqual.html#WhichBetweenOrEqual">WhichBetweenOrEqual</A> - Describes which elements of vector are in the closed</font>
+<a name="line158">158: </a><font color="#B22222">   interface defined by the lower and upper bounds.</font>
+
+<a name="line160">160: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line161">161: </a><font color="#B22222">+  xxll -  the vector representing lower bounds on the vector tv</font>
+<a name="line162">162: </a><font color="#B22222">.  vv - the TAO vector</font>
+<a name="line163">163: </a><font color="#B22222">-  xxuu - the vector of upper bounds</font>
+
+<a name="line165">165: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line166">166: </a><font color="#B22222">@*/</font>
+<a name="line167">167: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/WhichBetweenOrEqual.html#WhichBetweenOrEqual">WhichBetweenOrEqual</A>(TaoVec *xxll, TaoVec *vv, TaoVec *xxuu)
+<a name="line168">168: </a>{
+<a name="line169">169: </a>  TaoFunctionBegin;
+<a name="line170">170: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line171">171: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line172">172: </a>}
+
+<a name="line176">176: </a><font color="#B22222">/*@C</font>
+<a name="line177">177: </a><font color="#B22222">   <A href="../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A> - Describes which elements of vector tv are greater than</font>
+<a name="line178">178: </a><font color="#B22222">   the corresponding element of vector low and less than corresponding element</font>
+<a name="line179">179: </a><font color="#B22222">   of vector high.</font>
+
+<a name="line181">181: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line182">182: </a><font color="#B22222">.  nn - the number of size of the index set.</font>
+
+<a name="line184">184: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line185">185: </a><font color="#B22222">@*/</font>
+<a name="line186">186: </a>int TaoIndexSet::<A href="../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(TaoInt *nn){;
+<a name="line187">187: </a>  TaoFunctionBegin;
+<a name="line188">188: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line189">189: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line190">190: </a>}
+
+
+<a name="line195">195: </a><font color="#B22222">/*@C</font>
+<a name="line196">196: </a><font color="#B22222">  <A href="../../docs/manualpages/lsolver/View.html#View">View</A> - Views the contents of the index set.</font>
+<a name="line197">197: </a><font color="#B22222">  </font>
+<a name="line198">198: </a><font color="#B22222">  Input Parameters: none</font>
+<a name="line199">199: </a><font color="#B22222">  </font>
+<a name="line200">200: </a><font color="#B22222">  Level: intermediate</font>
+<a name="line201">201: </a><font color="#B22222">@*/</font>
+<a name="line202">202: </a>int TaoIndexSet::<A href="../../docs/manualpages/lsolver/View.html#View">View</A>(){
+<a name="line203">203: </a>  TaoFunctionBegin;
+<a name="line204">204: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line205">205: </a>  <font color="#B22222">/* TaoFunctionReturn(1); */</font>
+<a name="line206">206: </a>}
+
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,8 @@
+<?xml version="1.0"?> 
+<scl>
+  <library uri="@TAO_DIR@/lib/@PETSC_ARCH@/@LIBNAME@" 
+	scope="global" 
+	resolution="now" > 
+    <class name="@CLASSNAME@" desc="ior/impl" />
+  </library>
+</scl>

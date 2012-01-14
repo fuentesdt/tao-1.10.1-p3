@@ -1,0 +1,96 @@
+<center><a href="taoapp_petsc.h">Actual source code: taoapp_petsc.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:14+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOPETSCAPP_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOPETSCAPP_H</font></strong>
+
+
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"taoappobject.h"</font><font color="#A020F0"></font>
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"../../vector/taovec_petsc.h"</font><font color="#A020F0"></font>
+<a name="line7">  7: </a><font color="#A020F0">#include </font><font color="#666666">"../../matrix/taomat_petsc.h"</font><font color="#A020F0"></font>
+<a name="line8">  8: </a><font color="#A020F0">#include </font><font color="#666666">"../../linearsolver/taolinearsolver_petsc.h"</font><font color="#A020F0"></font>
+<a name="line9">  9: </a><font color="#A020F0">#include </font><font color="#666666">"petscksp.h"</font><font color="#A020F0"></font>
+
+<a name="line11"> 11: </a>//#include <font color="#666666">"taoapp.h"</font>
+
+<a name="line13"> 13: </a><font color="#4169E1">typedef struct _p_TAO_SOLVER* TAO_SOLVER;</font>
+<a name="line14"> 14: </a><font color="#4169E1">typedef struct _p_TAOAPPLICATION* TAO_APPLICATION;</font>
+
+
+<a name="line17"> 17: </a>class TaoPetscApplication: public TaoApplication{
+
+<a name="line19"> 19: </a><strong><font color="#FF0000"> protected:</font></strong>
+<a name="line20"> 20: </a>  MPI_Comm comm;
+
+<a name="line22"> 22: </a><strong><font color="#FF0000"> public:</font></strong>
+<a name="line23"> 23: </a>  TaoPetscApplication(MPI_Comm comm);
+<a name="line24"> 24: </a>  TaoPetscApplication(){};
+<a name="line25"> 25: </a>  int Setup();
+
+<a name="line27"> 27: </a>  ~TaoPetscApplication();
+<a name="line28"> 28: </a>  int TakeDown();
+
+<a name="line30"> 30: </a>  TAO_SOLVER tao;
+<a name="line31"> 31: </a>  TAO_APPLICATION papp;
+<a name="line32"> 32: </a>  int GetComm(MPI_Comm *comm);
+<a name="line33"> 33: </a>  int <A href="../../../../docs/manualpages/taoapp/Monitor.html#Monitor">Monitor</A>();
+<a name="line34"> 34: </a>  int <A href="../../../../docs/manualpages/taoapp/Monitor2.html#Monitor2">Monitor2</A>(TaoVec *xx, TaoVec *gl, TaoVec *dx,TaoTruth *flag);
+
+<a name="line36"> 36: </a>  <font color="#B22222">/* Function Evaluation */</font>
+<a name="line37"> 37: </a>  int <A href="../../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *x);
+
+<a name="line39"> 39: </a>  int <A href="../../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **xx);
+<a name="line40"> 40: </a>  int <A href="../../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(TaoVec *xx, double *ff);
+
+<a name="line42"> 42: </a>  <font color="#B22222">/* Gradient Evaluation */</font>
+<a name="line43"> 43: </a>  int <A href="../../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(TaoVec *xx, TaoVec *gg);
+
+<a name="line45"> 45: </a>  <font color="#B22222">/* Function and Gradient */</font>
+<a name="line46"> 46: </a>  int <A href="../../../../docs/manualpages/taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A>(TaoVec *xx, double *ff, TaoVec *gg);
+
+
+<a name="line49"> 49: </a>  <font color="#B22222">/* Hessian Evaluation */</font>
+<a name="line50"> 50: </a>  int <A href="../../../../docs/manualpages/taoapp/GetHessianMatrix.html#GetHessianMatrix">GetHessianMatrix</A>(TaoMat **HH);
+<a name="line51"> 51: </a>  int <A href="../../../../docs/manualpages/taoapp/EvaluateHessian.html#EvaluateHessian">EvaluateHessian</A>(TaoVec *xx, TaoMat *HH);
+
+<a name="line53"> 53: </a>  int <A href="../../../../docs/manualpages/taoapp/HessianSolve.html#HessianSolve">HessianSolve</A>(TaoVec *vv, TaoVec *ww, TaoTruth *flag);
+
+<a name="line55"> 55: </a>  <font color="#B22222">/* Set Variable Bounds */</font>
+<a name="line56"> 56: </a>  int <A href="../../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *, TaoVec *);
+
+<a name="line58"> 58: </a>  int <A href="../../../../docs/manualpages/taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A>(TaoMat *, int, TaoLinearSolver **);
+
+<a name="line60"> 60: </a>  <font color="#B22222">/* Routines below this are very preliminary */</font>
+<a name="line61"> 61: </a>  int <A href="../../../../docs/manualpages/taoapp/GetJacobianMatrix.html#GetJacobianMatrix">GetJacobianMatrix</A>(TaoMat **JJ);
+<a name="line62"> 62: </a>  int <A href="../../../../docs/manualpages/taoapp/EvaluateJacobian.html#EvaluateJacobian">EvaluateJacobian</A>(TaoVec *xx, TaoMat *JJ);
+
+<a name="line64"> 64: </a>  int GetConstraintVector(TaoVec** rr);
+<a name="line65"> 65: </a>  int <A href="../../../../docs/manualpages/taoapp/EvaluateConstraints.html#EvaluateConstraints">EvaluateConstraints</A>(TaoVec *xx, TaoVec *RR);
+<a name="line66"> 66: </a> 
+<a name="line67"> 67: </a>  virtual int GetInequalityConstraints(TaoVec**, TaoMat **, TaoVec **);
+
+<a name="line69"> 69: </a>  // Its really stupid to have these public; fix it later
+<a name="line70"> 70: </a>  TaoVecPetsc *taox;    <font color="#B22222">/* The Variable Vector */</font>
+<a name="line71"> 71: </a>  TaoMatPetsc *taoh;    <font color="#B22222">/* The Hessian Matrix */</font>
+<a name="line72"> 72: </a>  TaoMatPetsc *taoj;    <font color="#B22222">/* The Jacobian Matrix */</font>
+<a name="line73"> 73: </a>  TaoVecPetsc *taofv;
+<a name="line74"> 74: </a>  TaoVecPetsc *taofvll;
+<a name="line75"> 75: </a>  TaoVecPetsc *taofvuu;
+<a name="line76"> 76: </a>  TaoMatPetsc *taoAA;
+<a name="line77"> 77: </a>  TaoLinearSolverPetsc *ksptmp;
+<a name="line78"> 78: </a>};
+
+<a name="line80"> 80: </a><font color="#A020F0">#endif</font>
+
+
+</pre>
+</body>
+
+</html>

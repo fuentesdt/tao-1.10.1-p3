@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+#   This script sends mail to a list.
+#
+#   Create a file message with your message
+#   Create a file list_mail with the email addresses.
+#   Change the string "subject"
+#
+#   A cc can be done with the command line option -cc
+#   Read the man for mhmail for more information.
+
+for arg in `cat list_mail` 
+do
+mhmail $arg -subject "subject" < message
+done
+
+

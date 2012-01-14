@@ -1,0 +1,49 @@
+<center><a href="submatfree.h">Actual source code: submatfree.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"private/matimpl.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"private/vecimpl.h"</font><font color="#A020F0"></font>
+
+<a name="line4">  4: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font>{
+
+<a name="line6">  6: </a>  Mat A;
+<a name="line7">  7: </a>  Vec VC; <font color="#B22222">/* Work vector in the column space */</font>
+<a name="line8">  8: </a>  Vec VR; <font color="#B22222">/* Work vector in the row space */</font>
+<a name="line9">  9: </a>  //  IS Row, Col;
+<a name="line10"> 10: </a>  IS RowComplement, ColComplement;
+
+<a name="line12"> 12: </a>} _p_MatSubMatFreeCtx;
+
+<a name="line14"> 14: </a><font color="#4169E1">typedef  _p_MatSubMatFreeCtx* MatSubMatFreeCtx;</font>
+
+<a name="line16"> 16: </a><strong><font color="#4169E1">int <A href="../../../docs/manualpages/ptaopages/MatCreateSubMatrixFree.html#MatCreateSubMatrixFree">MatCreateSubMatrixFree</A>(Mat,IS,IS,Mat*)</font></strong>;
+<a name="line17"> 17: </a><strong><font color="#4169E1">int MatSMFResetRowColumn(Mat,IS,IS)</font></strong>;
+<a name="line18"> 18: </a><strong><font color="#4169E1">int MatMult_SMF(Mat,Vec,Vec)</font></strong>;
+<a name="line19"> 19: </a><strong><font color="#4169E1">int MatMultTranspose_SMF(Mat,Vec,Vec)</font></strong>;
+<a name="line20"> 20: </a><strong><font color="#4169E1">int MatDiagonalSet_SMF(Mat,Vec,InsertMode)</font></strong>;
+<a name="line21"> 21: </a><strong><font color="#4169E1">int MatDestroy_SMF(Mat)</font></strong>;
+<a name="line22"> 22: </a><strong><font color="#4169E1">int MatView_SMF(Mat,PetscViewer)</font></strong>;
+<a name="line23"> 23: </a><strong><font color="#4169E1">int MatShift_SMF(Mat,PetscScalar)</font></strong>;
+<a name="line24"> 24: </a><strong><font color="#4169E1">int MatDuplicate_SMF(Mat,MatDuplicateOption,Mat*)</font></strong>;
+<a name="line25"> 25: </a><strong><font color="#4169E1">int MatEqual_SMF(Mat,Mat,PetscTruth*)</font></strong>;
+<a name="line26"> 26: </a><strong><font color="#4169E1">int MatScale_SMF(Mat,PetscScalar)</font></strong>;
+<a name="line27"> 27: </a><strong><font color="#4169E1">int MatGetSubMatrix_SMF(Mat,IS,IS,MatReuse,Mat *)</font></strong>;
+<a name="line28"> 28: </a><strong><font color="#4169E1">int MatGetSubMatrices_SMF(Mat,int,IS*,IS*,MatReuse,Mat**)</font></strong>;
+<a name="line29"> 29: </a><strong><font color="#4169E1">int MatTranspose_SMF(Mat,Mat*)</font></strong>;
+<a name="line30"> 30: </a><strong><font color="#4169E1">int MatGetDiagonal_SMF(Mat,Vec)</font></strong>;
+<a name="line31"> 31: </a><strong><font color="#4169E1">int MatGetColumnVector_SMF(Mat,Vec, int)</font></strong>;
+<a name="line32"> 32: </a><strong><font color="#4169E1">int MatNorm_SMF(Mat,NormType,PetscReal *)</font></strong>;
+<a name="line33"> 33: </a><strong><font color="#4169E1">int MatGetRowMax_SMF(Mat, Vec)</font></strong>;
+<a name="line34"> 34: </a><strong><font color="#4169E1">int MatGetRow_SMF(Mat,int,int *,const int **,const PetscScalar **)</font></strong>;
+<a name="line35"> 35: </a><strong><font color="#4169E1">int MatRestoreRow_SMF(Mat,int,int *,const int **,const PetscScalar **)</font></strong>;
+</pre>
+</body>
+
+</html>

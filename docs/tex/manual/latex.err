@@ -1,0 +1,82 @@
+Unknown documentstyle or package dvipdfm; provide
+dvipdfm.def to define the commands
+Unknown documentstyle or package openright; provide
+openright.def to define the commands
+Unknown documentstyle or package amssymb; provide
+amssymb.def to define the commands
+Unknown documentstyle or package moreverb; provide
+moreverb.def to define the commands
+Unknown documentstyle or package float; provide
+float.def to define the commands
+Unknown documentstyle or package afterpage; provide
+afterpage.def to define the commands
+Unknown LaTeX command url, abstract.tex line 25
+No DVI file created for img0.tex
+citation to petsc has no hyperlink
+citation to petsc-user-ref has no hyperlink
+citation to petsc-web-page has no hyperlink
+citation to using-mpi has no hyperlink
+citation to more-toraldo has no hyperlink
+Unknown LaTeX command epsilon, part0.tex line 171
+citation to bs-user-ref has no hyperlink
+Unknown LaTeX command url, part1.tex line 13
+Unknown LaTeX command url, part1.tex line 63
+Unknown LaTeX command url, part1.tex line 65
+Latex command latex img7.tex returned nonzero
+No DVI file created for img7.tex
+Unknown LaTeX command mathbb, part1.tex line 78
+Unknown LaTeX command to, part1.tex line 78
+Unknown LaTeX command mathbb, part1.tex line 78
+Latex command latex img8.tex returned nonzero
+No DVI file created for img8.tex
+Unknown LaTeX command afterpage, part1.tex line 88
+Unknown LaTeX command footnotesize, part1.tex line 90
+Unknown LaTeX command verbatiminput, part1.tex line 90
+citation to petsc-web-page has no hyperlink
+citation to petsc-user-ref has no hyperlink
+citation to MPI-final has no hyperlink
+citation to mpich-web-page has no hyperlink
+No DVI file created for img9.tex
+No DVI file created for img10.tex
+No DVI file created for img11.tex
+Unknown LaTeX command footnotesize, part1.tex line 433
+Unknown LaTeX command footnotesize, part1.tex line 488
+No DVI file created for img12.tex
+Unknown LaTeX command subitem, part1.tex line 563
+citation to nelder.mead:simplex has no hyperlink
+citation to Gilbert-Lemarachal has no hyperlink
+citation to Gilbert-Lemarachal has no hyperlink
+citation to Gilbert-Lemarachal has no hyperlink
+citation to NW99 has no hyperlink
+citation to CGT has no hyperlink
+citation to CGT has no hyperlink
+citation to lin_c3 has no hyperlink
+citation to more-toraldo has no hyperlink
+Latex command latex img109.tex returned nonzero
+No DVI file created for img109.tex
+citation to cottle:nonlinear has no hyperlink
+citation to karush:minima has no hyperlink
+citation to  kuhn.tucker:nonlinear has no hyperlink
+citation to ferris.pang:engineering has no hyperlink
+citation to nash:equilibrium has no hyperlink
+citation to huang.pang:option has no hyperlink
+citation to munson.facchinei.ea:semismooth has no hyperlink
+citation to  deluca.facchinei.ea:semismooth has no hyperlink
+citation to  
+facchinei.fischer.ea:semismooth has no hyperlink
+citation to fischer:special has no hyperlink
+Latex command latex img123.tex returned nonzero
+No DVI file created for img123.tex
+citation to mifflin:semismooth has no hyperlink
+citation to  qi:convergence has no hyperlink
+citation to  qi.sun:nonsmooth has no hyperlink
+citation to qi.sun:nonsmooth has no hyperlink
+citation to armijo:minimization has no hyperlink
+citation to grippo.lampariello.ea:nonmonotone has no hyperlink
+citation to using-mpi has no hyperlink
+Unknown LaTeX command footnotesize, taoapplication.tex line 671
+Unknown LaTeX command footnotesize, taoapplication.tex line 842
+No DVI file created for img149.tex
+Unknown LaTeX command url, manual.bbl line 11
+Unknown LaTeX command url, manual.bbl line 70
+document does not match enumerate (started at line 61)

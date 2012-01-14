@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>MatCreateSubMatrixFree</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="MatCreateSubMatrixFree"><H1>MatCreateSubMatrixFree</H1></A>
+Creates a reduced matrix by masking a full matrix. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "mat.h"  
+int MatCreateSubMatrixFree(Mat mat,IS RowMask, IS ColMask, Mat *J)
+</PRE>
+Collective on matrix
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>mat </B></TD><TD>- matrix of arbitrary type
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>RowMask </B></TD><TD>- the rows that will be zero
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ColMask </B></TD><TD>- the columns that will be zero
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Output Parameters</FONT></H2>
+<DT><B>J </B> -New matrix
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Notes</FONT></H2>
+The user provides the input data and is responsible for destroying
+this data after matrix J has been destroyed.
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ MatCreate()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/matrix/submatfree.c.html#MatCreateSubMatrixFree">src/petsctao/matrix/submatfree.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

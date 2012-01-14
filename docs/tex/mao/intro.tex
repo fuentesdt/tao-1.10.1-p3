@@ -1,0 +1,128 @@
+\title{Scalable Algorithms in Optimization: Computational Experiments}
+
+\author{%
+% \thanks{Job Title, Department, Address, and AIAA Member Grade.}
+Steven J. Benson\thanks{Assistant Scientist, Mathematics and Computer Science Division, 
+benson@mcs.anl.gov, AIAA Member.},
+\ Lois McInnes\thanks{Software Engineer,  Mathematics and Computer Science Division, 
+mcinnes@mcs.anl.gov.},
+\ Jorge J. Mor\'e\thanks{Senior Scientist,  Mathematics and Computer Science Division, 
+more@mcs.anl.gov.},
+\ and Jason Sarich\thanks{Predoctoral Appointee,  Mathematics and Computer Science Division, 
+sarich@mcs.anl.gov.} \\
+{\normalsize\itshape Argonne National Laboratory, Argonne, IL 60439}
+}%
+
+% \begin{center}
+% \textbf{Draft: \today}  
+% \end{center}
+ % Data used by 'handcarry' option
+\AIAApapernumber{2004-21668?}
+\AIAAconference{MAO,August 30 - September 1, Albany, NY}
+\AIAAcopyright{\AIAAcopyrightD{2004}}
+
+\maketitle
+
+\begin{abstract}
+We survey techniques in the Toolkit for Advanced
+Optimization (\tao) for developing scalable algorithms for
+mesh-based optimization problems on parallel
+architectures.  We discuss the distribution of the mesh, the
+computation of the gradient and the Hessian matrix, and the
+use of preconditioners.  We show that these techniques,
+together with mesh sequencing, can produce results that
+scale with mesh size.
+\end{abstract}
+
+%\printglossary
+
+\section{Introduction}
+
+We describe strategies in the Toolkit for Advanced
+Optimization (\tao) \cite{TAO-manual,tao-home} for the
+solution of optimization problems of the form
+\begin{equation}
+  \label{eq:opt}
+  \min \left \{ f (x) : x_l \le x \le x_u \right \} ,
+\end{equation}
+where $ f : \R^n \mapsto \R $ is twice continuously differentiable
+and the vectors $ x_l $ and $ x_u $ are bounds on the
+variables $x$.
+\tao\ focuses on large-scale problems in which the solution of
+\Ref{eq:opt} requires high-performance (parallel)
+advanced architectures, that is, problems where
+time or memory requirements make the use of a parallel
+architecture mandatory.
+
+Problems of the form \Ref{eq:opt} often
+arise as discretization of
+infinite-dimensional problems of the form
+\begin{equation}
+  \label{eq:opt-mesh}
+  \min \left \{ f (v) : v_l \le v \le v_u \right \} ,
+\end{equation}
+where $ v : \R^p \mapsto \R^q $ is a function defined on
+some domain $ \cD \subset \R^p $, and $ v_l $ and $ v_u $
+are, respectively, the lower and upper (pointwise) bounds on
+$v$.  In these cases, discretization of the domain $ \cD $
+leads to a large optimization problem of the form
+\Ref{eq:opt} where the variables $ x $ represent the values
+of $ v $ at the grid points of the discretization of $ \cD
+$.  If there are $m$ grid points, then the number
+of variables $ n = mq $ in \Ref{eq:opt}.  We use the term
+\textit{mesh-based} optimization problem to refer to 
+problems of the form \Ref{eq:opt-mesh} that require the
+determination of a function $v$ on a mesh.
+
+We explore \textit{scalable} algorithms for mesh-based optimization
+problems in the sense that the number of operations required
+to solve the problem grows linearly with the number of
+variables.  We also require that the computing time grow
+linearly with the number of variables; this is an essential
+requirement from a computational viewpoint.
+
+Scalable algorithms for mesh-based problems
+generally require mesh-invariance in the sense that the
+number of iterations is independent of the mesh spacing.  In
+theory, mesh-invariance can be obtained with Newton's method
+\cite{ALD00}, although in practice numerous
+obstacles arise.  
+
+Developing scalable algorithms in a single-processor
+environment can be difficult, but these difficulties are
+significantly magnified in a parallel processor
+environment because the overhead of communication between
+processors must be balanced with other performance
+considerations.  Relatively little optimization software
+exists for parallel environments, so practitioners are left
+to assemble their own methods. We show that \tao\
+can be used to obtain scalable performance on
+parallel architectures.
+
+The focus of this paper is on recent computational experiments
+with the optimization algorithms in \tao\ for mesh-based
+problems on parallel architectures.  Section
+\ref{sec:tao} reviews the Newton method in \tao\ and some of
+the tools used in the solution of mesh-based problems.  We
+discuss the distribution of the mesh, the computation of the
+gradient and the Hessian matrix, and the use of appropriate
+preconditioners.  The tools for the distribution of the mesh
+and for the preconditioners are provided by PETSc
+\cite{PETSc-manual,petsc-home}, whereas the
+gradient is computed with ADIC \cite{ADIC,adic-home}.
+These tools reduce many of the
+barriers associated with solving these problems on
+parallel architectures.
+
+Section \ref{sec:comp} presents computational experiments with
+the \tao\ algorithms. We use an obstacle problem
+for a minimal surface problem to illustrate the performance
+behavior. Our results show that the use of mesh sequencing
+overcomes convergence difficulties from poor initial guesses
+and that we obtain scalable performance on parallel architectures.
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "mao"
+%%% End: 

@@ -1,0 +1,135 @@
+<center><a href="daapp_solve.c">Actual source code: daapp_solve.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"taodaapplication.h"</font><font color="#A020F0">   </font><font color="#B22222">/*I  "taodaapplication.h"  I*/</font><font color="#A020F0"></font>
+<a name="line2">  2: </a>//#include <font color="#666666">"taoapp.h"</font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tao.h"</font><font color="#A020F0"></font>
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"petsc.h"</font><font color="#A020F0"></font>
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/application/petscapp/tao_app_impl.h"</font><font color="#A020F0"></font>
+<a name="line6">  6: </a><font color="#A020F0">#include </font><font color="#666666">"daapp_impl.h"</font><font color="#A020F0"></font>
+
+<a name="line8">  8: </a>static int Tao_DA_Solve=0;
+<a name="line10"> 10: </a><strong><font color="#4169E1">int TaoAppDAApp(TAO_APPLICATION, DA_APPLICATION *)</font></strong>;
+
+<a name="line14"> 14: </a><font color="#B22222">/*@</font>
+<a name="line15"> 15: </a><font color="#B22222">  <A href="../../../../docs/manualpages/daapp/TaoDAAppSolve.html#TaoDAAppSolve">TaoDAAppSolve</A> - <A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> the PETSC DA application.</font>
+
+<a name="line17"> 17: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line18"> 18: </a><font color="#B22222">.  daapplication - the TAO DAApplication structure</font>
+
+<a name="line20"> 20: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line22"> 22: </a><font color="#B22222">.keywords: Application, DA, <A href="../../../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A></font>
+<a name="line23"> 23: </a><font color="#B22222">@*/</font>
+<a name="line24"> 24: </a><strong><font color="#4169E1"><a name="TaoDAAppSolve"></a>int <A href="../../../../docs/manualpages/daapp/TaoDAAppSolve.html#TaoDAAppSolve">TaoDAAppSolve</A>(TAO_APPLICATION daapplication, TAO_SOLVER tao)</font></strong>{
+<a name="line25"> 25: </a>  int info;
+<a name="line26"> 26: </a>  PetscInt i,j,iter;
+<a name="line27"> 27: </a>  PetscInt mx,my,mz;
+<a name="line28"> 28: </a>  double fval,residual;
+<a name="line29"> 29: </a>  TaoTerminateReason reason;
+<a name="line30"> 30: </a>  DA_APPLICATION daapp;
+
+
+<a name="line35"> 35: </a>  info=TaoAppDAApp(daapplication,&amp;daapp); CHKERRQ(info);
+
+<a name="line37"> 37: </a>  <font color="#4169E1">if</font> (Tao_DA_Solve==0){
+<a name="line38"> 38: </a>    info=PetscLogEventRegister(<font color="#666666">"TaoSolveDAApp"</font>,DAAPP_COOKIE,&amp;Tao_DA_Solve); CHKERRQ(info);
+<a name="line39"> 39: </a>  }
+
+<a name="line41"> 41: </a>  info = PetscLogEventBegin(Tao_DA_Solve,tao,daapp,0,0);CHKERRQ(info);
+<a name="line42"> 42: </a>  <font color="#4169E1">for</font> (i=0;i&lt;daapp-&gt;nda; i++){
+<a name="line43"> 43: </a>    
+<a name="line44"> 44: </a>    
+<a name="line45"> 45: </a>    info=<A href="../../../../docs/manualpages/ptaopages/TaoAppResetCounters.html#TaoAppResetCounters">TaoAppResetCounters</A>(daapplication);CHKERRQ(info);
+<a name="line46"> 46: </a>    info = DAGetInfo(daapp-&gt;grid[i].da,PETSC_NULL,&amp;mx,&amp;my,&amp;mz,PETSC_NULL,
+<a name="line47"> 47: </a>                     PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+<a name="line48"> 48: </a>                     PETSC_NULL,PETSC_NULL);CHKERRQ(info);
+
+<a name="line50"> 50: </a>    info = PetscInfo2(daapp-&gt;grid[i].da,<font color="#666666">"Level %d of %d in TAO_DA_APPLICATION object.\n"</font>,i,daapp-&gt;nda); CHKERRQ(info);
+<a name="line51"> 51: </a>    info = PetscInfo3(daapp-&gt;grid[i].da,<font color="#666666">"Global dimensions of DA:  mx=%d, my=%d, mz=%d .\n"</font>,mx,my,mz); CHKERRQ(info);
+
+<a name="line53"> 53: </a>    daapp-&gt;currentlevel=i;
+<a name="line55"> 55: </a>    info=<A href="../../../../docs/manualpages/ptaopages/TaoAppSetColoring.html#TaoAppSetColoring">TaoAppSetColoring</A>(daapplication, daapp-&gt;grid[i].coloring);CHKERRQ(info);
+
+<a name="line57"> 57: </a>    <font color="#4169E1">if</font> (i&gt;0){
+<a name="line58"> 58: </a>      info = <A href="../../../../docs/manualpages/solver/TaoSetDown.html#TaoSetDown">TaoSetDown</A>(tao); CHKERRQ(info);
+<a name="line59"> 59: </a>      info = MatMult(daapp-&gt;grid[i].Interpolate,daapp-&gt;grid[i-1].X,daapp-&gt;grid[i].X); CHKERRQ(info);
+<a name="line60"> 60: </a>    } 
+
+<a name="line62"> 62: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(daapplication,daapp-&gt;grid[i].X);CHKERRQ(info);
+
+<a name="line64"> 64: </a>    <font color="#4169E1">if</font> (daapp-&gt;grid[i].H){
+<a name="line65"> 65: </a>      <font color="#4169E1">if</font> (!daapplication-&gt;ksp) {
+<a name="line66"> 66: </a>        MPI_Comm comm;
+<a name="line67"> 67: </a>        info = PetscObjectGetComm((PetscObject)daapp-&gt;grid[i].H,&amp;comm); CHKERRQ(info);
+<a name="line68"> 68: </a>        info = KSPCreate(comm,&amp;daapp-&gt;grid[i].ksp); CHKERRQ(info);
+<a name="line69"> 69: </a>        info = KSPSetFromOptions(daapp-&gt;grid[i].ksp); CHKERRQ(info);
+<a name="line70"> 70: </a>        daapplication-&gt;ksp = daapp-&gt;grid[i].ksp;
+<a name="line71"> 71: </a>        <font color="#B22222">/*</font>
+<a name="line72"> 72: </a><font color="#B22222">        if (tao-&gt;ksp) {</font>
+<a name="line73"> 73: </a><font color="#B22222">          tao-&gt;ksp-&gt;SetKSP(daapp-&gt;grid[i].ksp);</font>
+<a name="line74"> 74: </a><font color="#B22222">        }</font>
+<a name="line75"> 75: </a><font color="#B22222">        info = <A href="../../../../docs/manualpages/ptaopages/TaoWrapKSP.html#TaoWrapKSP">TaoWrapKSP</A>(daapp-&gt;grid[i].ksp,&amp;tao-&gt;ksp); CHKERRQ(info);</font>
+<a name="line76"> 76: </a><font color="#B22222">        */</font>
+<a name="line77"> 77: </a>      }
+<a name="line78"> 78: </a>      <font color="#4169E1">if</font> (daapp-&gt;IsComplementarity==PETSC_FALSE){
+<a name="line79"> 79: </a>        info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(daapplication,daapp-&gt;grid[i].H,daapp-&gt;grid[i].H);CHKERRQ(info);
+<a name="line80"> 80: </a>      } <font color="#4169E1">else</font> {
+<a name="line81"> 81: </a>        info = <A href="../../../../docs/manualpages/ptaopages/TaoAppSetJacobianMat.html#TaoAppSetJacobianMat">TaoAppSetJacobianMat</A>(daapplication,daapp-&gt;grid[i].H,daapp-&gt;grid[i].H);CHKERRQ(info);
+<a name="line82"> 82: </a>      }
+<a name="line83"> 83: </a>    }
+
+<a name="line85"> 85: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoSetupApplicationSolver.html#TaoSetupApplicationSolver">TaoSetupApplicationSolver</A>(daapplication, tao); CHKERRQ(info);
+<a name="line86"> 86: </a>    <font color="#4169E1">for</font> (j=0;j&lt;daapp-&gt;nbeforemonitors;j++){
+<a name="line87"> 87: </a>      info = PetscInfo(daapp-&gt;grid[i].da,<font color="#666666">"TAO: Call before user monitor for DA_APPLICATION object.\n"</font>); CHKERRQ(info);
+<a name="line88"> 88: </a>      info = (*daapp-&gt;beforemonitor[j])(daapplication,daapp-&gt;grid[i].da,i,
+<a name="line89"> 89: </a>                                        daapp-&gt;beforemonitorctx[j]); CHKERRQ(info);
+<a name="line90"> 90: </a>    }
+
+<a name="line92"> 92: </a>    //        info = <A href="../../../../docs/manualpages/solver/TaoSetUp.html#TaoSetUp">TaoSetUp</A>(tao); CHKERRQ(info);
+
+<a name="line94"> 94: </a>    info = PetscInfo1(daapp-&gt;grid[i].da,<font color="#666666">"TAO: Begin solving level %d of DA_APPLICATION object.\n"</font>,i); CHKERRQ(info);
+<a name="line95"> 95: </a>    info = <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>(daapplication,tao);CHKERRQ(info);
+
+<a name="line97"> 97: </a>    info = <A href="../../../../docs/manualpages/solver/TaoGetSolutionStatus.html#TaoGetSolutionStatus">TaoGetSolutionStatus</A>(tao,&amp;iter,&amp;fval,&amp;residual,0,0,&amp;reason); CHKERRQ(info);
+<a name="line98"> 98: </a>    <font color="#4169E1">if</font> (reason &lt;= 0 ){
+<a name="line99"> 99: </a>      info = PetscInfo1(daapp-&gt;grid[i].da,<font color="#666666">"FAILURE TO FIND SOLUTION at level %d of DA_APPLICATION.\n"</font>,i+1); CHKERRQ(info);    
+<a name="line100">100: </a>      info = PetscInfo1(daapp-&gt;grid[i].da,<font color="#666666">"  TAO Reason for termination: %d.\n"</font>,reason); CHKERRQ(info);
+<a name="line101">101: </a>    } <font color="#4169E1">else</font> {
+<a name="line102">102: </a>      info = PetscInfo1(daapp-&gt;grid[i].da,<font color="#666666">"Found solution to DA_APPLICATION at level: %d.\n"</font>,i+1);CHKERRQ(info);
+<a name="line103">103: </a>      info = PetscInfo3(daapp-&gt;grid[i].da,<font color="#666666">"Iterations: %d, Objective Value: %10.8e, Residual: %4.2e.\n"</font>,
+<a name="line104">104: </a>                           iter,fval,residual);CHKERRQ(info);
+<a name="line105">105: </a>    }
+
+<a name="line107">107: </a>    <font color="#4169E1">for</font> (j=0;j&lt;daapp-&gt;naftermonitors;j++){
+<a name="line108">108: </a>      info = PetscInfo(daapp-&gt;grid[i].da,<font color="#666666">"TAO: Call after user monitor for DA_APPLICATION object.\n"</font>); CHKERRQ(info);
+<a name="line109">109: </a>      info = (*daapp-&gt;aftermonitor[j])(daapplication,daapp-&gt;grid[i].da,i,
+<a name="line110">110: </a>                                       daapp-&gt;aftermonitorctx[j]); CHKERRQ(info);
+<a name="line111">111: </a>    }
+
+<a name="line113">113: </a>    <font color="#4169E1">if</font> (daapplication-&gt;ksp) {
+<a name="line114">114: </a>      info = KSPDestroy(daapplication-&gt;ksp); CHKERRQ(info);
+<a name="line115">115: </a>      daapplication-&gt;ksp=0;
+<a name="line116">116: </a>    }
+<a name="line117">117: </a>    <font color="#4169E1">if</font> (i &lt; daapp-&gt;nda-1){
+<a name="line118">118: </a>      info = <A href="../../../../docs/manualpages/solver/TaoSetDown.html#TaoSetDown">TaoSetDown</A>(tao); CHKERRQ(info);
+<a name="line119">119: </a>    } 
+<a name="line120">120: </a>    
+<a name="line121">121: </a>  }
+
+<a name="line123">123: </a>  info = PetscLogEventEnd(Tao_DA_Solve,tao,daapp,0,0);CHKERRQ(info);
+<a name="line124">124: </a>  <font color="#4169E1">return</font>(0);
+<a name="line125">125: </a>}
+
+<a name="line127">127: </a> 
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,176 @@
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><font color="#A020F0"># $Id: makefile,v 1.1 2002/07/10 17:36:10 benson Exp benson $ </font>
+
+<strong><font color="#FF0000">ALL:</font></strong> minsurf3 jbearing3
+
+<font color="#A020F0">#ADIC            = /home/derivs/adic</font>
+<font color="#A020F0">#ADIC_ARCH  = linux</font>
+
+<font color="#A020F0">#CFLAGS           = ${ADIC_INCLUDE} -Dad_GRAD_MAX=4  # Needed only if using the ADIC code</font>
+CFLAGS           = ${ADIC_INCLUDE} -Dad_GRAD_MAX=16  # Needed only <font color="#4169E1">if</font> using the ADIC code
+CPPFLAGS         = 
+MANSEC                 = daapp
+FFLAGS                 = 
+FPPFLAGS         =
+LOCDIR                 = src/petsctao/gridapplication/examples/
+TUTORIALS         = eptorsion3.c jbearing3.c minsurf3.c combustion3.c
+
+TESTEXAMPLES_C         = eptorsion3.tao \
+                   eptorsion3.rm\
+                   jbearing3.tao runjbearing3 runjbearing3_2 \
+                   jbearing3.rm \
+                   minsurf3.tao runminsurf3 runminsurf3_2 runminsurf3_3 \
+                   minsurf3.rm \
+                   combustion3.tao runcombustion3 runcombustion3_2 combustion3.rm \
+                   clean
+TESTEXAMPLES_FORTRAN = jbearing3f.tao runjbearing3f runjbearing3f_2 \
+                   jbearing3f.rm clean
+
+EXAMPLESC         = eptorsion3.c jbearing3.c minsurf3.c combustion3.c
+
+<font color="#A020F0"># See $PETSC_DIR/bmake/test for definitions of example categories.</font>
+
+include ${TAO_DIR}/bmake/tao_common
+
+.PRECIOUS: %.ad.c
+
+%.ad.c: %.c
+        TaoComputeADICgradient $&lt;
+
+<strong><font color="#FF0000">minsurf3:</font></strong> minsurf3.o  tao_chkopts
+        -${CLINKER} -o minsurf3 minsurf3.o ${TAO_LIB} ${PETSC_SNES_LIB}
+        ${RM} minsurf3.o
+
+<strong><font color="#FF0000">minsurf4:</font></strong> minsurf3.o minsurff.ad.o  tao_chkopts
+        -${CLINKER} -o minsurf3 minsurf3.o minsurff.ad.o ${TAO_ADIC_LIB} ${PETSC_SNES_LIB}
+        ${RM} minsurf3.o minsurff.ad.o
+
+<strong><font color="#FF0000">minsurf5:</font></strong> minsurf4.o  tao_chkopts
+        -${CLINKER} -o minsurf4 minsurf4.o  ${TAO_LIB} ${PETSC_SNES_LIB}
+        ${RM} minsurf4.o 
+
+<strong><font color="#FF0000">jbearing3:</font></strong> jbearing3.o  tao_chkopts
+        -${CLINKER} -o jbearing3 jbearing3.o ${TAO_LIB} ${PETSC_SNES_LIB}
+        ${RM} jbearing3.o
+
+<strong><font color="#FF0000">jbearing3f:</font></strong> jbearing3f.o tao_chkopts
+        -${FLINKER} -o jbearing3f jbearing3f.o ${TAO_FORTRAN_LIB} ${TAO_LIB} ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+        ${RM} jbearing3f.o
+
+<strong><font color="#FF0000">jbearing4:</font></strong> jbearing3.o jbearingf.ad.o  tao_chkopts
+        -${CLINKER} -o jbearing3 jbearing3.o jbearingf.ad.o ${TAO_ADIC_LIB} ${PETSC_SNES_LIB}
+        ${RM} jbearing3.o jbearingf.ad.o
+
+<strong><font color="#FF0000">combustion3:</font></strong> combustion3.o  tao_chkopts
+        -${CLINKER} -o combustion3 combustion3.o ${TAO_LIB} ${PETSC_SNES_LIB}
+        ${RM} combustion3.o
+
+<strong><font color="#FF0000">combustion4:</font></strong> combustion3.o combustionf.ad.o tao_chkopts
+        -${CLINKER} -o combustion3 combustion3.o combustionf.ad.o ${TAO_ADIC_LIB} ${PETSC_SNES_LIB}
+        ${RM} combustion3.o combustionf.ad.o
+
+<strong><font color="#FF0000">eptorsion3:</font></strong> eptorsion3.o  tao_chkopts
+        -${CLINKER} -o eptorsion3 eptorsion3.o ${TAO_LIB} ${PETSC_SNES_LIB}
+        ${RM} eptorsion3.o
+
+<strong><font color="#FF0000">eptorsion4:</font></strong> eptorsion3.o eptorsionf.ad.o  tao_chkopts
+        -${CLINKER} -o eptorsion3 eptorsion3.o eptorsionf.ad.o ${TAO_ADIC_LIB} ${PETSC_SNES_LIB}
+        ${RM} eptorsion3.o eptorsionf.ad.o
+
+<strong><font color="#FF0000">ginzland3:</font></strong> ginzland3.o tao_chkopts
+        -${CLINKER} -o ginzland3 ginzland3.o ${TAO_LIB} ${PETSC_SNES_LIB}
+        ${RM} ginzland3.o
+
+<strong><font color="#FF0000">ginzland4:</font></strong> ginzland3.o ginzlandf.ad.o  tao_chkopts
+        -${CLINKER} -o ginzland3 ginzland3.o ginzlandf.ad.o ${TAO_ADIC_LIB} ${PETSC_SNES_LIB}
+        ${RM} ginzland3.o ginzlandf.ad.o
+
+<strong><font color="#FF0000">runeptorsion3:</font></strong>
+        -@${MPIEXEC} -np 3 ./eptorsion3 -tao_smonitor \
+           -tao_method tao_gpcg -byelement &gt; eptorsion3_1.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/eptorsion3_1.out eptorsion3_1.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with eptorsion3_1, diffs above"</font>; fi; \
+           ${RM} -f eptorsion3_1.tmp
+
+<strong><font color="#FF0000">runeptorsion3_2:</font></strong>
+        -@${MPIEXEC} -np 2 ./eptorsion3 -tao_smonitor -mx 21 -my 21  -tao_fd_coloring \
+           -tao_method tao_bnls -ksp_type cg -tao_da_multigrid &gt; eptorsion3_2.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/eptorsion3_2.out eptorsion3_2.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with eptorsion3_2, diffs above"</font>; fi; \
+           ${RM} -f eptorsion3_2.tmp
+
+<strong><font color="#FF0000">runjbearing3:</font></strong>
+        -@${MPIEXEC} -np 2 ./jbearing3 -tao_smonitor  -tao_fd_coloring  -byelement\
+           -tao_method tao_gpcg -byelement -ksp_type cg &gt; jbearing3_1.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/jbearing3_1.out jbearing3_1.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with jbearing3_1, diffs above"</font>; fi; \
+           ${RM} -f jbearing3_1.tmp
+
+<strong><font color="#FF0000">runjbearing3_2:</font></strong>
+        -@${MPIEXEC} -np 3 ./jbearing3 -tao_smonitor  -mx 5 -my 15 \
+           -tao_method tao_blmvm -tao_frtol 1.0e-4 -nlevels 6 &gt; jbearing3_2.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/jbearing3_2.out jbearing3_2.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with jbearing3_2, diffs above"</font>; fi; \
+           ${RM} -f jbearing3_2.tmp
+
+<strong><font color="#FF0000">runjbearing3f:</font></strong>
+        -@${MPIEXEC} -np 2 ./jbearing3f -tao_smonitor  -tao_fd_coloring  -byelement\
+           -tao_method tao_gpcg -byelement -ksp_type cg &gt; jbearing3f_1.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/jbearing3f_1.out jbearing3f_1.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with jbearing3f_1, diffs above"</font>; fi; \
+           ${RM} -f jbearing3f_1.tmp
+
+<strong><font color="#FF0000">runjbearing3f_2:</font></strong>
+        -@${MPIEXEC} -np 3 ./jbearing3f -tao_smonitor  -mx 5 -my 15 \
+           -tao_method tao_blmvm -tao_frtol 1.0e-4 -nlevels 6 &gt; jbearing3f_2.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/jbearing3f_2.out jbearing3f_2.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with jbearing3f_2, diffs above"</font>; fi; \
+           ${RM} -f jbearing3f_2.tmp
+
+<strong><font color="#FF0000">runcombustion3:</font></strong>
+        -@${MPIEXEC} -np 2 ./combustion3 -tao_smonitor -mx 4 -my 21  \
+           -tao_method tao_tron -byelement  -tao_fd_coloring &gt; combustion3_1.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/combustion3_1.out combustion3_1.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with combustion3_1, diffs above"</font>; fi; \
+           ${RM} -f combustion3_1.tmp
+
+<strong><font color="#FF0000">runcombustion3_2:</font></strong>
+        -@${MPIEXEC} -np 3 ./combustion3 -tao_smonitor -mx 3 -my 9 \
+           -tao_method tao_bnls -tao_frtol 1.0e-4 -nlevels 6 &gt; combustion3_2.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/combustion3_2.out combustion3_2.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with combustion3_2, diffs above"</font>; fi; \
+           ${RM} -f combustion3_2.tmp
+
+<strong><font color="#FF0000">runminsurf3:</font></strong>
+        -@${MPIEXEC} -np 2 ./minsurf3 -tao_smonitor -cops -byelement -mx 14 -my 5 \
+           -tao_method tao_tron -byelement &gt; minsurf3_1.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/minsurf3_1.out minsurf3_1.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with minsurf3_1, diffs above"</font>; fi; \
+           ${RM} -f minsurf3_1.tmp
+
+<strong><font color="#FF0000">runminsurf3_2:</font></strong>
+        -@${MPIEXEC} -np 3 ./minsurf3 -tao_smonitor -mx 14 -my 11 -byelement\
+           -tao_method tao_bnls -tao_fd_coloring -nlevels 4 &gt; minsurf3_2.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/minsurf3_2.out minsurf3_2.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with minsurf3_2, diffs above"</font>; fi; \
+           ${RM} -f minsurf3_2.tmp
+
+<strong><font color="#FF0000">runminsurf3_3:</font></strong>
+        -@${MPIEXEC} -np 4 ./minsurf3 -tao_smonitor  -mx 7 -my 6\
+           -tao_method tao_blmvm -tao_frtol 1.0e-4 -nlevels 6 &gt; minsurf3_3.tmp 2&gt;&amp;1;        \
+           <font color="#4169E1">if</font> (diff output/minsurf3_3.out minsurf3_3.tmp) then true; \
+           <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with minsurf3_3, diffs above"</font>; fi; \
+           ${RM} -f minsurf3_3.tmp
+
+</pre>
+</body>
+
+</html>

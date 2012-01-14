@@ -1,0 +1,835 @@
+<center><a href="lmvmmat.c">Actual source code: lmvmmat.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"lmvmmat.h"</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"tao_general.h"</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0"></font>
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"taovec.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><strong><font color="#228B22">#define Scale_None                0</font></strong>
+<a name="line7">  7: </a><strong><font color="#228B22">#define Scale_Scalar                1</font></strong>
+<a name="line8">  8: </a><strong><font color="#228B22">#define Scale_Broyden                2</font></strong>
+<a name="line9">  9: </a><strong><font color="#228B22">#define Scale_Types             3</font></strong>
+
+<a name="line11"> 11: </a><strong><font color="#228B22">#define Rescale_None                0</font></strong>
+<a name="line12"> 12: </a><strong><font color="#228B22">#define Rescale_Scalar                1</font></strong>
+<a name="line13"> 13: </a><strong><font color="#228B22">#define Rescale_GL                2</font></strong>
+<a name="line14"> 14: </a><strong><font color="#228B22">#define Rescale_Types                  3</font></strong>
+
+<a name="line16"> 16: </a><strong><font color="#228B22">#define Limit_None                0</font></strong>
+<a name="line17"> 17: </a><strong><font color="#228B22">#define Limit_Average                1</font></strong>
+<a name="line18"> 18: </a><strong><font color="#228B22">#define Limit_Relative                2</font></strong>
+<a name="line19"> 19: </a><strong><font color="#228B22">#define Limit_Absolute                3</font></strong>
+<a name="line20"> 20: </a><strong><font color="#228B22">#define Limit_Types                4</font></strong>
+
+<a name="line22"> 22: </a><strong><font color="#228B22">#define TAO_ZER_SAFEGUARD        1e-8</font></strong>
+<a name="line23"> 23: </a><strong><font color="#228B22">#define TAO_INF_SAFEGUARD        1e+8</font></strong>
+
+<a name="line25"> 25: </a>static const char *Scale_Table[64] = {
+<a name="line26"> 26: </a>  <font color="#666666">"none"</font>, <font color="#666666">"scalar"</font>, <font color="#666666">"broyden"</font>
+<a name="line27"> 27: </a>};
+
+<a name="line29"> 29: </a>static const char *Rescale_Table[64] = {
+<a name="line30"> 30: </a>  <font color="#666666">"none"</font>, <font color="#666666">"scalar"</font>, <font color="#666666">"gl"</font>
+<a name="line31"> 31: </a>};
+
+<a name="line33"> 33: </a>static const char *Limit_Table[64] = {
+<a name="line34"> 34: </a>  <font color="#666666">"none"</font>, <font color="#666666">"average"</font>, <font color="#666666">"relative"</font>, <font color="#666666">"absolute"</font>
+<a name="line35"> 35: </a>};
+
+<a name="line39"> 39: </a><strong><font color="#FF0000">TaoLMVMMat:</font></strong>:TaoLMVMMat(TaoVec *tv)
+<a name="line40"> 40: </a>{
+<a name="line41"> 41: </a>  // Set <font color="#4169E1">default</font> values
+<a name="line42"> 42: </a>  lm = 5;
+<a name="line43"> 43: </a>  eps = 0.0;
+
+<a name="line45"> 45: </a>  limitType = Limit_None;
+<a name="line46"> 46: </a>  scaleType = Scale_Broyden;
+<a name="line47"> 47: </a>  rScaleType = Rescale_Scalar;
+
+<a name="line49"> 49: </a>  s_alpha = 1.0;
+<a name="line50"> 50: </a>  r_alpha = 1.0;
+<a name="line51"> 51: </a>  r_beta = 0.5;
+<a name="line52"> 52: </a>  mu = 1.0;
+<a name="line53"> 53: </a>  nu = 100.0;
+
+<a name="line55"> 55: </a>  phi = 0.125;                
+
+<a name="line57"> 57: </a>  scalar_history = 1;
+<a name="line58"> 58: </a>  rescale_history = 1;
+
+<a name="line60"> 60: </a>  delta_min = 1e-7;
+<a name="line61"> 61: </a>  delta_max = 100;
+
+<a name="line63"> 63: </a>  // Begin configuration
+<a name="line64"> 64: </a>  TaoOptionsHead(<font color="#666666">"Limited memory matrix options"</font>);
+<a name="line65"> 65: </a>  TaoOptionInt(<font color="#666666">"-tao_lmm_vectors"</font>, <font color="#666666">"vectors to use for approximation"</font>, <font color="#666666">""</font>, lm, &amp;lm, 0);
+<a name="line66"> 66: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_limit_mu"</font>, <font color="#666666">"mu limiting factor"</font>, <font color="#666666">""</font>, mu, &amp;mu, 0);
+<a name="line67"> 67: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_limit_nu"</font>, <font color="#666666">"nu limiting factor"</font>, <font color="#666666">""</font>, nu, &amp;nu, 0);
+<a name="line68"> 68: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_broyden_phi"</font>, <font color="#666666">"phi factor for Broyden scaling"</font>, <font color="#666666">""</font>, phi, &amp;phi, 0);
+<a name="line69"> 69: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_scalar_alpha"</font>, <font color="#666666">"alpha factor for scalar scaling"</font>, <font color="#666666">""</font>, s_alpha, &amp;s_alpha, 0);
+<a name="line70"> 70: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_rescale_alpha"</font>, <font color="#666666">"alpha factor for rescaling diagonal"</font>, <font color="#666666">""</font>, r_alpha, &amp;r_alpha, 0);
+<a name="line71"> 71: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_rescale_beta"</font>, <font color="#666666">"beta factor for rescaling diagonal"</font>, <font color="#666666">""</font>, r_beta, &amp;r_beta, 0);
+<a name="line72"> 72: </a>  TaoOptionInt(<font color="#666666">"-tao_lmm_scalar_history"</font>, <font color="#666666">"amount of history for scalar scaling"</font>, <font color="#666666">""</font>, scalar_history, &amp;scalar_history, 0);
+<a name="line73"> 73: </a>  TaoOptionInt(<font color="#666666">"-tao_lmm_rescale_history"</font>, <font color="#666666">"amount of history for rescaling diagonal"</font>, <font color="#666666">""</font>, rescale_history, &amp;rescale_history, 0);
+<a name="line74"> 74: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_eps"</font>, <font color="#666666">"rejection tolerance"</font>, <font color="#666666">""</font>, eps, &amp;eps, 0);
+<a name="line75"> 75: </a>  TaoOptionList(<font color="#666666">"-tao_lmm_scale_type"</font>, <font color="#666666">"scale type"</font>, <font color="#666666">""</font>, Scale_Table, Scale_Types, Scale_Table[scaleType], &amp;scaleType, 0);
+<a name="line76"> 76: </a>  TaoOptionList(<font color="#666666">"-tao_lmm_rescale_type"</font>, <font color="#666666">"rescale type"</font>, <font color="#666666">""</font>, Rescale_Table, Rescale_Types, Rescale_Table[rScaleType], &amp;rScaleType, 0);
+<a name="line77"> 77: </a>  TaoOptionList(<font color="#666666">"-tao_lmm_limit_type"</font>, <font color="#666666">"limit type"</font>, <font color="#666666">""</font>, Limit_Table, Limit_Types, Limit_Table[limitType], &amp;limitType, 0);
+<a name="line78"> 78: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_delta_min"</font>, <font color="#666666">"minimum delta value"</font>, <font color="#666666">""</font>, delta_min, &amp;delta_min, 0);
+<a name="line79"> 79: </a>  TaoOptionDouble(<font color="#666666">"-tao_lmm_delta_max"</font>, <font color="#666666">"maximum delta value"</font>, <font color="#666666">""</font>, delta_max, &amp;delta_max, 0);
+<a name="line80"> 80: </a>  TaoOptionsTail();
+
+<a name="line82"> 82: </a>  // Complete configuration
+<a name="line83"> 83: </a>  rescale_history = TaoMin(rescale_history, lm);
+
+<a name="line85"> 85: </a>  // Perform allocations
+<a name="line86"> 86: </a>  tv-&gt;<A href="../../docs/manualpages/vector/CloneVecs.html#CloneVecs">CloneVecs</A>(lm+1, &amp;S);
+<a name="line87"> 87: </a>  tv-&gt;<A href="../../docs/manualpages/vector/CloneVecs.html#CloneVecs">CloneVecs</A>(lm+1, &amp;Y);
+<a name="line88"> 88: </a>  tv-&gt;<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;D);
+<a name="line89"> 89: </a>  tv-&gt;<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;U);
+<a name="line90"> 90: </a>  tv-&gt;<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;V);
+<a name="line91"> 91: </a>  tv-&gt;<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;W);
+<a name="line92"> 92: </a>  tv-&gt;<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;P);
+<a name="line93"> 93: </a>  tv-&gt;<A href="../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;Q);
+
+<a name="line95"> 95: </a>  rho = new double[lm+1];
+<a name="line96"> 96: </a>  beta = new double[lm+1];
+
+<a name="line98"> 98: </a>  yy_history = new double[TaoMax(scalar_history, 1)];
+<a name="line99"> 99: </a>  ys_history = new double[TaoMax(scalar_history, 1)];
+<a name="line100">100: </a>  ss_history = new double[TaoMax(scalar_history, 1)];
+
+<a name="line102">102: </a>  yy_rhistory = new double[TaoMax(rescale_history, 1)];
+<a name="line103">103: </a>  ys_rhistory = new double[TaoMax(rescale_history, 1)];
+<a name="line104">104: </a>  ss_rhistory = new double[TaoMax(rescale_history, 1)];
+
+<a name="line106">106: </a>  // Finish initializations
+<a name="line107">107: </a>  lmnow = 0;
+<a name="line108">108: </a>  iter = 0;
+<a name="line109">109: </a>  updates = 0;
+<a name="line110">110: </a>  rejects = 0;
+<a name="line111">111: </a>  delta = 1.0;
+
+<a name="line113">113: </a>  Gprev = 0;
+<a name="line114">114: </a>  Xprev = 0;
+
+<a name="line116">116: </a>  scale = 0;
+
+<a name="line118">118: </a>  H0 = 0;
+<a name="line119">119: </a>  H0default = TAO_TRUE;
+<a name="line120">120: </a>}
+
+<a name="line124">124: </a><strong><font color="#FF0000">TaoLMVMMat:</font></strong>:~TaoLMVMMat()
+<a name="line125">125: </a>{
+<a name="line126">126: </a>  int info;
+
+<a name="line128">128: </a>  info = S[0]-&gt;<A href="../../docs/manualpages/vector/DestroyVecs.html#DestroyVecs">DestroyVecs</A>(lm+1, S);
+<a name="line129">129: </a>  info = Y[0]-&gt;<A href="../../docs/manualpages/vector/DestroyVecs.html#DestroyVecs">DestroyVecs</A>(lm+1, Y);
+<a name="line130">130: </a>  info = <A href="../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(D);
+<a name="line131">131: </a>  info = <A href="../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(U);
+<a name="line132">132: </a>  info = <A href="../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(V);
+<a name="line133">133: </a>  info = <A href="../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(W);
+<a name="line134">134: </a>  info = <A href="../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(P);
+<a name="line135">135: </a>  info = <A href="../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(Q);
+
+<a name="line137">137: </a>  delete[] rho;
+<a name="line138">138: </a>  delete[] beta;
+<a name="line139">139: </a>  <font color="#4169E1">if</font> (info) rho=0;
+
+<a name="line141">141: </a>  delete[] yy_history;
+<a name="line142">142: </a>  delete[] ys_history;
+<a name="line143">143: </a>  delete[] ss_history;
+
+<a name="line145">145: </a>  delete[] yy_rhistory;
+<a name="line146">146: </a>  delete[] ys_rhistory;
+<a name="line147">147: </a>  delete[] ss_rhistory;
+<a name="line148">148: </a>}
+
+<a name="line152">152: </a>int TaoLMVMMat::Refine(TaoLMVMMat *coarse, TaoMat *op, TaoVec *fineX, TaoVec *fineG)
+<a name="line153">153: </a>{
+<a name="line154">154: </a>  double rhotemp, rhotol;
+<a name="line155">155: </a>  double y0temp, s0temp;
+<a name="line156">156: </a>  int  info;
+<a name="line157">157: </a>  TaoInt i;
+
+<a name="line159">159: </a>  TaoFunctionBegin;
+
+<a name="line161">161: </a>  info = Reset(); CHKERRQ(info);
+
+<a name="line163">163: </a>  <font color="#4169E1">for</font> (i = 0; i &lt; coarse-&gt;lmnow; ++i) {
+<a name="line164">164: </a>    // Refine S[i] and Y[i]
+<a name="line165">165: </a>    info = op-&gt;<A href="../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A>(coarse-&gt;S[i], S[lmnow]); CHKERRQ(info);
+<a name="line166">166: </a>    info = op-&gt;<A href="../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A>(coarse-&gt;Y[i], Y[lmnow]); CHKERRQ(info);
+
+<a name="line168">168: </a>    // Check to see <font color="#4169E1">if</font> refined vectors are fine
+<a name="line169">169: </a>    info = Y[lmnow]-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S[lmnow], &amp;rhotemp); CHKERRQ(info);
+<a name="line170">170: </a>    info = Y[lmnow]-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Y[lmnow], &amp;y0temp); CHKERRQ(info);
+
+<a name="line172">172: </a>    rhotol = eps * y0temp;
+<a name="line173">173: </a>    <font color="#4169E1">if</font> (rhotemp &gt; rhotol) {
+<a name="line174">174: </a>      rho[lmnow] = 1.0 / rhotemp;
+
+<a name="line176">176: </a>      // Add information to the scaling
+<a name="line177">177: </a>      <font color="#4169E1">switch</font>(scaleType) {
+<a name="line178">178: </a>      <font color="#4169E1">case</font> Scale_None:
+<a name="line179">179: </a>        <font color="#4169E1">break</font>;
+<a name="line180">180: </a>        
+<a name="line181">181: </a>      <font color="#4169E1">case</font> Scale_Scalar:
+<a name="line182">182: </a>        // Compute s^T s 
+<a name="line183">183: </a>        info = S[lmnow]-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S[lmnow], &amp;s0temp); CHKERRQ(info);
+
+<a name="line185">185: </a>        // Save information <font color="#4169E1">for</font> scalar scaling
+<a name="line186">186: </a>        yy_history[updates % scalar_history] = y0temp;
+<a name="line187">187: </a>        ys_history[updates % scalar_history] = rhotemp;
+<a name="line188">188: </a>        ss_history[updates % scalar_history] = s0temp;
+
+<a name="line190">190: </a>        sigma = coarse-&gt;sigma;
+<a name="line191">191: </a>        <font color="#4169E1">break</font>;
+
+<a name="line193">193: </a>      <font color="#4169E1">case</font> Scale_Broyden:
+<a name="line194">194: </a>        <font color="#4169E1">switch</font>(rScaleType) {
+<a name="line195">195: </a>        <font color="#4169E1">case</font> Rescale_None:
+<a name="line196">196: </a>          <font color="#4169E1">break</font>;
+<a name="line197">197: </a>          
+<a name="line198">198: </a>        <font color="#4169E1">case</font> Rescale_Scalar:
+<a name="line199">199: </a>        <font color="#4169E1">case</font> Rescale_GL:
+<a name="line200">200: </a>          // Compute s^T s 
+<a name="line201">201: </a>          info = S[lmnow]-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S[lmnow], &amp;s0temp); CHKERRQ(info);
+
+<a name="line203">203: </a>          // Save information <font color="#4169E1">for</font> special cases of scalar rescaling
+<a name="line204">204: </a>          yy_rhistory[updates % rescale_history] = y0temp;
+<a name="line205">205: </a>          ys_rhistory[updates % rescale_history] = rhotemp;
+<a name="line206">206: </a>          ss_rhistory[updates % rescale_history] = s0temp;
+<a name="line207">207: </a>          <font color="#4169E1">break</font>;
+<a name="line208">208: </a>        }
+
+<a name="line210">210: </a>        // Obtain diagonal scaling and ensure positive definite
+<a name="line211">211: </a>        info = op-&gt;<A href="../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A>(coarse-&gt;D, D); CHKERRQ(info);
+<a name="line212">212: </a>        info = D-&gt;<A href="../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>(); CHKERRQ(info);
+<a name="line213">213: </a>        <font color="#4169E1">break</font>;
+<a name="line214">214: </a>      }
+
+<a name="line216">216: </a>      // Successful update
+<a name="line217">217: </a>      ++updates;
+<a name="line218">218: </a>      ++lmnow;
+<a name="line219">219: </a>    }
+<a name="line220">220: </a>    <font color="#4169E1">else</font> {
+<a name="line221">221: </a>      ++rejects;
+<a name="line222">222: </a>    }
+<a name="line223">223: </a>  }
+
+<a name="line225">225: </a>  // Save the number of iterations and previous values <font color="#4169E1">for</font> x and g
+<a name="line226">226: </a>  // Need to use the actual value <font color="#4169E1">for</font> the gradient here and not
+<a name="line227">227: </a>  // the refined version of the coarse gradient in order <font color="#4169E1">for</font> the
+<a name="line228">228: </a>  // Wolfe conditions to guarantee the update is acceptable.
+<a name="line229">229: </a>  iter = coarse-&gt;iter;
+<a name="line230">230: </a>  info = Xprev-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(fineX); CHKERRQ(info);
+<a name="line231">231: </a>  info = Gprev-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(fineG); CHKERRQ(info);
+<a name="line232">232: </a>  TaoFunctionReturn(0);
+<a name="line233">233: </a>}
+
+<a name="line237">237: </a>int TaoLMVMMat::Reset()
+<a name="line238">238: </a>{
+<a name="line239">239: </a>  TaoInt i;
+
+<a name="line241">241: </a>  TaoFunctionBegin;
+<a name="line242">242: </a>  Gprev = Y[lm];
+<a name="line243">243: </a>  Xprev = S[lm];
+<a name="line244">244: </a>  <font color="#4169E1">for</font> (i = 0; i &lt; lm; ++i) {
+<a name="line245">245: </a>    rho[i] = 0.0;
+<a name="line246">246: </a>  }
+<a name="line247">247: </a>  rho[0] = 1.0;
+
+<a name="line249">249: </a>  // Set the scaling and diagonal scaling matrix
+<a name="line250">250: </a>  <font color="#4169E1">switch</font>(scaleType) {
+<a name="line251">251: </a>  <font color="#4169E1">case</font> Scale_None:
+<a name="line252">252: </a>    sigma = 1.0;
+<a name="line253">253: </a>    <font color="#4169E1">break</font>;
+
+<a name="line255">255: </a>  <font color="#4169E1">case</font> Scale_Scalar:
+<a name="line256">256: </a>    sigma = delta;
+<a name="line257">257: </a>    <font color="#4169E1">break</font>;
+
+<a name="line259">259: </a>  <font color="#4169E1">case</font> Scale_Broyden:
+<a name="line260">260: </a>    D-&gt;<A href="../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(delta);
+<a name="line261">261: </a>    <font color="#4169E1">break</font>;
+<a name="line262">262: </a>  }
+
+<a name="line264">264: </a>  iter = 0;
+<a name="line265">265: </a>  updates = 0;
+<a name="line266">266: </a>  lmnow = 0;
+<a name="line267">267: </a>  TaoFunctionReturn(0);
+<a name="line268">268: </a>}
+
+<a name="line272">272: </a>int TaoLMVMMat::<A href="../../docs/manualpages/matrix/Presolve.html#Presolve">Presolve</A>()
+<a name="line273">273: </a>{
+<a name="line274">274: </a>  TaoFunctionBegin;
+<a name="line275">275: </a>  TaoFunctionReturn(0);
+<a name="line276">276: </a>}
+
+<a name="line280">280: </a>int TaoLMVMMat::<A href="../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(TaoVec *tb, TaoVec *dx, TaoTruth *tt)
+<a name="line281">281: </a>{
+<a name="line282">282: </a>  double   sq, yq, dd;
+<a name="line283">283: </a>  int      info;
+<a name="line284">284: </a>  TaoInt ll;
+<a name="line285">285: </a>  TaoTruth scaled;
+
+<a name="line287">287: </a>  TaoFunctionBegin;
+<a name="line288">288: </a>  <font color="#4169E1">if</font> (lmnow &lt; 1) {
+<a name="line289">289: </a>    rho[0] = 1.0;
+<a name="line290">290: </a>  }
+
+<a name="line292">292: </a>  info = dx-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(tb); CHKERRQ(info);
+<a name="line293">293: </a>  <font color="#4169E1">for</font> (ll = 0; ll &lt; lmnow; ++ll) {
+<a name="line294">294: </a>    info = dx-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S[ll], &amp;sq); CHKERRQ(info);
+<a name="line295">295: </a>    beta[ll] = sq * rho[ll];
+<a name="line296">296: </a>    info = dx-&gt;<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-beta[ll], Y[ll]); CHKERRQ(info);
+<a name="line297">297: </a>  }
+
+<a name="line299">299: </a>  scaled = TAO_FALSE;
+<a name="line300">300: </a>  <font color="#4169E1">if</font> (!scaled &amp;&amp; H0) {
+<a name="line301">301: </a>    info = H0-&gt;<A href="../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(dx, U, tt); CHKERRQ(info);
+<a name="line302">302: </a>    <font color="#4169E1">if</font> (*tt) {
+<a name="line303">303: </a>      info = dx-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(U, &amp;dd); CHKERRQ(info);
+<a name="line304">304: </a>      <font color="#4169E1">if</font> ((dd &gt; 0.0) &amp;&amp; !TaoInfOrNaN(dd)) {
+<a name="line305">305: </a>        // Accept Hessian solve
+<a name="line306">306: </a>        info = dx-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(U); CHKERRQ(info);
+<a name="line307">307: </a>        scaled = TAO_TRUE;
+<a name="line308">308: </a>      }
+<a name="line309">309: </a>    }
+<a name="line310">310: </a>  }
+
+<a name="line312">312: </a>  <font color="#4169E1">if</font> (!scaled &amp;&amp; scale) {
+<a name="line313">313: </a>    info = U-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(dx, scale); CHKERRQ(info);
+<a name="line314">314: </a>    info = dx-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(U, &amp;dd); CHKERRQ(info);
+<a name="line315">315: </a>    <font color="#4169E1">if</font> ((dd &gt; 0.0) &amp;&amp; !TaoInfOrNaN(dd)) {
+<a name="line316">316: </a>      // Accept scaling
+<a name="line317">317: </a>      info = dx-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(U); CHKERRQ(info);
+<a name="line318">318: </a>      scaled = TAO_TRUE;
+<a name="line319">319: </a>    }
+<a name="line320">320: </a>  }
+<a name="line321">321: </a>  
+<a name="line322">322: </a>  <font color="#4169E1">if</font> (!scaled) {
+<a name="line323">323: </a>    <font color="#4169E1">switch</font>(scaleType) {
+<a name="line324">324: </a>    <font color="#4169E1">case</font> Scale_None:
+<a name="line325">325: </a>      <font color="#4169E1">break</font>;
+
+<a name="line327">327: </a>    <font color="#4169E1">case</font> Scale_Scalar:
+<a name="line328">328: </a>      info = dx-&gt;<A href="../../docs/manualpages/vector/Scale.html#Scale">Scale</A>(sigma); CHKERRQ(info);
+<a name="line329">329: </a>      <font color="#4169E1">break</font>;
+<a name="line330">330: </a>  
+<a name="line331">331: </a>    <font color="#4169E1">case</font> Scale_Broyden:
+<a name="line332">332: </a>      info = dx-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(dx, D); CHKERRQ(info);
+<a name="line333">333: </a>      <font color="#4169E1">break</font>;
+<a name="line334">334: </a>    }
+<a name="line335">335: </a>  } 
+
+<a name="line337">337: </a>  <font color="#4169E1">for</font> (ll = lmnow-1; ll &gt;= 0; --ll) {
+<a name="line338">338: </a>    info = dx-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Y[ll], &amp;yq); CHKERRQ(info);
+<a name="line339">339: </a>    info = dx-&gt;<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(beta[ll] - yq * rho[ll], S[ll]); CHKERRQ(info);
+<a name="line340">340: </a>  }
+
+<a name="line342">342: </a>  *tt = TAO_TRUE;
+<a name="line343">343: </a>  TaoFunctionReturn(0);
+<a name="line344">344: </a>}
+
+<a name="line348">348: </a>int TaoLMVMMat::Update(TaoVec *x, TaoVec *g)
+<a name="line349">349: </a>{
+<a name="line350">350: </a>  double rhotemp, rhotol;
+<a name="line351">351: </a>  double y0temp, s0temp;
+<a name="line352">352: </a>  double yDy, yDs, sDs;
+<a name="line353">353: </a>  double sigmanew, denom;
+<a name="line354">354: </a>  int  info;
+<a name="line355">355: </a>  TaoInt i;
+
+<a name="line357">357: </a>  double yy_sum, ys_sum, ss_sum;
+
+<a name="line359">359: </a>  TaoFunctionBegin;
+
+<a name="line361">361: </a>  <font color="#4169E1">if</font> (0 == iter) {
+<a name="line362">362: </a>    info = Reset(); CHKERRQ(info);
+<a name="line363">363: </a>  } 
+<a name="line364">364: </a>  <font color="#4169E1">else</font> {
+<a name="line365">365: </a>    info = Gprev-&gt;<A href="../../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A>(-1.0, g); CHKERRQ(info);
+<a name="line366">366: </a>    info = Xprev-&gt;<A href="../../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A>(-1.0, x); CHKERRQ(info);
+
+<a name="line368">368: </a>    info = Gprev-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Xprev, &amp;rhotemp); CHKERRQ(info);
+<a name="line369">369: </a>    info = Gprev-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Gprev, &amp;y0temp); CHKERRQ(info);
+
+<a name="line371">371: </a>    rhotol = eps * y0temp;
+<a name="line372">372: </a>    <font color="#4169E1">if</font> (rhotemp &gt; rhotol) {
+<a name="line373">373: </a>      ++updates;
+
+<a name="line375">375: </a>      lmnow = TaoMin(lmnow+1, lm);
+<a name="line376">376: </a>      <font color="#4169E1">for</font> (i = lm-1; i &gt;= 0; --i) {
+<a name="line377">377: </a>        S[i+1] = S[i];
+<a name="line378">378: </a>        Y[i+1] = Y[i];
+<a name="line379">379: </a>        rho[i+1] = rho[i];
+<a name="line380">380: </a>      }
+<a name="line381">381: </a>      S[0] = Xprev;
+<a name="line382">382: </a>      Y[0] = Gprev;
+<a name="line383">383: </a>      rho[0] = 1.0 / rhotemp;
+
+<a name="line385">385: </a>      // Compute the scaling
+<a name="line386">386: </a>      <font color="#4169E1">switch</font>(scaleType) {
+<a name="line387">387: </a>      <font color="#4169E1">case</font> Scale_None:
+<a name="line388">388: </a>        <font color="#4169E1">break</font>;
+
+<a name="line390">390: </a>      <font color="#4169E1">case</font> Scale_Scalar:
+<a name="line391">391: </a>        // Compute s^T s 
+<a name="line392">392: </a>        info = Xprev-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Xprev, &amp;s0temp); CHKERRQ(info);
+
+<a name="line394">394: </a>        // Scalar is positive; safeguards are not required.
+
+<a name="line396">396: </a>        // Save information <font color="#4169E1">for</font> scalar scaling
+<a name="line397">397: </a>        yy_history[(updates - 1) % scalar_history] = y0temp;
+<a name="line398">398: </a>        ys_history[(updates - 1) % scalar_history] = rhotemp;
+<a name="line399">399: </a>        ss_history[(updates - 1) % scalar_history] = s0temp;
+
+<a name="line401">401: </a>        // Compute summations <font color="#4169E1">for</font> scalar scaling
+<a name="line402">402: </a>        yy_sum = 0;        // No safeguard required; y^T y &gt; 0
+<a name="line403">403: </a>        ys_sum = 0;        // No safeguard required; y^T s &gt; 0
+<a name="line404">404: </a>        ss_sum = 0;        // No safeguard required; s^T s &gt; 0
+<a name="line405">405: </a>        <font color="#4169E1">for</font> (i = 0; i &lt; TaoMin(updates, scalar_history); ++i) {
+<a name="line406">406: </a>          yy_sum += yy_history[i];
+<a name="line407">407: </a>          ys_sum += ys_history[i];
+<a name="line408">408: </a>          ss_sum += ss_history[i];
+<a name="line409">409: </a>        }
+
+<a name="line411">411: </a>        <font color="#4169E1">if</font> (0.0 == s_alpha) {
+<a name="line412">412: </a>          // Safeguard ys_sum 
+<a name="line413">413: </a>          <font color="#4169E1">if</font> (0.0 == ys_sum) {
+<a name="line414">414: </a>            ys_sum = TAO_ZER_SAFEGUARD;
+<a name="line415">415: </a>          }
+
+<a name="line417">417: </a>          sigmanew = ss_sum / ys_sum;
+<a name="line418">418: </a>        }
+<a name="line419">419: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (0.5 == s_alpha) {
+<a name="line420">420: </a>          // Safeguard yy_sum 
+<a name="line421">421: </a>          <font color="#4169E1">if</font> (0.0 == yy_sum) {
+<a name="line422">422: </a>            yy_sum = TAO_ZER_SAFEGUARD;
+<a name="line423">423: </a>          }
+
+<a name="line425">425: </a>          sigmanew = sqrt(ss_sum / yy_sum);
+<a name="line426">426: </a>        }
+<a name="line427">427: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (1.0 == s_alpha) {
+<a name="line428">428: </a>          // Safeguard yy_sum 
+<a name="line429">429: </a>          <font color="#4169E1">if</font> (0.0 == yy_sum) {
+<a name="line430">430: </a>            yy_sum = TAO_ZER_SAFEGUARD;
+<a name="line431">431: </a>          }
+
+<a name="line433">433: </a>          sigmanew = ys_sum / yy_sum;
+<a name="line434">434: </a>        }
+<a name="line435">435: </a>        <font color="#4169E1">else</font> {
+<a name="line436">436: </a>          denom = 2*s_alpha*yy_sum;
+
+<a name="line438">438: </a>          // Safeguard denom
+<a name="line439">439: </a>          <font color="#4169E1">if</font> (0.0 == denom) {
+<a name="line440">440: </a>            denom = TAO_ZER_SAFEGUARD;
+<a name="line441">441: </a>          }
+
+<a name="line443">443: </a>          sigmanew = ((2*s_alpha-1)*ys_sum + 
+<a name="line444">444: </a>                      sqrt((2*s_alpha-1)*(2*s_alpha-1)*ys_sum*ys_sum - 
+<a name="line445">445: </a>                           4*s_alpha*(s_alpha-1)*yy_sum*ss_sum)) / denom;
+<a name="line446">446: </a>        }
+
+<a name="line448">448: </a>        <font color="#4169E1">switch</font>(limitType) {
+<a name="line449">449: </a>        <font color="#4169E1">case</font> Limit_Average:
+<a name="line450">450: </a>          <font color="#4169E1">if</font> (1.0 == mu) {
+<a name="line451">451: </a>            sigma = sigmanew;
+<a name="line452">452: </a>          }
+<a name="line453">453: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (mu) {
+<a name="line454">454: </a>            sigma = mu * sigmanew + (1.0 - mu) * sigma;
+<a name="line455">455: </a>          }
+<a name="line456">456: </a>          <font color="#4169E1">break</font>;
+
+<a name="line458">458: </a>        <font color="#4169E1">case</font> Limit_Relative:
+<a name="line459">459: </a>          <font color="#4169E1">if</font> (mu) {
+<a name="line460">460: </a>            sigma = TaoMid((1.0 - mu) * sigma, sigmanew, (1.0 + mu) * sigma);
+<a name="line461">461: </a>          }
+<a name="line462">462: </a>          <font color="#4169E1">break</font>;
+
+<a name="line464">464: </a>        <font color="#4169E1">case</font> Limit_Absolute:
+<a name="line465">465: </a>          <font color="#4169E1">if</font> (nu) {
+<a name="line466">466: </a>            sigma = TaoMid(sigma - nu, sigmanew, sigma + nu);
+<a name="line467">467: </a>          }
+<a name="line468">468: </a>          <font color="#4169E1">break</font>;
+
+<a name="line470">470: </a><strong><font color="#FF0000">        default:</font></strong>
+<a name="line471">471: </a>          sigma = sigmanew;
+<a name="line472">472: </a>          <font color="#4169E1">break</font>;
+<a name="line473">473: </a>        }
+<a name="line474">474: </a>        <font color="#4169E1">break</font>;
+
+<a name="line476">476: </a>      <font color="#4169E1">case</font> Scale_Broyden:
+<a name="line477">477: </a>        // Original version
+<a name="line478">478: </a>        // Combine DFP and BFGS
+
+<a name="line480">480: </a>        // This code appears to be numerically unstable.  We use the
+<a name="line481">481: </a>        // original version because this was used to generate all of
+<a name="line482">482: </a>        // the data and because it may be the least unstable of the
+<a name="line483">483: </a>        // bunch.
+
+<a name="line485">485: </a>        // P = Q = inv(D);
+<a name="line486">486: </a>        info = P-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(D); CHKERRQ(info);
+<a name="line487">487: </a>        info = P-&gt;<A href="../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(); CHKERRQ(info);
+<a name="line488">488: </a>        info = Q-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(P); CHKERRQ(info);
+
+<a name="line490">490: </a>        // V = y*y
+<a name="line491">491: </a>        info = V-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(Gprev, Gprev); CHKERRQ(info);
+
+<a name="line493">493: </a>        // W = inv(D)*s
+<a name="line494">494: </a>        info = W-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(Xprev, P); CHKERRQ(info);
+<a name="line495">495: </a>        info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Xprev, &amp;sDs); CHKERRQ(info);
+
+<a name="line497">497: </a>        // Safeguard rhotemp and sDs
+<a name="line498">498: </a>        <font color="#4169E1">if</font> (0.0 == rhotemp) {
+<a name="line499">499: </a>          rhotemp = TAO_ZER_SAFEGUARD;
+<a name="line500">500: </a>        }
+
+<a name="line502">502: </a>        <font color="#4169E1">if</font> (0.0 == sDs) {
+<a name="line503">503: </a>          sDs = TAO_ZER_SAFEGUARD;
+<a name="line504">504: </a>        }
+
+<a name="line506">506: </a>        <font color="#4169E1">if</font> (1.0 != phi) {
+<a name="line507">507: </a>          // BFGS portion of the update
+<a name="line508">508: </a>          // U = (inv(D)*s)*(inv(D)*s)
+<a name="line509">509: </a>          info = U-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(W, W); CHKERRQ(info);
+
+<a name="line511">511: </a>          // Assemble
+<a name="line512">512: </a>          info = P-&gt;<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0 / rhotemp, V); CHKERRQ(info);
+<a name="line513">513: </a>          info = P-&gt;<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0 / sDs, U); CHKERRQ(info);
+<a name="line514">514: </a>        }
+
+<a name="line516">516: </a>        <font color="#4169E1">if</font> (0.0 != phi) {
+<a name="line517">517: </a>          // DFP portion of the update
+<a name="line518">518: </a>          // U = inv(D)*s*y
+<a name="line519">519: </a>          info = U-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(W, Gprev); CHKERRQ(info);
+
+<a name="line521">521: </a>          // Assemble
+<a name="line522">522: </a>          info = Q-&gt;<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0 / rhotemp + sDs / (rhotemp * rhotemp), V); CHKERRQ(info);
+<a name="line523">523: </a>          info = Q-&gt;<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-2.0 / rhotemp, U); CHKERRQ(info);
+<a name="line524">524: </a>        }
+
+<a name="line526">526: </a>        <font color="#4169E1">if</font> (0.0 == phi) {
+<a name="line527">527: </a>          info = U-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(P); CHKERRQ(info);
+<a name="line528">528: </a>        }
+<a name="line529">529: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (1.0 == phi) {
+<a name="line530">530: </a>          info = U-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Q); CHKERRQ(info);
+<a name="line531">531: </a>        }
+<a name="line532">532: </a>        <font color="#4169E1">else</font> {
+<a name="line533">533: </a>          // Broyden update
+<a name="line534">534: </a>          info = U-&gt;<A href="../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0 - phi, P, phi, Q); CHKERRQ(info);
+<a name="line535">535: </a>        }
+
+<a name="line537">537: </a>        // Obtain inverse and ensure positive definite
+<a name="line538">538: </a>        info = U-&gt;<A href="../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(); CHKERRQ(info);
+<a name="line539">539: </a>        info = U-&gt;<A href="../../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>(); CHKERRQ(info);
+
+<a name="line541">541: </a>        // Checking the diagonal scaling <font color="#4169E1">for</font> not a number and infinity
+<a name="line542">542: </a>        // should not be necessary <font color="#4169E1">for</font> the Broyden update
+<a name="line543">543: </a>        // info = U-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(U, &amp;sDs); CHKERRQ(info);
+<a name="line544">544: </a>        // <font color="#4169E1">if</font> (sDs != sDs) {
+<a name="line545">545: </a>        //   // not a number
+<a name="line546">546: </a>        //   info = U-&gt;<A href="../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(TAO_ZER_SAFEGUARD); CHKERRQ(info);
+<a name="line547">547: </a>        // }
+<a name="line548">548: </a>        // <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((sDs - sDs) != 0.0)) {
+<a name="line549">549: </a>        //   // infinity
+<a name="line550">550: </a>        //   info = U-&gt;<A href="../../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>(TAO_INF_SAFEGUARD); CHKERRQ(info);
+<a name="line551">551: </a>        // }
+
+<a name="line553">553: </a>        <font color="#4169E1">switch</font>(rScaleType) {
+<a name="line554">554: </a>        <font color="#4169E1">case</font> Rescale_None:
+<a name="line555">555: </a>          <font color="#4169E1">break</font>;
+
+<a name="line557">557: </a>        <font color="#4169E1">case</font> Rescale_Scalar:
+<a name="line558">558: </a>        <font color="#4169E1">case</font> Rescale_GL:
+<a name="line559">559: </a>          <font color="#4169E1">if</font> (rScaleType == Rescale_GL) {
+<a name="line560">560: </a>            // Gilbert and Lemarachal use the old diagonal
+<a name="line561">561: </a>            info = P-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(D); CHKERRQ(info);
+<a name="line562">562: </a>          }
+<a name="line563">563: </a>          <font color="#4169E1">else</font> {
+<a name="line564">564: </a>            // The <font color="#4169E1">default</font> version uses the current diagonal
+<a name="line565">565: </a>            info = P-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(U); CHKERRQ(info);
+<a name="line566">566: </a>          }
+
+<a name="line568">568: </a>          // Compute s^T s 
+<a name="line569">569: </a>          info = Xprev-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Xprev, &amp;s0temp); CHKERRQ(info);
+
+<a name="line571">571: </a>          // Save information <font color="#4169E1">for</font> special cases of scalar rescaling
+<a name="line572">572: </a>          yy_rhistory[(updates - 1) % rescale_history] = y0temp;
+<a name="line573">573: </a>          ys_rhistory[(updates - 1) % rescale_history] = rhotemp;
+<a name="line574">574: </a>          ss_rhistory[(updates - 1) % rescale_history] = s0temp;
+
+<a name="line576">576: </a>          <font color="#4169E1">if</font> (0.0 == r_beta) {
+<a name="line577">577: </a>            <font color="#4169E1">if</font> (1 == TaoMin(updates, rescale_history)) {
+<a name="line578">578: </a>              // Compute summations <font color="#4169E1">for</font> scalar scaling
+<a name="line579">579: </a>              info = W-&gt;<A href="../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(S[0], P); CHKERRQ(info);
+<a name="line580">580: </a>  
+<a name="line581">581: </a>              info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Y[0], &amp;ys_sum); CHKERRQ(info);
+<a name="line582">582: </a>              info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(W, &amp;ss_sum); CHKERRQ(info);
+<a name="line583">583: </a>  
+<a name="line584">584: </a>              yy_sum += yy_rhistory[0];
+<a name="line585">585: </a>            }
+<a name="line586">586: </a>            <font color="#4169E1">else</font> {
+<a name="line587">587: </a>              info = Q-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(P); CHKERRQ(info);
+<a name="line588">588: </a>              info = Q-&gt;<A href="../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(); CHKERRQ(info);
+
+<a name="line590">590: </a>              // Compute summations <font color="#4169E1">for</font> scalar scaling
+<a name="line591">591: </a>              yy_sum = 0;        // No safeguard required
+<a name="line592">592: </a>              ys_sum = 0;        // No safeguard required
+<a name="line593">593: </a>              ss_sum = 0;        // No safeguard required
+<a name="line594">594: </a>              <font color="#4169E1">for</font> (i = 0; i &lt; TaoMin(updates, rescale_history); ++i) {
+<a name="line595">595: </a>                info = W-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(S[i], Q); CHKERRQ(info);
+<a name="line596">596: </a>                info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Y[i], &amp;yDs); CHKERRQ(info);
+<a name="line597">597: </a>                ys_sum += yDs;
+
+<a name="line599">599: </a>                info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(W, &amp;sDs); CHKERRQ(info);
+<a name="line600">600: </a>                ss_sum += sDs;
+<a name="line601">601: </a>  
+<a name="line602">602: </a>                yy_sum += yy_rhistory[i];
+<a name="line603">603: </a>              }
+<a name="line604">604: </a>            }
+<a name="line605">605: </a>          }
+<a name="line606">606: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (0.5 == r_beta) {
+<a name="line607">607: </a>            <font color="#4169E1">if</font> (1 == TaoMin(updates, rescale_history)) {
+<a name="line608">608: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(Y[0], P); CHKERRQ(info);
+<a name="line609">609: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Y[0], &amp;yy_sum); CHKERRQ(info);
+
+<a name="line611">611: </a>              info = W-&gt;<A href="../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(S[0], P); CHKERRQ(info);
+<a name="line612">612: </a>              info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S[0], &amp;ss_sum); CHKERRQ(info);
+
+<a name="line614">614: </a>              ys_sum = ys_rhistory[0];
+<a name="line615">615: </a>            }
+<a name="line616">616: </a>            <font color="#4169E1">else</font> {
+<a name="line617">617: </a>              info = Q-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(P); CHKERRQ(info);
+<a name="line618">618: </a>              info = Q-&gt;<A href="../../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>(); CHKERRQ(info);
+
+<a name="line620">620: </a>              // Compute summations <font color="#4169E1">for</font> scalar scaling
+<a name="line621">621: </a>              yy_sum = 0;        // No safeguard required
+<a name="line622">622: </a>              ys_sum = 0;        // No safeguard required
+<a name="line623">623: </a>              ss_sum = 0;        // No safeguard required
+<a name="line624">624: </a>              <font color="#4169E1">for</font> (i = 0; i &lt; TaoMin(updates, rescale_history); ++i) {
+<a name="line625">625: </a>                info = V-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(Y[i], P); CHKERRQ(info);
+<a name="line626">626: </a>                info = V-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(Y[i], &amp;yDy); CHKERRQ(info);
+<a name="line627">627: </a>                yy_sum += yDy;
+
+<a name="line629">629: </a>                info = W-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(S[i], Q); CHKERRQ(info);
+<a name="line630">630: </a>                info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S[i], &amp;sDs); CHKERRQ(info);
+<a name="line631">631: </a>                ss_sum += sDs;
+
+<a name="line633">633: </a>                ys_sum += ys_rhistory[i];
+<a name="line634">634: </a>              }
+<a name="line635">635: </a>            }
+<a name="line636">636: </a>          }
+<a name="line637">637: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (1.0 == r_beta) {
+<a name="line638">638: </a>            // Compute summations <font color="#4169E1">for</font> scalar scaling
+<a name="line639">639: </a>            yy_sum = 0;        // No safeguard required
+<a name="line640">640: </a>            ys_sum = 0;        // No safeguard required
+<a name="line641">641: </a>            ss_sum = 0;        // No safeguard required
+<a name="line642">642: </a>            <font color="#4169E1">for</font> (i = 0; i &lt; TaoMin(updates, rescale_history); ++i) {
+<a name="line643">643: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(Y[i], P); CHKERRQ(info);
+<a name="line644">644: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S[i], &amp;yDs); CHKERRQ(info);
+<a name="line645">645: </a>              ys_sum += yDs;
+
+<a name="line647">647: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(V, &amp;yDy); CHKERRQ(info);
+<a name="line648">648: </a>              yy_sum += yDy;
+
+<a name="line650">650: </a>              ss_sum += ss_rhistory[i];
+<a name="line651">651: </a>            }
+<a name="line652">652: </a>          }
+<a name="line653">653: </a>          <font color="#4169E1">else</font> {
+<a name="line654">654: </a>            info = Q-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(P); CHKERRQ(info);
+
+<a name="line656">656: </a>            info = P-&gt;<A href="../../docs/manualpages/vector/Pow.html#Pow">Pow</A>(r_beta); CHKERRQ(info);
+<a name="line657">657: </a>            info = Q-&gt;<A href="../../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>(P, Q); CHKERRQ(info);
+
+<a name="line659">659: </a>            // Compute summations <font color="#4169E1">for</font> scalar scaling
+<a name="line660">660: </a>            yy_sum = 0;        // No safeguard required
+<a name="line661">661: </a>            ys_sum = 0;        // No safeguard required
+<a name="line662">662: </a>            ss_sum = 0;        // No safeguard required
+<a name="line663">663: </a>            <font color="#4169E1">for</font> (i = 0; i &lt; TaoMin(updates, rescale_history); ++i) {
+<a name="line664">664: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(P, Y[i]); CHKERRQ(info);
+<a name="line665">665: </a>              info = W-&gt;<A href="../../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>(Q, S[i]); CHKERRQ(info);
+
+<a name="line667">667: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(V, &amp;yDy); CHKERRQ(info);
+<a name="line668">668: </a>              info = V-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(W, &amp;yDs); CHKERRQ(info);
+<a name="line669">669: </a>              info = W-&gt;<A href="../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(W, &amp;sDs); CHKERRQ(info);
+
+<a name="line671">671: </a>              yy_sum += yDy;
+<a name="line672">672: </a>              ys_sum += yDs;
+<a name="line673">673: </a>              ss_sum += sDs;
+<a name="line674">674: </a>            }
+<a name="line675">675: </a>          }
+
+<a name="line677">677: </a>          <font color="#4169E1">if</font> (0.0 == r_alpha) {
+<a name="line678">678: </a>            // Safeguard ys_sum 
+<a name="line679">679: </a>            <font color="#4169E1">if</font> (0.0 == ys_sum) {
+<a name="line680">680: </a>              ys_sum = TAO_ZER_SAFEGUARD;
+<a name="line681">681: </a>            }
+
+<a name="line683">683: </a>            sigmanew = ss_sum / ys_sum;
+<a name="line684">684: </a>          }
+<a name="line685">685: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (0.5 == r_alpha) {
+<a name="line686">686: </a>            // Safeguard yy_sum 
+<a name="line687">687: </a>            <font color="#4169E1">if</font> (0.0 == yy_sum) {
+<a name="line688">688: </a>              yy_sum = TAO_ZER_SAFEGUARD;
+<a name="line689">689: </a>            }
+
+<a name="line691">691: </a>            sigmanew = sqrt(ss_sum / yy_sum);
+<a name="line692">692: </a>          }
+<a name="line693">693: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (1.0 == r_alpha) {
+<a name="line694">694: </a>            // Safeguard yy_sum 
+<a name="line695">695: </a>            <font color="#4169E1">if</font> (0.0 == yy_sum) {
+<a name="line696">696: </a>              yy_sum = TAO_ZER_SAFEGUARD;
+<a name="line697">697: </a>            }
+
+<a name="line699">699: </a>            sigmanew = ys_sum / yy_sum;
+<a name="line700">700: </a>          }
+<a name="line701">701: </a>          <font color="#4169E1">else</font> {
+<a name="line702">702: </a>            denom = 2*r_alpha*yy_sum;
+
+<a name="line704">704: </a>            // Safeguard denom
+<a name="line705">705: </a>            <font color="#4169E1">if</font> (0.0 == denom) {
+<a name="line706">706: </a>              denom = TAO_ZER_SAFEGUARD;
+<a name="line707">707: </a>            }
+
+<a name="line709">709: </a>            sigmanew = ((2*r_alpha-1)*ys_sum +
+<a name="line710">710: </a>                        sqrt((2*r_alpha-1)*(2*r_alpha-1)*ys_sum*ys_sum -
+<a name="line711">711: </a>                             4*r_alpha*(r_alpha-1)*yy_sum*ss_sum)) / denom;
+<a name="line712">712: </a>          }
+
+<a name="line714">714: </a>          // If Q has small values, then Q^(r_beta - 1)
+<a name="line715">715: </a>          // can have very large values.  Hence, ys_sum
+<a name="line716">716: </a>          // and ss_sum can be infinity.  In this <font color="#4169E1">case</font>,
+<a name="line717">717: </a>          // sigmanew can either be not-a-number or infinity.
+
+<a name="line719">719: </a>          <font color="#4169E1">if</font> (TaoInfOrNaN(sigmanew)) {
+<a name="line720">720: </a>            // sigmanew is not-a-number; skip rescaling
+<a name="line721">721: </a>          }
+<a name="line722">722: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (!sigmanew) {
+<a name="line723">723: </a>            // sigmanew is zero; this is a bad <font color="#4169E1">case</font>; skip rescaling
+<a name="line724">724: </a>          }
+<a name="line725">725: </a>          <font color="#4169E1">else</font> {
+<a name="line726">726: </a>            // sigmanew is positive
+<a name="line727">727: </a>            info = U-&gt;<A href="../../docs/manualpages/vector/Scale.html#Scale">Scale</A>(sigmanew); CHKERRQ(info);
+<a name="line728">728: </a>          }
+<a name="line729">729: </a>          <font color="#4169E1">break</font>;
+<a name="line730">730: </a>        }
+
+<a name="line732">732: </a>        // Modify <font color="#4169E1">for</font> previous information
+<a name="line733">733: </a>        <font color="#4169E1">switch</font>(limitType) {
+<a name="line734">734: </a>        <font color="#4169E1">case</font> Limit_Average:
+<a name="line735">735: </a>          <font color="#4169E1">if</font> (1.0 == mu) {
+<a name="line736">736: </a>            info = D-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(U); CHKERRQ(info);
+<a name="line737">737: </a>          }
+<a name="line738">738: </a>          <font color="#4169E1">else</font> <font color="#4169E1">if</font> (mu) {
+<a name="line739">739: </a>            info = D-&gt;<A href="../../docs/manualpages/vector/Axpby.html#Axpby">Axpby</A>(mu, U, 1.0 - mu); CHKERRQ(info);
+<a name="line740">740: </a>          }
+<a name="line741">741: </a>          <font color="#4169E1">break</font>;
+<a name="line742">742: </a> 
+<a name="line743">743: </a>        <font color="#4169E1">case</font> Limit_Relative:
+<a name="line744">744: </a>          <font color="#4169E1">if</font> (mu) {
+<a name="line745">745: </a>            info = P-&gt;<A href="../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(1.0 - mu, D); CHKERRQ(info);
+<a name="line746">746: </a>            info = Q-&gt;<A href="../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(1.0 + mu, D); CHKERRQ(info);
+<a name="line747">747: </a>            info = D-&gt;<A href="../../docs/manualpages/vector/Median.html#Median">Median</A>(P, U, Q); CHKERRQ(info);
+<a name="line748">748: </a>          }
+<a name="line749">749: </a>          <font color="#4169E1">break</font>;
+
+<a name="line751">751: </a>        <font color="#4169E1">case</font> Limit_Absolute:
+<a name="line752">752: </a>          <font color="#4169E1">if</font> (nu) {
+<a name="line753">753: </a>            info = P-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(D); CHKERRQ(info);
+<a name="line754">754: </a>            info = P-&gt;<A href="../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(-nu); CHKERRQ(info);
+<a name="line755">755: </a>               info = Q-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(D); CHKERRQ(info);
+<a name="line756">756: </a>            info = Q-&gt;<A href="../../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>(nu); CHKERRQ(info);
+<a name="line757">757: </a>            info = D-&gt;<A href="../../docs/manualpages/vector/Median.html#Median">Median</A>(P, U, Q); CHKERRQ(info);
+<a name="line758">758: </a>          }
+<a name="line759">759: </a>          <font color="#4169E1">break</font>;
+
+<a name="line761">761: </a><strong><font color="#FF0000">        default:</font></strong>
+<a name="line762">762: </a>          info = D-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(U); CHKERRQ(info);
+<a name="line763">763: </a>          <font color="#4169E1">break</font>;
+<a name="line764">764: </a>        } 
+<a name="line765">765: </a>        <font color="#4169E1">break</font>;
+<a name="line766">766: </a>      }
+
+<a name="line768">768: </a>      Xprev = S[lm]; Gprev = Y[lm];
+<a name="line769">769: </a>    } 
+<a name="line770">770: </a>    <font color="#4169E1">else</font> { 
+<a name="line771">771: </a>      ++rejects;
+<a name="line772">772: </a>    }
+<a name="line773">773: </a>  }
+<a name="line774">774: </a>  
+<a name="line775">775: </a>  ++iter;
+<a name="line776">776: </a>  info = Xprev-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(x); CHKERRQ(info);
+<a name="line777">777: </a>  info = Gprev-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(g); CHKERRQ(info);
+<a name="line778">778: </a>  TaoFunctionReturn(0);
+<a name="line779">779: </a>}
+
+<a name="line783">783: </a>int TaoLMVMMat::<A href="../../docs/manualpages/lsolver/View.html#View">View</A>()
+<a name="line784">784: </a>{
+<a name="line785">785: </a>  TaoFunctionBegin;
+<a name="line786">786: </a>  TaoFunctionReturn(0);
+<a name="line787">787: </a>}
+
+<a name="line791">791: </a>int TaoLMVMMat::SetDelta(double d)
+<a name="line792">792: </a>{
+<a name="line793">793: </a>  TaoFunctionBegin;
+<a name="line794">794: </a>  delta = TaoAbsDouble(d);
+<a name="line795">795: </a>  delta = TaoMax(delta_min, delta);
+<a name="line796">796: </a>  delta = TaoMin(delta_max, delta);
+<a name="line797">797: </a>  TaoFunctionReturn(0);
+<a name="line798">798: </a>}
+
+<a name="line802">802: </a>int TaoLMVMMat::SetScale(TaoVec *s)
+<a name="line803">803: </a>{
+<a name="line804">804: </a>  TaoFunctionBegin;
+<a name="line805">805: </a>  scale = s;
+<a name="line806">806: </a>  TaoFunctionReturn(0);
+<a name="line807">807: </a>}
+
+<a name="line811">811: </a>int TaoLMVMMat::SetH0(TaoMat *HH0)
+<a name="line812">812: </a>{
+<a name="line813">813: </a>  TaoFunctionBegin;
+<a name="line814">814: </a>  <font color="#4169E1">if</font> (H0) { 
+<a name="line815">815: </a>    H0 = 0;
+<a name="line816">816: </a>  }
+<a name="line817">817: </a>  H0default = TAO_TRUE;
+
+<a name="line819">819: </a>  <font color="#4169E1">if</font> (HH0) {
+<a name="line820">820: </a>    H0 = HH0;
+<a name="line821">821: </a>    H0default = TAO_FALSE;
+<a name="line822">822: </a>  }
+<a name="line823">823: </a>  TaoFunctionReturn(0);
+<a name="line824">824: </a>}
+
+<a name="line828">828: </a>int TaoLMVMMat::GetX0(TaoVec *x)
+<a name="line829">829: </a>{
+<a name="line830">830: </a>  int i,info;
+
+<a name="line832">832: </a>  TaoFunctionBegin;
+<a name="line833">833: </a>  info = x-&gt;<A href="../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(Xprev); CHKERRQ(info);
+<a name="line834">834: </a>  <font color="#4169E1">for</font> (i = 0; i &lt; lmnow; ++i) {
+<a name="line835">835: </a>    info = x-&gt;<A href="../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(-1.0, S[i]); CHKERRQ(info);
+<a name="line836">836: </a>  }
+<a name="line837">837: </a>  TaoFunctionReturn(0);
+<a name="line838">838: </a>}
+
+<a name="line842">842: </a>int TaoLMVMMat::InitialApproximation(TaoVec *x)
+<a name="line843">843: </a>{
+<a name="line844">844: </a>  TaoFunctionBegin;
+<a name="line845">845: </a>  TaoFunctionReturn(0);
+<a name="line846">846: </a>}
+
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetTolerances</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetTolerances"><H1>TaoSetTolerances</H1></A>
+Sets convergence parameters. TAO tries to satisfy an absolute stopping criteria or a relative stopping criteria. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetTolerances(TAO_SOLVER tao,double fatol,double frtol,double catol,double crtol)
+</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>fatol </B></TD><TD>- absolute convergence tolerance
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>frtol </B></TD><TD>- relative convergence tolerance
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>catol </B></TD><TD>- allowable error in constraints
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>crtol </B></TD><TD>- allowable relative error in constraints
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Options Database Keys</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_fatol &lt;fatol&gt; </B></TD><TD>- Sets fatol
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_frtol &lt;frtol&gt; </B></TD><TD>- Sets frtol
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_catol &lt;catol&gt; </B></TD><TD>- Sets catol
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>-tao_crtol &lt;crtol&gt; </B></TD><TD>- Sets crtol
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Absolute Stopping Criteria</FONT></H2>
+<pre>
+ f &lt;= f + fatol
+</pre>
+<pre>
+ B1 - catol &lt;= B(X) &lt;= B2 + catol
+</pre>
+<P>
+<H2><FONT COLOR="#CC3333">Relative stopping criteria</FONT></H2>
+<pre>
+ f &lt;= f + frtol*|f|
+</pre>
+<pre>
+ B1 - catol &lt;= B(X) &lt;= B2 + catol
+</pre>
+<P>
+
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ options, convergence
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(),<A HREF="../solver/TaoSetTrustRegionTolerance.html#TaoSetTrustRegionTolerance">TaoSetTrustRegionTolerance</A>(), <A HREF="../solver/TaoSetGradientTolerances.html#TaoSetGradientTolerances">TaoSetGradientTolerances</A>
+<BR><A HREF="../solver/TaoSetMaximumFunctionEvaluations.html#TaoSetMaximumFunctionEvaluations">TaoSetMaximumFunctionEvaluations</A>()
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>beginner
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao.c.html#TaoSetTolerances">src/interface/tao.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+<P><H3><FONT COLOR="#CC3333">Examples</FONT></H3>
+<A HREF="../../../src/unconstrained/examples/tutorials/rosenbrock1f.F.html">src/unconstrained/examples/tutorials/rosenbrock1f.F.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/eptorsion3.c.html">src/petsctao/gridapplication/examples/eptorsion3.c.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/jbearing3.c.html">src/petsctao/gridapplication/examples/jbearing3.c.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/minsurf3.c.html">src/petsctao/gridapplication/examples/minsurf3.c.html</A><BR>
+<A HREF="../../../src/petsctao/gridapplication/examples/combustion3.c.html">src/petsctao/gridapplication/examples/combustion3.c.html</A><BR>
+</BODY></HTML>

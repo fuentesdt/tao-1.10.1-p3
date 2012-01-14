@@ -1,0 +1,258 @@
+#! /bin/csh
+#
+# $Id: s.builddist 1.45 02/07/15 15:59:36-05:00 sarich@holmes.mcs.anl.gov $ 
+#
+#  builddist - Makes a distribution version of TAO.
+#
+#  Usage: builddist <version_number>
+#         For example, the command
+#              builddist 0.0.1
+#         creates the TAO tar file tao-0.0.2.tar.gz in your current working directory.
+#
+#  See TAO installation instructions for info about using this compressed tar file.
+#
+#  Notes: 
+#
+#
+#  This script has been tested when run as the user 'aotools' ... so for best results,
+#  use this account to run the script.  Difficulties have been encountered when running
+#  as other users due to incorrect paths/environmental variables.
+#
+#  
+
+#
+# If /sandbox/{username}/{tempdir} does not exist create it.
+#
+# Create temporary directory to check cvs files to
+set tmpdir = "/sandbox/${USER}/tmptaodirzxj"
+if (! -d $tmpdir) then
+  mkdir -p $tmpdir
+else
+  rm -rf $tmpdir/*
+endif
+if (! -d $tmpdir) then
+  echo "Cannot create $tmpdir. Exiting.."
+endif
+
+
+set tardir = "${tmpdir}/tarring"
+echo "Verifying that tmp directory exists ($tardir) ..."
+if (! -d $tardir) then
+  mkdir -p $tardir
+endif
+if (! -d $tardir) then
+  echo "Cannot create $tardir. Exiting.."
+endif
+
+echo "$tardir"
+
+echo ' '
+echo '------------- Have you done ALL of the following? ------------------------'
+echo '(1) Excluded any directories not for public release by editing tao/maint/xclude (for example, src/least_squares, docs/tex, etc.)'
+echo '(2) Set the version number in tao/docs/changes.html, tao/docs/tex/manual/manual_tex.tex, manual.tex, and intro.tex?'
+echo '(3) Set the version number and release date in tao/include/tao_version.h?'
+echo '(4) Checked manual pages (by running make tao_allmanpages to build latexpages and wwwpages)?'
+echo '(5) Checked the users manual (and intro) in .ps and .html formats?'
+echo '(6) Rebuilt and checked all Fortran stubs (via make ACTION=tao_fortranstubs tree)?'
+echo '(7) Made sure that all *.f Fortran examples run correctly?'
+echo '(8) Made sure that all Fortran include files match their C counterparts?'
+
+set version=""
+set tag=""
+set lite=""
+    
+if ($#argv == 1) then
+    if ($1 == "lite") then
+      set lite="lite"
+      set version="-lite"
+    else
+      set version="-$1"
+      set tag = "-r $1"
+    endif
+endif
+if ($#argv == 2) then
+  set version="-$1-$2"
+  set tag = "-r $1"
+  if ($2 == "lite") then
+    set lite="lite"
+  endif
+endif
+
+echo ' '
+echo "Building ~/tao$version.tar.gz"
+echo ' '
+#
+echo ' '
+echo "Checking out current TAO version from /home/aotools/cvs to $tmpdir/tao"
+#
+cd $tmpdir
+#
+echo "cvs -d /home/aotools/cvs co  $tag  -d tao$version tao"
+cvs -d /home/aotools/cvs co  $tag -d tao$version  tao
+
+echo "cd tao$version"
+cd tao$version
+
+
+cp src/unconstrained/examples/tutorials/rosenbrock1.c examples
+cp src/unconstrained/examples/tutorials/rosenbrock1f.F examples
+cp src/unconstrained/examples/tutorials/rosenbrock1f.h examples
+cp src/unconstrained/examples/tutorials/minsurf1.c examples
+cp src/bound/examples/tutorials/plate2.c examples
+
+setenv PETSC_DIR /home/sarich/software/petsc-3.1-p2
+setenv PETSC_ARCH linux-gnu-cxx-debug
+setenv TAO_DIR $tmpdir/tao$version
+setenv PYTHONPATH $PETSC_DIR/python/BuildSystem:$PETSC_DIR/python
+setenv PATH /home/sarich/software/sowing/bin:/home/sarich/software/bin:$PATH
+
+#
+echo ' '
+echo 'Making sure all directories are clean ...'
+
+make ACTION=clean tree
+#
+echo ' '
+echo 'Building Fortran interface stubs ...'
+make tao_allfortranstubs BFORT=/home/sarich/software/sowing-1.1.10/src/bfort/bfort
+
+
+if ($lite != "lite") then
+  echo ' '
+  echo 'Building manual pages (html and latex formats) ...'
+
+  # make no docs for least_squares, and do make docs for ga
+  mv $TAO_DIR/src/least_squares $tmpdir
+  setenv GA_SUBDIR  globalarraytao
+  setenv DA_ADIC_DIR daadic
+
+  # make the empty directories because doctext won't
+  cd $TAO_DIR/docs/manualpages
+  mkdir Bound Complementarity LeastSquares Unconstrained esiman \
+        indexset lsolver matrix ptaopages solver taoapp abcapp vector daapp gaapp
+  cd $TAO_DIR
+  echo '************************'
+  echo '*** make tao_allmanpages'
+  echo '************************'
+  echo "make tao_allmanpages LOC=$TAO_DIR MAPNAMES=/home/sarich/software/sowing-1.1.10/src/mapnames/mapnames C2HTML=/home/sarich/software/c2html/bin/c2html  DOCTEXT=/home/sarich/software/sowing-1.1.10/src/doctext/doctext"
+  make tao_allmanpages LOC=$TAO_DIR MAPNAMES=/home/sarich/software/sowing-1.1.10/src/mapnames/mapnames C2HTML=/home/sarich/software/c2html/bin/c2html  DOCTEXT=/home/sarich/software/sowing-1.1.10/src/doctext/doctext
+
+  echo '************************'
+  echo '*** make exercises   ***'
+  echo '************************'
+  echo "make exercises  MAPNAMES=/home/sarich/software/sowing-1.1.10/src/mapnames/mapnames C2HTML=/home/sarich/software/c2html/bin/c2html"
+  make exercises  MAPNAMES=/home/sarich/software/sowing-1.1.10/src/mapnames/mapnames C2HTML=/home/sarich/software/c2html/bin/c2html
+
+  mv $tmpdir/least_squares $TAO_DIR/src
+  #
+  echo ' '
+  echo 'Building users manual (html and pdf formats) ...'
+  
+  mkdir $TAO_DIR/docs/manual
+  mkdir $TAO_DIR/docs/splitmanual
+  cd $TAO_DIR/docs/tex/manual
+  make manual.html
+  make splitmanual.html
+  make manual.pdf
+endif
+
+#
+echo ' '
+echo 'Creating EMACS-TAGS ...;'
+cd $TAO_DIR; make tao_alletags 
+#
+#
+echo ' '
+echo 'Excluding any irrelevant files from TAO distribution ...'
+
+cd $tmpdir
+
+echo "/bin/tar -c -X /sandbox/sarich/tmptaodirzxj/tao$version/maint/xclude -f /sandbox/sarich/tmptaodirzxj/tarring/tao$version.tar tao$version"
+/bin/tar -c -X $tmpdir/tao$version/maint/xclude -f $tardir/tao$version.tar tao$version
+    
+#
+cd $tardir
+echo '/bin/tar xf $tardir/tao$version.tar'
+/bin/tar xf $tardir/tao$version.tar
+#
+echo ' '
+echo 'Setting the correct file permissions ...'
+cd $tardir
+chmod -R a-w tao$version
+chmod -R u+w tao$version
+chmod -R a+r tao$version
+echo ' changing directory permissions a+x'
+find tao$version -type d -name "*" -exec chmod a+x {} \;
+#
+#/bin/rm -f $tardir/tao.tar
+#echo " renaming tao to tao$version "
+
+#if ("x$version" != "x") then 
+#    mv tao tao$version
+#endif
+
+    
+echo 'Building TAO distribution file in home directory...'
+/bin/tar cf $tardir/tao$version.tar tao$version
+
+echo 'gzip $tardir/tao$version.tar'
+gzip -f $tardir/tao$version.tar
+
+echo 'Changing Permissions of tar.gz file'
+chmod ug+w $tardir/tao$version.tar.gz
+
+echo '/bin/cp $tardir/tao$version.tar.gz ~/'
+
+/bin/cp -p $tardir/tao$version.tar.gz ~/
+if ($lite == "lite") then
+  /bin/cp -p $tardir/tao$version.tar.gz /home/aotools/web/download
+endif
+
+
+
+#if ($lite != "lite") then
+  echo 'untarring .gz file and compiling in temp directory ...'
+  set rundir = $tardir/../rundir
+  /bin/mkdir -p $rundir
+  /bin/cp $tardir/tao$version.tar.gz $rundir
+  cd $rundir
+  gunzip -f tao$version.tar.gz
+  tar xf tao$version.tar
+
+  setenv TAO_DIR $rundir/tao$version
+  unsetenv GA_SUBDIR  
+  unsetenv DA_ADIC_DIR
+  cd $TAO_DIR
+  if ! ( -f $TAO_DIR/bmake/packages.$PETSC_ARCH ) then
+    /bin/cp -f $TAO_DIR/bmake/packages  $TAO_DIR/bmake/packages.$PETSC_ARCH
+  endif
+  make 
+  make tao_testexamples 
+  make tao_testfortran 
+  make tao_testexamples_uni 
+#endif
+
+#remove temporary directory (use full name to avoid any accidents).
+#echo "Removing temporary directory /sandbox/${USER}/tmptaodirzxj"
+#/bin/rm -R -f $tmpdir
+
+#
+# To test locally and build a local distribution:
+#
+#gunzip -c tao$version.tar.gz | tar -xf -
+#do chgrp -R tao tao$version
+#do chmod -R g+w tao$version
+# do find tao$version -type d -name '*' chmod g+s tao$version
+# Run du on tao$version to make sure there is no garbage
+# Test manpages and manual in tao$version
+# Do builds in tao$version -- Remember that you must set
+# TAO_DIR in .cshrc to  point to tao$version
+#
+# Put a .gz file in the ftp site.
+
+# Add to tao.html the current release and date (in Overview section)
+# and to docs/tex/Releases
+#
+
+
+

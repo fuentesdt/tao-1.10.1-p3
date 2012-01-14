@@ -1,0 +1,10 @@
+iter = 0, Function value 2199.16, Residual: 5587.988969 
+iter = 1, Function value 2.92684, Residual: 90.642010 
+iter = 2, Function value 0.56311, Residual: 13.202605 
+iter = 3, Function value 0.523731, Residual: 0.596910 
+iter = 4, Function value 0.513503, Residual: 1.496565 
+iter = 5, Function value 0.506713, Residual: 2.698523 
+iter = 6, Function value 0.505508, Residual: 0.004546 
+iter = 7, Function value 0.505499, Residual: 0.004522 
+iter = 8, Function value 0.505499, Residual: 0.000213 
+iter = 9, Function value 0.505499, Residual: 0.000032 

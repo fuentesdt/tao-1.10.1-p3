@@ -1,0 +1,20 @@
+# Makefile template for client-F77 libraries
+#
+
+ALL: lib
+#get source and header filenames for this sidl package
+-include babel.make
+
+# Replace with the actual package name and necessary flags/libs
+NAME = @SIDL_PACKAGE_NAME@
+OBJSC = $(STUBSRCS:.c=.o) $(IORSRCS:.c=.o)
+SOURCEC=$(STUBSRCS) $(IORSRCS)
+SOURCEH=$(IORHDRS)
+CFLAGS = ${TAO_SIDL_FLAGS_F77}
+
+LIBBASE=lib$(NAME)-client-F77
+CLEANFILES= $(STUBDOCS) $(STUBSRCS) babel.make
+
+#get babel_home variable
+include $(TAO_DIR)/bmake/tao_common
+

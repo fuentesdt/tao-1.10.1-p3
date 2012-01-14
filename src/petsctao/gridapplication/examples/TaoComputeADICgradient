@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Must set the ADIC environmental variables before running this scipt
+# setenv ADIC /home/derivs/adic
+
+$ADIC/bin/$ADIC_ARCH/adiC -d gradient $1
+sed s/"ad_AD_Init()"/"ad_AD_Init(int)"/g ad_deriv.h > ad_deriv1.h
+mv ad_deriv1.h ad_deriv.h

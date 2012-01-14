@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
+The top-level auxiliary file: manual.aux
+The style file: plain.bst
+Database file #1: ../tao.bib
+Database file #2: mathprog.bib
+Warning--I didn't find a database entry for "Gilbert-Lemarachal"
+Warning--empty author in MPI-final
+You've used 27 entries,
+            2118 wiz_defined-function locations,
+            780 strings with 10066 characters,
+and the built_in function-call counts, 8437 in all, are:
+= -- 858
+> -- 390
+< -- 5
++ -- 158
+- -- 124
+* -- 560
+:= -- 1455
+add.period$ -- 83
+call.type$ -- 27
+change.case$ -- 137
+chr.to.int$ -- 0
+cite$ -- 28
+duplicate$ -- 314
+empty$ -- 635
+format.name$ -- 124
+if$ -- 1732
+int.to.chr$ -- 0
+int.to.str$ -- 27
+missing$ -- 24
+newline$ -- 137
+num.names$ -- 58
+pop$ -- 120
+preamble$ -- 1
+purify$ -- 114
+quote$ -- 0
+skip$ -- 217
+stack$ -- 0
+substring$ -- 534
+swap$ -- 50
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 102
+warning$ -- 1
+while$ -- 90
+width$ -- 29
+write$ -- 298
+(There were 2 warnings)

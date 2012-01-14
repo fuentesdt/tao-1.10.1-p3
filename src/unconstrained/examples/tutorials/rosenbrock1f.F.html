@@ -1,0 +1,330 @@
+<center><a href="rosenbrock1f.F">Actual source code: rosenbrock1f.F</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:11+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a>! <font color="#666666">"$Id$"</font>;
+<a name="line2">  2: </a>!
+<a name="line3">  3: </a>!  Program usage: mpirun -np 1 rosenbrock1f [-help] [all TAO options] 
+<a name="line4">  4: </a>!
+<a name="line5">  5: </a>!  Description:  This example demonstrates use of the TAO package to solve an
+<a name="line6">  6: </a>!  unconstrained minimization problem on a single processor.  We minimize the 
+<a name="line7">  7: </a>!  extended Rosenbrock function: 
+<a name="line8">  8: </a>!       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
+<a name="line9">  9: </a>!
+<a name="line10"> 10: </a>!  The C version of this code is rosenbrock1.c
+<a name="line11"> 11: </a>!
+<a name="line12"> 12: </a>!<font color="#B22222">/*T</font>
+<a name="line13"> 13: </a><font color="#B22222">!  Concepts: TAO - Solving an unconstrained minimization problem</font>
+<a name="line14"> 14: </a><font color="#B22222">!  Routines: <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(); <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>();</font>
+<a name="line15"> 15: </a><font color="#B22222">!  Routines: <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>();</font>
+<a name="line16"> 16: </a><font color="#B22222">!  Routines: <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A>(); </font>
+<a name="line17"> 17: </a><font color="#B22222">!  Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>();</font>
+<a name="line18"> 18: </a><font color="#B22222">!  Routines: <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(); </font>
+<a name="line19"> 19: </a><font color="#B22222">!  Routines: <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>(); <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(); <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>();</font>
+<a name="line20"> 20: </a><font color="#B22222">!  Routines: <A href="../../../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>(); <A href="../../../../docs/manualpages/solver/TaoGetTerminationReason.html#TaoGetTerminationReason">TaoGetTerminationReason</A>();                              </font>
+<a name="line21"> 21: </a><font color="#B22222">!  Processors: 1</font>
+<a name="line22"> 22: </a><font color="#B22222">!T*/</font> 
+<a name="line23"> 23: </a>!
+<a name="line24"> 24: </a>! ---------------------------------------------------------------------- 
+<a name="line25"> 25: </a>!
+<a name="line26"> 26: </a>      implicit none
+
+<a name="line28"> 28: </a><font color="#A020F0">#include </font><font color="#666666">"rosenbrock1f.h"</font><font color="#A020F0"></font>
+
+<a name="line30"> 30: </a>! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+<a name="line31"> 31: </a>!                   Variable declarations
+<a name="line32"> 32: </a>! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+<a name="line33"> 33: </a>!
+<a name="line34"> 34: </a>!  See additional variable declarations in the file rosenbrock1f.h
+
+<a name="line36"> 36: </a>      integer          info    ! used to check <font color="#4169E1">for</font> functions returning nonzeros
+<a name="line37"> 37: </a>      Vec              x       ! solution vector
+<a name="line38"> 38: </a>      Mat              H       ! hessian matrix
+<a name="line39"> 39: </a>      TAO_SOLVER       tao     ! TAO_SOVER context
+<a name="line40"> 40: </a>      TAO_APPLICATION  taoapp   ! TAO application context
+<a name="line41"> 41: </a>      PetscTruth       flg     
+<a name="line42"> 42: </a>      PetscInt         i2,i1
+<a name="line43"> 43: </a>      integer          size,rank    ! number of processes running
+<a name="line44"> 44: </a>      PetscScalar      zero
+<a name="line45"> 45: </a>      TaoTerminateReason reason
+
+<a name="line47"> 47: </a>      
+
+
+<a name="line50"> 50: </a>!  Note: Any user-defined Fortran routines (such as FormGradient)
+<a name="line51"> 51: </a>!  MUST be declared as external.
+
+<a name="line53"> 53: </a>      external FormFunctionGradient,FormHessian
+
+<a name="line55"> 55: </a>      zero = 0.0d0
+<a name="line56"> 56: </a>      i2 = 2
+<a name="line57"> 57: </a>      i1 = 1
+
+<a name="line59"> 59: </a>!  Initialize TAO and PETSc
+<a name="line60"> 60: </a>      call PetscInitialize(PETSC_NULL_CHARACTER,info)
+<a name="line61"> 61: </a>      call <A href="../../../../docs/manualpages/solver/TaoInitialize.html#TaoInitialize">TaoInitialize</A>(PETSC_NULL_CHARACTER,info)
+
+<a name="line63"> 63: </a>      call MPI_Comm_size(PETSC_COMM_WORLD,size,info)
+<a name="line64"> 64: </a>      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,info)
+<a name="line65"> 65: </a>      <font color="#4169E1">if</font> (size .ne. 1) then
+<a name="line66"> 66: </a>         <font color="#4169E1">if</font> (rank .eq. 0) then
+<a name="line67"> 67: </a>            write(6,*) 'This is a uniprocessor example only!'
+<a name="line68"> 68: </a>         endif
+<a name="line69"> 69: </a>         SETERRQ(1,' ',info)
+<a name="line70"> 70: </a>      endif
+
+<a name="line72"> 72: </a>!  Initialize problem parameters
+<a name="line73"> 73: </a>      n     = 2
+<a name="line74"> 74: </a>      alpha = 99.0d0
+
+
+
+<a name="line78"> 78: </a>! Check <font color="#4169E1">for</font> command line arguments to override defaults        
+<a name="line79"> 79: </a>      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,           &amp;
+<a name="line80"> 80: </a>     &amp;                        info)
+<a name="line81"> 81: </a>      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-alpha',            &amp;
+<a name="line82"> 82: </a>     &amp;                           alpha,flg,info)
+
+<a name="line84"> 84: </a>!  Allocate vectors <font color="#4169E1">for</font> the solution and gradient
+<a name="line85"> 85: </a>      call VecCreateSeq(PETSC_COMM_SELF,n,x,info)
+
+<a name="line87"> 87: </a>!  Allocate storage space <font color="#4169E1">for</font> Hessian; 
+<a name="line88"> 88: </a>      call MatCreateSeqBAIJ(PETSC_COMM_SELF,i2,n,n,i1,                   &amp;
+<a name="line89"> 89: </a>     &amp;     PETSC_NULL_INTEGER, H,info)
+
+<a name="line91"> 91: </a>      call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,info)
+
+
+<a name="line94"> 94: </a>!  The TAO code begins here 
+
+<a name="line96"> 96: </a>!  Create TAO solver
+<a name="line97"> 97: </a>      call <A href="../../../../docs/manualpages/solver/TaoCreate.html#TaoCreate">TaoCreate</A>(PETSC_COMM_SELF,TAO_NULL_CHARACTER,tao,info)
+<a name="line98"> 98: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoApplicationCreate.html#TaoApplicationCreate">TaoApplicationCreate</A>(PETSC_COMM_SELF,taoapp,info)
+<a name="line99"> 99: </a>!  Set routines <font color="#4169E1">for</font> function, gradient, and hessian evaluation 
+
+<a name="line101">101: </a>!     <A href="../../../../docs/manualpages/ptaopages/TaoAppSetObjectiveAndGradientRoutine.html#TaoAppSetObjectiveAndGradientRoutine">TaoAppSetObjectiveAndGradientRoutine</A> is shortened to 31 chars to comply with some compilers
+<a name="line102">102: </a>      call TaoAppSetObjectiveAndGradientRo(taoapp,                      &amp;
+<a name="line103">103: </a>     &amp;     FormFunctionGradient,TAO_NULL_OBJECT,info)
+<a name="line104">104: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianMat.html#TaoAppSetHessianMat">TaoAppSetHessianMat</A>(taoapp,H,H,info)
+<a name="line105">105: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetHessianRoutine.html#TaoAppSetHessianRoutine">TaoAppSetHessianRoutine</A>(taoapp,FormHessian,TAO_NULL_OBJECT,   &amp;
+<a name="line106">106: </a>     &amp;     info)
+
+<a name="line108">108: </a>!  Optional: Set initial guess
+<a name="line109">109: </a>      call VecSet(x, zero, info)
+<a name="line110">110: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppSetInitialSolutionVec.html#TaoAppSetInitialSolutionVec">TaoAppSetInitialSolutionVec</A>(taoapp, x, info)
+
+
+<a name="line113">113: </a>!  Check <font color="#4169E1">for</font> TAO command line options
+<a name="line114">114: </a>      call <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao,1.0d-3,1.0d-3,1.0d-3,1.0d-3,info)
+<a name="line115">115: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>(taoapp,tao,info)
+
+<a name="line117">117: </a>!  SOLVE THE APPLICATION
+<a name="line118">118: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoSolveApplication.html#TaoSolveApplication">TaoSolveApplication</A>(taoapp,tao,info)
+
+<a name="line120">120: </a>      call <A href="../../../../docs/manualpages/solver/TaoGetTerminationReason.html#TaoGetTerminationReason">TaoGetTerminationReason</A>(tao, reason, info)
+<a name="line121">121: </a>      <font color="#4169E1">if</font> (reason .le. 0) then
+<a name="line122">122: </a>         print *,'Try a different TAO method, adjust some parameters,'
+<a name="line123">123: </a>         print *,'or check the function evaluation routines.'
+<a name="line124">124: </a>      endif
+
+<a name="line126">126: </a>!  <A href="../../../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>() prints info about the TAO solver; the option
+<a name="line127">127: </a>!      -tao_view 
+<a name="line128">128: </a>!  can alternatively be used to activate this at runtime.
+<a name="line129">129: </a>!     call <A href="../../../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>(tao,info)
+<a name="line130">130: </a>      
+
+<a name="line132">132: </a>!  Free TAO data structures
+<a name="line133">133: </a>      call <A href="../../../../docs/manualpages/solver/TaoDestroy.html#TaoDestroy">TaoDestroy</A>(tao,info)
+<a name="line134">134: </a>      call <A href="../../../../docs/manualpages/ptaopages/TaoAppDestroy.html#TaoAppDestroy">TaoAppDestroy</A>(taoapp,info)
+
+<a name="line136">136: </a>!  Free PETSc data structures 
+<a name="line137">137: </a>      call VecDestroy(x,info)
+<a name="line138">138: </a>      call MatDestroy(H,info)
+
+<a name="line140">140: </a>!  Finalize TAO 
+<a name="line141">141: </a>      call <A href="../../../../docs/manualpages/solver/TaoFinalize.html#TaoFinalize">TaoFinalize</A>(info)
+<a name="line142">142: </a>      call PetscFinalize(info)
+
+<a name="line144">144: </a>      end
+
+
+<a name="line147">147: </a>! --------------------------------------------------------------------
+<a name="line148">148: </a>!  FormFunctionGradient - Evaluates the function f(X) and gradient G(X)
+<a name="line149">149: </a>!
+<a name="line150">150: </a>!  Input Parameters:
+<a name="line151">151: </a>!  tao - the TAO_SOLVER context
+<a name="line152">152: </a>!  X   - input vector
+<a name="line153">153: </a>!  dummy - not used
+<a name="line154">154: </a>!
+<a name="line155">155: </a>!  Output Parameters:
+<a name="line156">156: </a>!  G - vector containing the newly evaluated gradient
+<a name="line157">157: </a>!  f - function value
+<a name="line158">158: </a>      
+<a name="line159">159: </a>      subroutine FormFunctionGradient(taoapp, X, f, G, dummy, info)
+<a name="line160">160: </a>      implicit none
+
+<a name="line162">162: </a>! n,alpha defined in rosenbrock1f.h
+<a name="line163">163: </a><font color="#A020F0">#include </font><font color="#666666">"rosenbrock1f.h"</font><font color="#A020F0"></font>
+
+<a name="line165">165: </a>      TAO_APPLICATION  taoapp
+<a name="line166">166: </a>      Vec              X,G
+<a name="line167">167: </a>      PetscScalar      f
+<a name="line168">168: </a>      integer          info
+<a name="line169">169: </a>      PetscInt         dummy
+
+
+<a name="line172">172: </a>      PetscScalar      ff,t1,t2
+<a name="line173">173: </a>      PetscInt         i,nn
+
+<a name="line175">175: </a>! PETSc's VecGetArray acts differently in Fortran than it does in C.
+<a name="line176">176: </a>! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, info)
+<a name="line177">177: </a>! will <font color="#4169E1">return</font> an array of doubles referenced by x_array offset by x_index.
+<a name="line178">178: </a>!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
+<a name="line179">179: </a>! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
+<a name="line180">180: </a>      PetscScalar      g_v(0:1),x_v(0:1)
+<a name="line181">181: </a>      PetscOffset      g_i,x_i
+
+<a name="line183">183: </a>      info = 0
+<a name="line184">184: </a>      nn = n/2
+<a name="line185">185: </a>      ff = 0
+
+<a name="line187">187: </a>!     Get pointers to vector data
+<a name="line188">188: </a>      call VecGetArray(X,x_v,x_i,info)
+<a name="line189">189: </a>      call VecGetArray(G,g_v,g_i,info)
+
+
+<a name="line192">192: </a>!     Compute G(X)
+<a name="line193">193: </a>      <font color="#4169E1">do</font> i=0,nn-1
+<a name="line194">194: </a>         t1 = x_v(x_i+2*i+1) - x_v(x_i+2*i)*x_v(x_i+2*i)
+<a name="line195">195: </a>         t2 = 1.0 - x_v(x_i + 2*i)
+<a name="line196">196: </a>         ff = ff + alpha*t1*t1 + t2*t2
+<a name="line197">197: </a>         g_v(g_i + 2*i) = -4*alpha*t1*x_v(x_i + 2*i) - 2.0*t2
+<a name="line198">198: </a>         g_v(g_i + 2*i + 1) = 2.0*alpha*t1
+<a name="line199">199: </a>      enddo
+
+<a name="line201">201: </a>!     Restore vectors
+<a name="line202">202: </a>      call VecRestoreArray(X,x_v,x_i,info)
+<a name="line203">203: </a>      call VecRestoreArray(G,g_v,g_i,info)
+
+<a name="line205">205: </a>      f = ff
+<a name="line206">206: </a>      call PetscLogFlops(nn*15,info)
+
+<a name="line208">208: </a>      <font color="#4169E1">return</font>
+<a name="line209">209: </a>      end
+
+<a name="line211">211: </a>!  
+<a name="line212">212: </a>! ---------------------------------------------------------------------
+<a name="line213">213: </a>!
+<a name="line214">214: </a>!  FormHessian - Evaluates Hessian matrix.
+<a name="line215">215: </a>!
+<a name="line216">216: </a>!  Input Parameters:
+<a name="line217">217: </a>!  tao     - the TAO_SOLVER context
+<a name="line218">218: </a>!  X       - input vector
+<a name="line219">219: </a>!  dummy   - optional user-defined context, as set by SNESSetHessian()
+<a name="line220">220: </a>!            (not used here)
+<a name="line221">221: </a>!
+<a name="line222">222: </a>!  Output Parameters:
+<a name="line223">223: </a>!  H      - Hessian matrix
+<a name="line224">224: </a>!  PrecH  - optionally different preconditioning matrix (not used here)
+<a name="line225">225: </a>!  flag   - flag indicating matrix structure
+<a name="line226">226: </a>!  info   - error code
+<a name="line227">227: </a>!
+<a name="line228">228: </a>!  Note: Providing the Hessian may not be necessary.  Only some solvers
+<a name="line229">229: </a>!  require this matrix.
+
+<a name="line231">231: </a>      subroutine FormHessian(taoapp,X,H,PrecH,flag,dummy,info)
+<a name="line232">232: </a>      implicit none
+
+<a name="line234">234: </a><font color="#A020F0">#include </font><font color="#666666">"rosenbrock1f.h"</font><font color="#A020F0"></font>
+
+<a name="line236">236: </a>!  Input/output variables:
+<a name="line237">237: </a>      TAO_APPLICATION  taoapp
+<a name="line238">238: </a>      Vec              X
+<a name="line239">239: </a>      Mat              H, PrecH
+<a name="line240">240: </a>      MatStructure     flag
+<a name="line241">241: </a>      integer          info
+<a name="line242">242: </a>      PetscInt         dummy
+<a name="line243">243: </a>      
+<a name="line244">244: </a>      PetscScalar      v(0:1,0:1)
+<a name="line245">245: </a>      PetscTruth assembled
+
+<a name="line247">247: </a>! PETSc's VecGetArray acts differently in Fortran than it does in C.
+<a name="line248">248: </a>! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, info)
+<a name="line249">249: </a>! will <font color="#4169E1">return</font> an array of doubles referenced by x_array offset by x_index.
+<a name="line250">250: </a>!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
+<a name="line251">251: </a>! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
+<a name="line252">252: </a>      PetscScalar      x_v(0:1)
+<a name="line253">253: </a>      PetscOffset      x_i
+<a name="line254">254: </a>      PetscInt         i,nn,ind(0:1),i2
+
+
+<a name="line257">257: </a>      info = 0
+<a name="line258">258: </a>      nn= n/2
+<a name="line259">259: </a>      i2 = 2
+
+<a name="line261">261: </a>!  Zero existing matrix entries
+<a name="line262">262: </a>      call MatAssembled(H,assembled,info)
+<a name="line263">263: </a>      <font color="#4169E1">if</font> (assembled .eqv. PETSC_TRUE) call MatZeroEntries(H,info)
+
+<a name="line265">265: </a>!  Get a pointer to vector data
+
+<a name="line267">267: </a>      call VecGetArray(X,x_v,x_i,info)
+
+<a name="line269">269: </a>!  Compute Hessian entries
+
+<a name="line271">271: </a>      <font color="#4169E1">do</font> i=0,nn-1
+<a name="line272">272: </a>         v(1,1) = 2.0*alpha
+<a name="line273">273: </a>         v(0,0) = -4.0*alpha*(x_v(x_i+2*i+1) -                          &amp;
+<a name="line274">274: </a>     &amp;                3*x_v(x_i+2*i)*x_v(x_i+2*i))+2
+<a name="line275">275: </a>         v(1,0) = -4.0*alpha*x_v(x_i+2*i)
+<a name="line276">276: </a>         v(0,1) = v(1,0)
+<a name="line277">277: </a>         ind(0) = 2*i
+<a name="line278">278: </a>         ind(1) = 2*i + 1
+<a name="line279">279: </a>         call MatSetValues(H,i2,ind,i2,ind,v,INSERT_VALUES,info)
+<a name="line280">280: </a>      enddo
+
+<a name="line282">282: </a>!  Restore vector
+
+<a name="line284">284: </a>      call VecRestoreArray(X,x_v,x_i,info)
+
+<a name="line286">286: </a>!  Assemble matrix
+
+<a name="line288">288: </a>      call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,info)
+<a name="line289">289: </a>      call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,info)
+
+<a name="line291">291: </a>      call PetscLogFlops(nn*9,info)
+
+<a name="line293">293: </a>!  Set flag to indicate that the Hessian matrix retains an identical
+<a name="line294">294: </a>!  nonzero structure throughout all nonlinear iterations (although the
+<a name="line295">295: </a>!  values of the entries change). Thus, we can save some work in setting
+<a name="line296">296: </a>!  up the preconditioner (e.g., no need to redo symbolic factorization <font color="#4169E1">for</font>
+<a name="line297">297: </a>!  ICC preconditioners).
+<a name="line298">298: </a>!   - If the nonzero structure of the matrix is different during
+<a name="line299">299: </a>!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
+<a name="line300">300: </a>!     must be used instead.  If you are unsure whether the matrix
+<a name="line301">301: </a>!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
+<a name="line302">302: </a>!   - Caution:  If you specify SAME_NONZERO_PATTERN, the software
+<a name="line303">303: </a>!     believes your assertion and does not check the structure
+<a name="line304">304: </a>!     of the matrix.  If you erroneously claim that the structure
+<a name="line305">305: </a>!     is the same when it actually is not, the new preconditioner
+<a name="line306">306: </a>!     will not function correctly.  Thus, use this optimization
+<a name="line307">307: </a>!     feature with caution!
+
+<a name="line309">309: </a>      flag = SAME_NONZERO_PATTERN
+
+<a name="line311">311: </a>      <font color="#4169E1">return</font>
+<a name="line312">312: </a>      end
+
+
+
+
+</pre>
+</body>
+
+</html>

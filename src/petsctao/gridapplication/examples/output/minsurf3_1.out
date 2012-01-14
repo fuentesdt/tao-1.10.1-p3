@@ -1,0 +1,46 @@
+
+---- Minimal Surface Problem (simple boundary) -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value 2.21811, Residual: 0.404110 
+iter = 1, Function value 2.00729, Residual: 0.172485 
+iter = 2, Function value 1.90509, Residual: 0.040601 
+iter = 3, Function value 1.90131, Residual: 0.004267 
+iter = 4, Function value 1.90129, Residual: 0.000036 
+iter = 5, Function value 1.90129, Residual: < 1.0e-6 
+iter = 6, Function value 1.90129, Residual: < 1.0e-11 
+iter = 7, Function value 1.90129, Residual: < 1.0e-11 
+
+---- Minimal Surface Problem (simple boundary) -----
+
+Grid: 0,    mx: 14     my: 5   
+iter = 0, Function value 2.18802, Residual: 0.317125 
+iter = 1, Function value 1.99459, Residual: 0.241549 
+iter = 2, Function value 1.95753, Residual: 0.042918 
+iter = 3, Function value 1.95648, Residual: 0.002277 
+iter = 4, Function value 1.95647, Residual: 0.000009 
+iter = 5, Function value 1.95647, Residual: < 1.0e-6 
+iter = 6, Function value 1.95647, Residual: < 1.0e-6 
+Grid: 1,    mx: 27     my: 9   
+iter = 0, Function value 1.95151, Residual: 0.174538 
+iter = 1, Function value 1.91471, Residual: 0.035711 
+iter = 2, Function value 1.91216, Residual: 0.002664 
+iter = 3, Function value 1.91215, Residual: 0.000026 
+iter = 4, Function value 1.91215, Residual: < 1.0e-6 
+iter = 5, Function value 1.91215, Residual: < 1.0e-6 
+iter = 6, Function value 1.91215, Residual: < 1.0e-6 
+Grid: 2,    mx: 53     my: 17   
+iter = 0, Function value 1.90999, Residual: 0.087498 
+iter = 1, Function value 1.8979, Residual: 0.009906 
+iter = 2, Function value 1.89722, Residual: 0.000753 
+iter = 3, Function value 1.89721, Residual: 0.000009 
+iter = 4, Function value 1.89721, Residual: < 1.0e-6 
+iter = 5, Function value 1.89721, Residual: < 1.0e-6 
+iter = 6, Function value 1.89721, Residual: < 1.0e-6 
+Grid: 3,    mx: 105     my: 33   
+iter = 0, Function value 1.89652, Residual: 0.044349 
+iter = 1, Function value 1.89289, Residual: 0.002206 
+iter = 2, Function value 1.89277, Residual: 0.000108 
+iter = 3, Function value 1.89277, Residual: < 1.0e-6 
+iter = 4, Function value 1.89277, Residual: < 1.0e-6 
+iter = 5, Function value 1.89277, Residual: < 1.0e-6 

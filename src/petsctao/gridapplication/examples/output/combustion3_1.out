@@ -1,0 +1,49 @@
+
+---- Steady-State Combustion Problem -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value -4.66063, Residual: 1.836131 
+iter = 1, Function value -5.59076, Residual: 0.124330 
+iter = 2, Function value -5.59512, Residual: 0.000176 
+iter = 3, Function value -5.59512, Residual: < 1.0e-6 
+iter = 4, Function value -5.59512, Residual: < 1.0e-6 
+
+---- Steady-State Combustion Problem -----
+
+Grid: 0,    mx: 4     my: 21   
+iter = 0, Function value -5.10384, Residual: 2.635935 
+iter = 1, Function value -5.52325, Residual: 0.004791 
+iter = 2, Function value -5.5233, Residual: 0.000006 
+iter = 3, Function value -5.5233, Residual: < 1.0e-6 
+iter = 4, Function value -5.5233, Residual: < 1.0e-11 
+iter = 5, Function value -5.5233, Residual: < 1.0e-11 
+Grid: 1,    mx: 7     my: 41   
+iter = 0, Function value -5.54407, Residual: 0.285818 
+iter = 1, Function value -5.5883, Residual: 0.000465 
+iter = 2, Function value -5.58831, Residual: < 1.0e-6 
+iter = 3, Function value -5.58831, Residual: < 1.0e-11 
+iter = 4, Function value -5.58831, Residual: < 1.0e-11 
+Maximum Interpolation Error: 6.96e-02
+Average Interpolation Error: 2.20e-02
+Grid: 2,    mx: 13     my: 81   
+iter = 0, Function value -5.59448, Residual: 0.153051 
+iter = 1, Function value -5.6056, Residual: 0.000016 
+iter = 2, Function value -5.6056, Residual: < 1.0e-6 
+iter = 3, Function value -5.6056, Residual: < 1.0e-6 
+Maximum Interpolation Error: 1.79e-02
+Average Interpolation Error: 6.41e-03
+Grid: 3,    mx: 25     my: 161   
+iter = 0, Function value -5.60723, Residual: 0.078794 
+iter = 1, Function value -5.61001, Residual: < 1.0e-6 
+iter = 2, Function value -5.61001, Residual: < 1.0e-11 
+iter = 3, Function value -5.61001, Residual: < 1.0e-11 
+iter = 4, Function value -5.61001, Residual: < 1.0e-11 
+Maximum Interpolation Error: 4.52e-03
+Average Interpolation Error: 1.71e-03
+Grid: 4,    mx: 49     my: 321   
+iter = 0, Function value -5.61042, Residual: 0.039922 
+iter = 1, Function value -5.61112, Residual: < 1.0e-6 
+iter = 2, Function value -5.61112, Residual: < 1.0e-11 
+iter = 3, Function value -5.61112, Residual: < 1.0e-11 
+Maximum Interpolation Error: 1.13e-03
+Average Interpolation Error: 4.41e-04

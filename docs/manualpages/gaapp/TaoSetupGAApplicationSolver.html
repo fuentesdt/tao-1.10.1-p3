@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetupGAApplicationSolver</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetupGAApplicationSolver"><H1>TaoSetupGAApplicationSolver</H1></A>
+This routine creates the vectors, matrices, linear solvers, and other data structures used in the during the optimization process.  The application provides the solver with an objective function, constraints, derivative  information, and application data structures.  These structures include a vector of variables, and Hessian matrix. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "taoapp_ga.h" 
+int TaoSetupGAApplicationSolver(TAO_GA_APPLICATION myapp, TAO_SOLVER tao )</PRE>
+Collective on TAO_SOLVER
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>myapp </B></TD><TD>- user application context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>tao </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR></TABLE>
+<P>
+
+<P>
+Note: This routine should be called after <A HREF="../gaapp/TaoGAAppSetInitialSolutionVec.html#TaoGAAppSetInitialSolutionVec">TaoGAAppSetInitialSolutionVec</A>()
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This method is called during  <A HREF="../ptaopages/TaoSetOptions.html#TaoSetOptions">TaoSetOptions</A>() and TaoApplicationSolve();
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ GAApplication
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../gaapp/TaoSolveGAApplication.html#TaoSolveGAApplication">TaoSolveGAApplication</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/external/globalarraytao/taoapp_ga.c.html#TaoSetupGAApplicationSolver">src/external/globalarraytao/taoapp_ga.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

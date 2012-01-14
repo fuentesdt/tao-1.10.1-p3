@@ -1,0 +1,224 @@
+<center><a href="multigridmat.c">Actual source code: multigridmat.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"multigridmat.h"</font><font color="#A020F0"></font>
+
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/vector/taovec_petsc.h"</font><font color="#A020F0"></font>
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"src/petsctao/indexset/taois_petsc.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><strong><font color="#FF0000">TaoMultiGridMatPetsc:</font></strong>:TaoMultiGridMatPetsc(Mat MM):TaoMatPetsc(MM){
+<a name="line7">  7: </a>  int i,nn=PETSCDAAPPMAXGRIDS;
+<a name="line9">  9: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){
+<a name="line10"> 10: </a>    this-&gt;grid[i].da=0;
+<a name="line11"> 11: </a>    this-&gt;grid[i].H=0;
+<a name="line12"> 12: </a>    this-&gt;grid[i].R=0;
+<a name="line13"> 13: </a>    this-&gt;grid[i].RHS=0;
+<a name="line14"> 14: </a>    this-&gt;grid[i].Interpolate=0;
+<a name="line15"> 15: </a>    this-&gt;grid[i].CScale=0;
+<a name="line16"> 16: </a>    this-&gt;grid[i].W3=0;
+<a name="line17"> 17: </a>    this-&gt;grid[i].coloring=0;
+<a name="line18"> 18: </a>    this-&gt;grid[i].mgrid=0;
+<a name="line19"> 19: </a>  }
+<a name="line20"> 20: </a>  this-&gt;nda=0;
+<a name="line21"> 21: </a>  <font color="#4169E1">return</font>;
+<a name="line22"> 22: </a>}
+<a name="line23"> 23: </a> 
+<a name="line24"> 24: </a><strong><font color="#FF0000">TaoMultiGridMatPetsc:</font></strong>:~TaoMultiGridMatPetsc(){
+<a name="line25"> 25: </a>  this-&gt;TakeDown();
+<a name="line26"> 26: </a>  <font color="#4169E1">return</font>;
+<a name="line27"> 27: </a>}
+<a name="line28"> 28: </a> 
+
+<a name="line32"> 32: </a>int TaoMultiGridMatPetsc::TakeDown(){
+<a name="line33"> 33: </a>  int i,info,nn=this-&gt;nda;
+<a name="line35"> 35: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){
+<a name="line36"> 36: </a>    this-&gt;grid[i].da=0;
+<a name="line37"> 37: </a>    this-&gt;grid[i].H=0;
+<a name="line38"> 38: </a>    this-&gt;grid[i].R=0;
+<a name="line39"> 39: </a>    this-&gt;grid[i].RHS=0;
+<a name="line40"> 40: </a>    this-&gt;grid[i].Interpolate=0;
+<a name="line41"> 41: </a>    this-&gt;grid[i].mgrid=0;
+<a name="line42"> 42: </a>    this-&gt;grid[i].CScale=0;
+<a name="line43"> 43: </a>    <font color="#4169E1">if</font> (this-&gt;grid[i].W3){
+<a name="line44"> 44: </a>      info=VecDestroy(this-&gt;grid[i].W3);CHKERRQ(info);
+<a name="line45"> 45: </a>    }
+<a name="line46"> 46: </a>    this-&gt;grid[i].W3=0;
+<a name="line47"> 47: </a>  }
+<a name="line48"> 48: </a>  this-&gt;nda=0;
+<a name="line49"> 49: </a>  <font color="#4169E1">return</font>(0);
+<a name="line50"> 50: </a>}
+
+
+<a name="line55"> 55: </a>int TaoMultiGridMatPetsc::SetUpMultiGrid(GridCtx*dagrid,int nn){
+<a name="line56"> 56: </a>  int i,info;
+<a name="line58"> 58: </a>  info=this-&gt;TakeDown(); CHKERRQ(info);
+<a name="line59"> 59: </a>  this-&gt;nda=nn;
+<a name="line60"> 60: </a>  this-&gt;ndamax=PETSCDAAPPMAXGRIDS;
+<a name="line61"> 61: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nn;i++){
+<a name="line62"> 62: </a>    this-&gt;grid[i].H = dagrid[i].H;
+<a name="line63"> 63: </a>    this-&gt;grid[i].R = dagrid[i].R;
+<a name="line64"> 64: </a>    this-&gt;grid[i].RHS = dagrid[i].RHS;
+<a name="line65"> 65: </a>    this-&gt;grid[i].Interpolate = dagrid[i].Interpolate;
+<a name="line66"> 66: </a>    this-&gt;grid[i].CScale = dagrid[i].CScale;
+<a name="line67"> 67: </a>    this-&gt;grid[i].W3=0;
+<a name="line68"> 68: </a>    info=VecDuplicate(this-&gt;grid[i].R,&amp;this-&gt;grid[i].W3); CHKERRQ(info);
+<a name="line69"> 69: </a>  }
+<a name="line70"> 70: </a>  info = this-&gt;SetMatrix(this-&gt;grid[nn-1].H,this-&gt;grid[nn-1].H,SAME_NONZERO_PATTERN); CHKERRQ(info);
+<a name="line71"> 71: </a>  info=<A href="../../../../docs/manualpages/ptaopages/TaoSelectSubset.html#TaoSelectSubset">TaoSelectSubset</A>(TaoMaskFullSpace); CHKERRQ(info);
+<a name="line72"> 72: </a>  <font color="#4169E1">return</font>(0);
+<a name="line73"> 73: </a>}
+
+
+<a name="line78"> 78: </a>int TaoMultiGridMatPetsc::<A href="../../../../docs/manualpages/matrix/SetDiagonal.html#SetDiagonal">SetDiagonal</A>(TaoVec *tv)
+<a name="line79"> 79: </a>{
+<a name="line80"> 80: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+
+<a name="line82"> 82: </a>  int i,info;
+<a name="line83"> 83: </a>  Vec VCourse, VFine = pv-&gt;GetVec();
+
+<a name="line86"> 86: </a>  info = MatDiagonalSet(this-&gt;grid[this-&gt;nda-1].H,VFine,INSERT_VALUES); CHKERRQ(info);
+<a name="line87"> 87: </a>  <font color="#4169E1">for</font> (i=this-&gt;nda-1;i&gt;0;i--){
+<a name="line88"> 88: </a>    VCourse=this-&gt;grid[i-1].R;
+<a name="line89"> 89: </a>    info=MatMultTranspose(this-&gt;grid[i].Interpolate,VFine,VCourse); CHKERRQ(info);
+<a name="line90"> 90: </a>    info=VecPointwiseMult(VCourse,this-&gt;grid[i].CScale,VCourse); CHKERRQ(info);
+<a name="line91"> 91: </a>    info=MatDiagonalSet(this-&gt;grid[i-1].H,VCourse,INSERT_VALUES); CHKERRQ(info);
+<a name="line92"> 92: </a>    VFine=VCourse;
+<a name="line93"> 93: </a>  }
+<a name="line94"> 94: </a>  <font color="#4169E1">return</font>(0);
+<a name="line95"> 95: </a>}
+
+<a name="line99"> 99: </a>int TaoMultiGridMatPetsc::<A href="../../../../docs/manualpages/matrix/AddDiagonal.html#AddDiagonal">AddDiagonal</A>(TaoVec*tv) 
+<a name="line100">100: </a>{
+<a name="line101">101: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+
+<a name="line103">103: </a>  int i,info;
+<a name="line104">104: </a>  Vec VCourse, VFine = pv-&gt;GetVec();
+
+<a name="line107">107: </a>  info = MatDiagonalSet(this-&gt;pm,VFine,ADD_VALUES); CHKERRQ(info);
+<a name="line108">108: </a>  <font color="#4169E1">for</font> (i=this-&gt;nda-1;i&gt;0;i--){
+<a name="line109">109: </a>    VCourse=this-&gt;grid[i-1].R;
+<a name="line110">110: </a>    info=MatMultTranspose(this-&gt;grid[i].Interpolate,VFine,VCourse); CHKERRQ(info);
+<a name="line111">111: </a>    info=VecPointwiseMult(VCourse,this-&gt;grid[i].CScale,VCourse); CHKERRQ(info);
+<a name="line112">112: </a>    info=MatDiagonalSet(this-&gt;grid[i-1].H,VCourse,ADD_VALUES); CHKERRQ(info);
+<a name="line113">113: </a>    VFine=VCourse;
+<a name="line114">114: </a>  }
+<a name="line115">115: </a>  <font color="#4169E1">return</font>(0);
+<a name="line116">116: </a>}
+
+
+<a name="line121">121: </a>int TaoMultiGridMatPetsc::<A href="../../../../docs/manualpages/matrix/ShiftDiagonal.html#ShiftDiagonal">ShiftDiagonal</A>(double c){
+<a name="line122">122: </a>  int i,info;
+<a name="line123">123: </a>  PetscScalar cc=c;
+<a name="line125">125: </a>  info = MatShift(pm,cc); CHKERRQ(info);
+<a name="line126">126: </a>  <font color="#4169E1">for</font> (i=this-&gt;nda-1;i&gt;0;i--){
+<a name="line127">127: </a>    info = MatShift(this-&gt;grid[i-1].H,cc); CHKERRQ(info);
+<a name="line128">128: </a>  }
+<a name="line129">129: </a>  <font color="#4169E1">return</font>(0);
+<a name="line130">130: </a>}
+
+<a name="line134">134: </a>int TaoMultiGridMatPetsc::<A href="../../../../docs/manualpages/matrix/RowScale.html#RowScale">RowScale</A>(TaoVec*tv)
+<a name="line135">135: </a>{
+<a name="line136">136: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+
+<a name="line138">138: </a>  int i,info;
+<a name="line139">139: </a>  Vec VCourse, VFine = pv-&gt;GetVec();
+
+<a name="line142">142: </a>  info = MatDiagonalScale(this-&gt;pm,VFine,PETSC_NULL); CHKERRQ(info);
+<a name="line143">143: </a>  <font color="#4169E1">for</font> (i=this-&gt;nda-1;i&gt;0;i--){
+<a name="line144">144: </a>    VCourse=this-&gt;grid[i-1].R;
+<a name="line145">145: </a>    info=MatMultTranspose(this-&gt;grid[i].Interpolate,VFine,VCourse); CHKERRQ(info);
+<a name="line146">146: </a>    info=VecPointwiseMult(VCourse,this-&gt;grid[i].CScale,VCourse); CHKERRQ(info);
+<a name="line147">147: </a>    info=MatDiagonalScale(this-&gt;grid[i-1].H,VCourse,PETSC_NULL); CHKERRQ(info);
+<a name="line148">148: </a>    VFine=VCourse;
+<a name="line149">149: </a>  }
+<a name="line150">150: </a>  <font color="#4169E1">return</font>(0);
+<a name="line151">151: </a>}
+
+<a name="line155">155: </a>int TaoMultiGridMatPetsc::<A href="../../../../docs/manualpages/matrix/ColScale.html#ColScale">ColScale</A>(TaoVec*tv)
+<a name="line156">156: </a>{
+<a name="line157">157: </a>  TaoVecPetsc *pv = dynamic_cast &lt;TaoVecPetsc *&gt; (tv);
+
+<a name="line159">159: </a>  int i,info;
+<a name="line160">160: </a>  Vec VCourse,VFine = pv-&gt;GetVec();
+
+<a name="line163">163: </a>  info = MatDiagonalScale(this-&gt;pm,PETSC_NULL,VFine); CHKERRQ(info);
+<a name="line164">164: </a>  <font color="#4169E1">for</font> (i=this-&gt;nda-1;i&gt;0;i--){
+<a name="line165">165: </a>    VCourse=this-&gt;grid[i-1].R;
+<a name="line166">166: </a>    info=MatMultTranspose(this-&gt;grid[i].Interpolate,VFine,VCourse); CHKERRQ(info);
+<a name="line167">167: </a>    info=VecPointwiseMult(VCourse,this-&gt;grid[i].CScale,VCourse); CHKERRQ(info);
+<a name="line168">168: </a>    info=MatDiagonalScale(this-&gt;grid[i-1].H,PETSC_NULL,VCourse); CHKERRQ(info);
+<a name="line169">169: </a>    VFine=VCourse;
+<a name="line170">170: </a>  }
+<a name="line171">171: </a>  <font color="#4169E1">return</font>(0);
+<a name="line172">172: </a>}
+
+<a name="line176">176: </a>int TaoMultiGridMatPetsc::<A href="../../../../docs/manualpages/matrix/CreateReducedMatrix.html#CreateReducedMatrix">CreateReducedMatrix</A>(TaoIndexSet*S1,TaoIndexSet*S2,TaoMat**MM){
+<a name="line177">177: </a>  int info;
+<a name="line178">178: </a>  Mat B,BPre;
+<a name="line179">179: </a>  MatStructure flag;
+<a name="line180">180: </a>  TaoMultiGridMatPetsc *MMM;
+
+<a name="line183">183: </a>  info = this-&gt;GetMatrix(&amp;B,&amp;BPre,&amp;flag); CHKERRQ(info);
+<a name="line184">184: </a>  MMM = new TaoMultiGridMatPetsc(B);
+<a name="line185">185: </a>  info=MMM-&gt;SetUpMultiGrid(this-&gt;grid,this-&gt;nda); CHKERRQ(info);
+<a name="line186">186: </a>  info = MMM-&gt;SetMatrix(B,BPre,flag); CHKERRQ(info);
+<a name="line187">187: </a>  <font color="#B22222">/*</font>
+<a name="line188">188: </a><font color="#B22222">    info = MatDuplicate(B,BB); CHKERRQ(info);</font>
+<a name="line189">189: </a><font color="#B22222">    info = MMM-&gt;SetMatrix(BB,BBPre,flag); CHKERRQ(info);</font>
+<a name="line190">190: </a><font color="#B22222">  */</font>
+<a name="line191">191: </a>  *MM=MMM;
+<a name="line192">192: </a>  <font color="#4169E1">return</font>(0);
+<a name="line193">193: </a>}
+
+<a name="line197">197: </a>int TaoMultiGridMatPetsc::<A href="../../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(TaoMat*M,TaoIndexSet*S1,TaoIndexSet*S2){
+
+<a name="line199">199: </a>  int i,info;
+<a name="line200">200: </a>  TaoIndexSetPetsc *TRows=((TaoIndexSetPetsc *)S1);
+<a name="line201">201: </a>  TaoIndexSetPetsc *TCols=((TaoIndexSetPetsc *)S2);
+<a name="line202">202: </a>  TaoMatPetsc *MM=(TaoMatPetsc *)M;
+<a name="line203">203: </a>  Vec CFine,CCourse,RFine,RCourse;
+<a name="line204">204: </a>  Mat A,Apre,B,Bpre;
+
+<a name="line207">207: </a>  info=MM-&gt;GetMatrix(&amp;A,&amp;Apre,0); CHKERRQ(info);
+<a name="line208">208: </a>  info=this-&gt;GetMatrix(&amp;B,&amp;Bpre,0); CHKERRQ(info);
+<a name="line209">209: </a>  info=TRows-&gt;GetMask(&amp;RFine); CHKERRQ(info);
+<a name="line210">210: </a>  info=TCols-&gt;GetMask(&amp;CFine); CHKERRQ(info);
+<a name="line211">211: </a>  <font color="#4169E1">if</font> (A!=B){
+<a name="line212">212: </a>    info=MatCopy(A,B,SAME_NONZERO_PATTERN); CHKERRQ(info);
+<a name="line213">213: </a>  }
+<a name="line214">214: </a>  info=MatGetDiagonal(B,this-&gt;grid[this-&gt;nda-1].W3); CHKERRQ(info);
+<a name="line215">215: </a>  info=MatDiagonalScale(B,RFine,CFine); CHKERRQ(info);
+<a name="line216">216: </a>  info=MatDiagonalSet(B,this-&gt;grid[this-&gt;nda-1].W3,INSERT_VALUES); CHKERRQ(info);
+<a name="line217">217: </a>  <font color="#4169E1">if</font> (B!=Bpre){
+<a name="line218">218: </a>    info=MatCopy(Apre,Bpre,SAME_NONZERO_PATTERN); CHKERRQ(info);
+<a name="line219">219: </a>    info=MatGetDiagonal(Bpre,this-&gt;grid[this-&gt;nda-1].W3); CHKERRQ(info);
+<a name="line220">220: </a>    info=MatDiagonalScale(Bpre,RFine,CFine); CHKERRQ(info);
+<a name="line221">221: </a>    info=MatDiagonalSet(Bpre,this-&gt;grid[this-&gt;nda-1].W3,INSERT_VALUES); CHKERRQ(info);
+<a name="line222">222: </a>  }
+<a name="line223">223: </a>  <font color="#4169E1">for</font> (i=this-&gt;nda-1;i&gt;0;i--){
+<a name="line224">224: </a>    CCourse=this-&gt;grid[i-1].R;
+<a name="line225">225: </a>    RCourse=this-&gt;grid[i-1].RHS;
+<a name="line226">226: </a>    info=MatMultTranspose(this-&gt;grid[i].Interpolate,CFine,CCourse); CHKERRQ(info);
+<a name="line227">227: </a>    info=MatMultTranspose(this-&gt;grid[i].Interpolate,RFine,RCourse); CHKERRQ(info);
+<a name="line228">228: </a>    info=VecPointwiseMult(CCourse,this-&gt;grid[i].CScale,CCourse); CHKERRQ(info);
+<a name="line229">229: </a>    info=VecPointwiseMult(RCourse,this-&gt;grid[i].CScale,RCourse); CHKERRQ(info);
+<a name="line230">230: </a>    info=MatGetDiagonal(this-&gt;grid[i-1].H,this-&gt;grid[i-1].W3); CHKERRQ(info);
+<a name="line231">231: </a>    info=MatDiagonalScale(this-&gt;grid[i-1].H,CCourse,RCourse); CHKERRQ(info);
+<a name="line232">232: </a>    info=MatDiagonalSet(this-&gt;grid[i-1].H,this-&gt;grid[i-1].W3,INSERT_VALUES); CHKERRQ(info);
+<a name="line233">233: </a>    RFine=RCourse;
+<a name="line234">234: </a>    CFine=CCourse;
+<a name="line235">235: </a>  }
+<a name="line236">236: </a>  <font color="#4169E1">return</font>(0);
+<a name="line237">237: </a>}
+
+</pre>
+</body>
+
+</html>

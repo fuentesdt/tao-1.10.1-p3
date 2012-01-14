@@ -1,0 +1,1059 @@
+<center><a href="morethuente.c">Actual source code: morethuente.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:10+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"morethuente.h"</font><font color="#A020F0">  </font><font color="#B22222">/*I "tao_solver.h" I*/</font><font color="#A020F0"></font>
+<a name="line4">  4: </a><font color="#A020F0">#include &lt;stdlib.h&gt;</font>
+
+<a name="line6">  6: </a><font color="#B22222">/*</font>
+<a name="line7">  7: </a><font color="#B22222">     The subroutine mcstep is taken from the work of Jorge Nocedal.</font>
+<a name="line8">  8: </a><font color="#B22222">     this is a variant of More' and Thuente's routine.</font>
+
+<a name="line10"> 10: </a><font color="#B22222">     subroutine mcstep</font>
+
+<a name="line12"> 12: </a><font color="#B22222">     the purpose of mcstep is to compute a safeguarded step for</font>
+<a name="line13"> 13: </a><font color="#B22222">     a linesearch and to update an interval of uncertainty for</font>
+<a name="line14"> 14: </a><font color="#B22222">     a minimizer of the function.</font>
+
+<a name="line16"> 16: </a><font color="#B22222">     the parameter stx contains the step with the least function</font>
+<a name="line17"> 17: </a><font color="#B22222">     value. the parameter stp contains the current step. it is</font>
+<a name="line18"> 18: </a><font color="#B22222">     assumed that the derivative at stx is negative in the</font>
+<a name="line19"> 19: </a><font color="#B22222">     direction of the step. if bracket is set true then a</font>
+<a name="line20"> 20: </a><font color="#B22222">     minimizer has been bracketed in an interval of uncertainty</font>
+<a name="line21"> 21: </a><font color="#B22222">     with endpoints stx and sty.</font>
+
+<a name="line23"> 23: </a><font color="#B22222">     the subroutine statement is</font>
+
+<a name="line25"> 25: </a><font color="#B22222">     subroutine mcstep(stx,fx,dx,sty,fy,dy,stp,fp,dp,bracket,</font>
+<a name="line26"> 26: </a><font color="#B22222">                       stpmin,stpmax,info)</font>
+
+<a name="line28"> 28: </a><font color="#B22222">     where</font>
+
+<a name="line30"> 30: </a><font color="#B22222">       stx, fx, and dx are variables which specify the step,</font>
+<a name="line31"> 31: </a><font color="#B22222">         the function, and the derivative at the best step obtained</font>
+<a name="line32"> 32: </a><font color="#B22222">         so far. The derivative must be negative in the direction</font>
+<a name="line33"> 33: </a><font color="#B22222">         of the step, that is, dx and stp-stx must have opposite</font>
+<a name="line34"> 34: </a><font color="#B22222">         signs. On output these parameters are updated appropriately.</font>
+
+<a name="line36"> 36: </a><font color="#B22222">       sty, fy, and dy are variables which specify the step,</font>
+<a name="line37"> 37: </a><font color="#B22222">         the function, and the derivative at the other endpoint of</font>
+<a name="line38"> 38: </a><font color="#B22222">         the interval of uncertainty. On output these parameters are</font>
+<a name="line39"> 39: </a><font color="#B22222">         updated appropriately.</font>
+
+<a name="line41"> 41: </a><font color="#B22222">       stp, fp, and dp are variables which specify the step,</font>
+<a name="line42"> 42: </a><font color="#B22222">         the function, and the derivative at the current step.</font>
+<a name="line43"> 43: </a><font color="#B22222">         If bracket is set true then on input stp must be</font>
+<a name="line44"> 44: </a><font color="#B22222">         between stx and sty. On output stp is set to the new step.</font>
+
+<a name="line46"> 46: </a><font color="#B22222">       bracket is a logical variable which specifies if a minimizer</font>
+<a name="line47"> 47: </a><font color="#B22222">         has been bracketed.  If the minimizer has not been bracketed</font>
+<a name="line48"> 48: </a><font color="#B22222">         then on input bracket must be set false.  If the minimizer</font>
+<a name="line49"> 49: </a><font color="#B22222">         is bracketed then on output bracket is set true.</font>
+
+<a name="line51"> 51: </a><font color="#B22222">       stpmin and stpmax are input variables which specify lower</font>
+<a name="line52"> 52: </a><font color="#B22222">         and upper bounds for the step.</font>
+
+<a name="line54"> 54: </a><font color="#B22222">       info is an integer output variable set as follows:</font>
+<a name="line55"> 55: </a><font color="#B22222">         if info = 1,2,3,4,5, then the step has been computed</font>
+<a name="line56"> 56: </a><font color="#B22222">         according to one of the five cases below. otherwise</font>
+<a name="line57"> 57: </a><font color="#B22222">         info = 0, and this indicates improper input parameters.</font>
+
+<a name="line59"> 59: </a><font color="#B22222">     subprograms called</font>
+
+<a name="line61"> 61: </a><font color="#B22222">       fortran-supplied ... abs,max,min,sqrt</font>
+
+<a name="line63"> 63: </a><font color="#B22222">     argonne national laboratory. minpack project. june 1983</font>
+<a name="line64"> 64: </a><font color="#B22222">     jorge j. more', david j. thuente</font>
+
+<a name="line66"> 66: </a><font color="#B22222">*/</font>
+
+<a name="line70"> 70: </a><strong><font color="#4169E1"><a name="TaoStep_LineSearch"></a>static int TaoStep_LineSearch(TAO_SOLVER tao,</font></strong>
+<a name="line71"> 71: </a><strong><font color="#4169E1">                              double *stx, double *fx, double *dx,</font></strong>
+<a name="line72"> 72: </a><strong><font color="#4169E1">                              double *sty, double *fy, double *dy,</font></strong>
+<a name="line73"> 73: </a><strong><font color="#4169E1">                              double *stp, double *fp, double *dp)</font></strong>
+<a name="line74"> 74: </a>{
+<a name="line75"> 75: </a>  TAO_LINESEARCH *neP = (TAO_LINESEARCH *) tao-&gt;linectx;
+<a name="line76"> 76: </a>  double gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
+<a name="line77"> 77: </a>  TaoInt bound;
+
+<a name="line79"> 79: </a>  TaoFunctionBegin;
+
+<a name="line81"> 81: </a>  // Check the input parameters <font color="#4169E1">for</font> errors
+<a name="line82"> 82: </a>  neP-&gt;infoc = 0;
+<a name="line83"> 83: </a>  <font color="#4169E1">if</font> (neP-&gt;bracket &amp;&amp; (*stp &lt;= TaoMin(*stx,*sty) || (*stp &gt;= TaoMax(*stx,*sty)))) SETERRQ(1,<font color="#666666">"bad stp in bracket"</font>);
+<a name="line84"> 84: </a>  <font color="#4169E1">if</font> (*dx * (*stp-*stx) &gt;= 0.0) SETERRQ(1,<font color="#666666">"dx * (stp-stx) &gt;= 0.0"</font>);
+<a name="line85"> 85: </a>  <font color="#4169E1">if</font> (neP-&gt;stepmax &lt; neP-&gt;stepmin) SETERRQ(1,<font color="#666666">"stepmax &gt; stepmin"</font>);
+
+<a name="line87"> 87: </a>  // Determine <font color="#4169E1">if</font> the derivatives have opposite sign */
+<a name="line88"> 88: </a>  sgnd = *dp * (*dx / TaoAbsDouble(*dx));
+
+<a name="line90"> 90: </a>  <font color="#4169E1">if</font> (*fp &gt; *fx) {
+<a name="line91"> 91: </a>    // Case 1: a higher function value.
+<a name="line92"> 92: </a>    // The minimum is bracketed. If the cubic step is closer
+<a name="line93"> 93: </a>    // to stx than the quadratic step, the cubic step is taken,
+<a name="line94"> 94: </a>    // <font color="#4169E1">else</font> the average of the cubic and quadratic steps is taken.
+
+<a name="line96"> 96: </a>    neP-&gt;infoc = 1;
+<a name="line97"> 97: </a>    bound = 1;
+<a name="line98"> 98: </a>    theta = 3 * (*fx - *fp) / (*stp - *stx) + *dx + *dp;
+<a name="line99"> 99: </a>    s = TaoMax(TaoAbsDouble(theta),TaoAbsDouble(*dx));
+<a name="line100">100: </a>    s = TaoMax(s,TaoAbsDouble(*dp));
+<a name="line101">101: </a>    gamma1 = s*sqrt(pow(theta/s,2.0) - (*dx/s)*(*dp/s));
+<a name="line102">102: </a>    <font color="#4169E1">if</font> (*stp &lt; *stx) gamma1 = -gamma1;
+<a name="line103">103: </a>    <font color="#B22222">/* Can p be 0?  Check */</font>
+<a name="line104">104: </a>    p = (gamma1 - *dx) + theta;
+<a name="line105">105: </a>    q = ((gamma1 - *dx) + gamma1) + *dp;
+<a name="line106">106: </a>    r = p/q;
+<a name="line107">107: </a>    stpc = *stx + r*(*stp - *stx);
+<a name="line108">108: </a>    stpq = *stx + ((*dx/((*fx-*fp)/(*stp-*stx)+*dx))*0.5) * (*stp - *stx);
+
+<a name="line110">110: </a>    <font color="#4169E1">if</font> (TaoAbsDouble(stpc-*stx) &lt; TaoAbsDouble(stpq-*stx)) {
+<a name="line111">111: </a>      stpf = stpc;
+<a name="line112">112: </a>    } 
+<a name="line113">113: </a>    <font color="#4169E1">else</font> {
+<a name="line114">114: </a>      stpf = stpc + 0.5*(stpq - stpc);
+<a name="line115">115: </a>    }
+<a name="line116">116: </a>    neP-&gt;bracket = 1;
+<a name="line117">117: </a>  }
+<a name="line118">118: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (sgnd &lt; 0.0) {
+<a name="line119">119: </a>    // Case 2: A lower function value and derivatives of
+<a name="line120">120: </a>    // opposite sign. The minimum is bracketed. If the cubic
+<a name="line121">121: </a>    // step is closer to stx than the quadratic (secant) step,
+<a name="line122">122: </a>    // the cubic step is taken, <font color="#4169E1">else</font> the quadratic step is taken.
+
+<a name="line124">124: </a>    neP-&gt;infoc = 2;
+<a name="line125">125: </a>    bound = 0;
+<a name="line126">126: </a>    theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
+<a name="line127">127: </a>    s = TaoMax(TaoAbsDouble(theta),TaoAbsDouble(*dx));
+<a name="line128">128: </a>    s = TaoMax(s,TaoAbsDouble(*dp));
+<a name="line129">129: </a>    gamma1 = s*sqrt(pow(theta/s,2.0) - (*dx/s)*(*dp/s));
+<a name="line130">130: </a>    <font color="#4169E1">if</font> (*stp &gt; *stx) gamma1 = -gamma1;
+<a name="line131">131: </a>    p = (gamma1 - *dp) + theta;
+<a name="line132">132: </a>    q = ((gamma1 - *dp) + gamma1) + *dx;
+<a name="line133">133: </a>    r = p/q;
+<a name="line134">134: </a>    stpc = *stp + r*(*stx - *stp);
+<a name="line135">135: </a>    stpq = *stp + (*dp/(*dp-*dx))*(*stx - *stp);
+
+<a name="line137">137: </a>    <font color="#4169E1">if</font> (TaoAbsDouble(stpc-*stp) &gt; TaoAbsDouble(stpq-*stp)) {
+<a name="line138">138: </a>      stpf = stpc;
+<a name="line139">139: </a>    }
+<a name="line140">140: </a>    <font color="#4169E1">else</font> {
+<a name="line141">141: </a>      stpf = stpq;
+<a name="line142">142: </a>    }
+<a name="line143">143: </a>    neP-&gt;bracket = 1;
+<a name="line144">144: </a>  }
+<a name="line145">145: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (TaoAbsDouble(*dp) &lt; TaoAbsDouble(*dx)) {
+<a name="line146">146: </a>    // Case 3: A lower function value, derivatives of the
+<a name="line147">147: </a>    // same sign, and the magnitude of the derivative decreases.
+<a name="line148">148: </a>    // The cubic step is only used <font color="#4169E1">if</font> the cubic tends to infinity
+<a name="line149">149: </a>    // in the direction of the step or <font color="#4169E1">if</font> the minimum of the cubic
+<a name="line150">150: </a>    // is beyond stp. Otherwise the cubic step is defined to be
+<a name="line151">151: </a>    // either stepmin or stepmax. The quadratic (secant) step is also
+<a name="line152">152: </a>    // computed and <font color="#4169E1">if</font> the minimum is bracketed then the the step
+<a name="line153">153: </a>    // closest to stx is taken, <font color="#4169E1">else</font> the step farthest away is taken.
+
+<a name="line155">155: </a>    neP-&gt;infoc = 3;
+<a name="line156">156: </a>    bound = 1;
+<a name="line157">157: </a>    theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
+<a name="line158">158: </a>    s = TaoMax(TaoAbsDouble(theta),TaoAbsDouble(*dx));
+<a name="line159">159: </a>    s = TaoMax(s,TaoAbsDouble(*dp));
+
+<a name="line161">161: </a>    // The <font color="#4169E1">case</font> gamma1 = 0 only arises <font color="#4169E1">if</font> the cubic does not tend
+<a name="line162">162: </a>    // to infinity in the direction of the step.
+<a name="line163">163: </a>    gamma1 = s*sqrt(TaoMax(0.0,pow(theta/s,2.0) - (*dx/s)*(*dp/s)));
+<a name="line164">164: </a>    <font color="#4169E1">if</font> (*stp &gt; *stx) gamma1 = -gamma1;
+<a name="line165">165: </a>    p = (gamma1 - *dp) + theta;
+<a name="line166">166: </a>    q = (gamma1 + (*dx - *dp)) + gamma1;
+<a name="line167">167: </a>    r = p/q;
+<a name="line168">168: </a>    <font color="#4169E1">if</font> (r &lt; 0.0 &amp;&amp; gamma1 != 0.0) stpc = *stp + r*(*stx - *stp);
+<a name="line169">169: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (*stp &gt; *stx)        stpc = neP-&gt;stepmax;
+<a name="line170">170: </a>    <font color="#4169E1">else</font>                         stpc = neP-&gt;stepmin;
+<a name="line171">171: </a>    stpq = *stp + (*dp/(*dp-*dx)) * (*stx - *stp);
+
+<a name="line173">173: </a>    <font color="#4169E1">if</font> (neP-&gt;bracket) {
+<a name="line174">174: </a>      <font color="#4169E1">if</font> (TaoAbsDouble(*stp-stpc) &lt; TaoAbsDouble(*stp-stpq)) {
+<a name="line175">175: </a>        stpf = stpc;
+<a name="line176">176: </a>      } 
+<a name="line177">177: </a>      <font color="#4169E1">else</font> {
+<a name="line178">178: </a>        stpf = stpq;
+<a name="line179">179: </a>      }
+<a name="line180">180: </a>    }
+<a name="line181">181: </a>    <font color="#4169E1">else</font> {
+<a name="line182">182: </a>      <font color="#4169E1">if</font> (TaoAbsDouble(*stp-stpc) &gt; TaoAbsDouble(*stp-stpq)) {
+<a name="line183">183: </a>        stpf = stpc;
+<a name="line184">184: </a>      }
+<a name="line185">185: </a>      <font color="#4169E1">else</font> {
+<a name="line186">186: </a>        stpf = stpq;
+<a name="line187">187: </a>      }
+<a name="line188">188: </a>    }
+<a name="line189">189: </a>  }
+<a name="line190">190: </a>  <font color="#4169E1">else</font> {
+<a name="line191">191: </a>    // Case 4: A lower function value, derivatives of the
+<a name="line192">192: </a>    // same sign, and the magnitude of the derivative does
+<a name="line193">193: </a>    // not decrease. If the minimum is not bracketed, the step
+<a name="line194">194: </a>    // is either stpmin or stpmax, <font color="#4169E1">else</font> the cubic step is taken.
+
+<a name="line196">196: </a>    neP-&gt;infoc = 4;
+<a name="line197">197: </a>    bound = 0;
+<a name="line198">198: </a>    <font color="#4169E1">if</font> (neP-&gt;bracket) {
+<a name="line199">199: </a>      theta = 3*(*fp - *fy)/(*sty - *stp) + *dy + *dp;
+<a name="line200">200: </a>      s = TaoMax(TaoAbsDouble(theta),TaoAbsDouble(*dy));
+<a name="line201">201: </a>      s = TaoMax(s,TaoAbsDouble(*dp));
+<a name="line202">202: </a>      gamma1 = s*sqrt(pow(theta/s,2.0) - (*dy/s)*(*dp/s));
+<a name="line203">203: </a>      <font color="#4169E1">if</font> (*stp &gt; *sty) gamma1 = -gamma1;
+<a name="line204">204: </a>      p = (gamma1 - *dp) + theta;
+<a name="line205">205: </a>      q = ((gamma1 - *dp) + gamma1) + *dy;
+<a name="line206">206: </a>      r = p/q;
+<a name="line207">207: </a>      stpc = *stp + r*(*sty - *stp);
+<a name="line208">208: </a>      stpq = *stp + (*dp/(*dp-*dx)) * (*stx - *stp);
+
+<a name="line210">210: </a>      stpf = stpc;
+<a name="line211">211: </a>    } 
+<a name="line212">212: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (*stp &gt; *stx) {
+<a name="line213">213: </a>      stpf = neP-&gt;stepmax;
+<a name="line214">214: </a>    } 
+<a name="line215">215: </a>    <font color="#4169E1">else</font> {
+<a name="line216">216: </a>      stpf = neP-&gt;stepmin;
+<a name="line217">217: </a>    }
+<a name="line218">218: </a>  }
+<a name="line219">219: </a>  
+<a name="line220">220: </a>  // Update the interval of uncertainty.  This update does not
+<a name="line221">221: </a>  // depend on the new step or the <font color="#4169E1">case</font> analysis above.
+
+<a name="line223">223: </a>  <font color="#4169E1">if</font> (*fp &gt; *fx) {
+<a name="line224">224: </a>    *sty = *stp;
+<a name="line225">225: </a>    *fy = *fp;
+<a name="line226">226: </a>    *dy = *dp;
+<a name="line227">227: </a>  } 
+<a name="line228">228: </a>  <font color="#4169E1">else</font> {
+<a name="line229">229: </a>    <font color="#4169E1">if</font> (sgnd &lt; 0.0) {
+<a name="line230">230: </a>      *sty = *stx;
+<a name="line231">231: </a>      *fy = *fx;
+<a name="line232">232: </a>      *dy = *dx;
+<a name="line233">233: </a>    }
+<a name="line234">234: </a>    *stx = *stp;
+<a name="line235">235: </a>    *fx = *fp;
+<a name="line236">236: </a>    *dx = *dp;
+<a name="line237">237: </a>  }
+<a name="line238">238: </a>  
+<a name="line239">239: </a>  // Compute the new step and safeguard it.
+<a name="line240">240: </a>  stpf = TaoMin(neP-&gt;stepmax,stpf);
+<a name="line241">241: </a>  stpf = TaoMax(neP-&gt;stepmin,stpf);
+<a name="line242">242: </a>  *stp = stpf;
+<a name="line243">243: </a>  <font color="#4169E1">if</font> (neP-&gt;bracket &amp;&amp; bound) {
+<a name="line244">244: </a>    <font color="#4169E1">if</font> (*sty &gt; *stx) {
+<a name="line245">245: </a>      *stp = TaoMin(*stx+0.66*(*sty-*stx),*stp);
+<a name="line246">246: </a>    }
+<a name="line247">247: </a>    <font color="#4169E1">else</font> {
+<a name="line248">248: </a>      *stp = TaoMax(*stx+0.66*(*sty-*stx),*stp);
+<a name="line249">249: </a>    }
+<a name="line250">250: </a>  }
+<a name="line251">251: </a>  TaoFunctionReturn(0);
+<a name="line252">252: </a>}
+
+<a name="line256">256: </a><font color="#B22222">/* @ </font>
+<a name="line257">257: </a><font color="#B22222">   TaoApply_LineSearch - This routine performs a line search algorithm.</font>
+
+<a name="line259">259: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line260">260: </a><font color="#B22222">+  tao - TAO_SOLVER context</font>
+<a name="line261">261: </a><font color="#B22222">.  X - current iterate (on output X contains new iterate, X + step*S)</font>
+<a name="line262">262: </a><font color="#B22222">.  S - search direction</font>
+<a name="line263">263: </a><font color="#B22222">.  f - objective function evaluated at X</font>
+<a name="line264">264: </a><font color="#B22222">.  G - gradient evaluated at X</font>
+<a name="line265">265: </a><font color="#B22222">.  W - work vector</font>
+<a name="line266">266: </a><font color="#B22222">-  step - initial estimate of step length</font>
+
+<a name="line268">268: </a><font color="#B22222">   Output parameters:</font>
+<a name="line269">269: </a><font color="#B22222">+  f - objective function evaluated at new iterate, X + step*S</font>
+<a name="line270">270: </a><font color="#B22222">.  G - gradient evaluated at new iterate, X + step*S</font>
+<a name="line271">271: </a><font color="#B22222">.  X - new iterate</font>
+<a name="line272">272: </a><font color="#B22222">.  gnorm - 2-norm of G</font>
+<a name="line273">273: </a><font color="#B22222">-  step - final step length</font>
+
+
+<a name="line276">276: </a><font color="#B22222">   Info is set to one of:</font>
+<a name="line277">277: </a><font color="#B22222">+   0 - the line search succeeds; the sufficient decrease</font>
+<a name="line278">278: </a><font color="#B22222">   condition and the directional derivative condition hold</font>
+
+<a name="line280">280: </a><font color="#B22222">   negative number if an input parameter is invalid</font>
+<a name="line281">281: </a><font color="#B22222">.   -1 -  step &lt; 0 </font>
+<a name="line282">282: </a><font color="#B22222">.   -2 -  ftol &lt; 0 </font>
+<a name="line283">283: </a><font color="#B22222">.   -3 -  rtol &lt; 0 </font>
+<a name="line284">284: </a><font color="#B22222">.   -4 -  gtol &lt; 0 </font>
+<a name="line285">285: </a><font color="#B22222">.   -5 -  stepmin &lt; 0 </font>
+<a name="line286">286: </a><font color="#B22222">.   -6 -  stepmax &lt; stepmin</font>
+<a name="line287">287: </a><font color="#B22222">-   -7 -  maxfev &lt; 0</font>
+
+<a name="line289">289: </a><font color="#B22222">   positive number &gt; 1 if the line search otherwise terminates</font>
+<a name="line290">290: </a><font color="#B22222">+    2 -  Relative width of the interval of uncertainty is </font>
+<a name="line291">291: </a><font color="#B22222">         at most rtol.</font>
+<a name="line292">292: </a><font color="#B22222">.    3 -  Maximum number of function evaluations (maxfev) has </font>
+<a name="line293">293: </a><font color="#B22222">         been reached.</font>
+<a name="line294">294: </a><font color="#B22222">.    4 -  Step is at the lower bound, stepmin.</font>
+<a name="line295">295: </a><font color="#B22222">.    5 -  Step is at the upper bound, stepmax.</font>
+<a name="line296">296: </a><font color="#B22222">.    6 -  Rounding errors may prevent further progress. </font>
+<a name="line297">297: </a><font color="#B22222">         There may not be a step that satisfies the </font>
+<a name="line298">298: </a><font color="#B22222">         sufficient decrease and curvature conditions.  </font>
+<a name="line299">299: </a><font color="#B22222">         Tolerances may be too small.</font>
+<a name="line300">300: </a><font color="#B22222">-    7 -  Search direction is not a descent direction.</font>
+
+<a name="line302">302: </a><font color="#B22222">   Notes:</font>
+<a name="line303">303: </a><font color="#B22222">   This algorithm is taken from More' and Thuente, "Line search algorithms</font>
+<a name="line304">304: </a><font color="#B22222">   with guaranteed sufficient decrease", Argonne National Laboratory, </font>
+<a name="line305">305: </a><font color="#B22222">   Technical Report MCS-P330-1092.</font>
+
+<a name="line307">307: </a><font color="#B22222">   Notes:</font>
+<a name="line308">308: </a><font color="#B22222">   This routine is used within the following TAO unconstrained minimization </font>
+<a name="line309">309: </a><font color="#B22222">   solvers: Newton linesearch (tao_nls), limited memory variable metric</font>
+<a name="line310">310: </a><font color="#B22222">   (tao_lmvm), and conjugate gradient (tao_cg).</font>
+
+<a name="line312">312: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line314">314: </a><font color="#B22222">.keywords: TAO_SOLVER, linesearch</font>
+<a name="line315">315: </a><font color="#B22222">@ */</font>
+<a name="line316">316: </a><strong><font color="#4169E1"><a name="TaoApply_LineSearch"></a>static int TaoApply_LineSearch(TAO_SOLVER tao,TaoVec* X,TaoVec* G,TaoVec* S,TaoVec* W,double *f, double *f_full,</font></strong>
+<a name="line317">317: </a><strong><font color="#4169E1">                        double *step,TaoInt *info2,void*ctx)</font></strong>
+<a name="line318">318: </a>{
+<a name="line319">319: </a>  TAO_LINESEARCH *neP = (TAO_LINESEARCH *) tao-&gt;linectx;
+<a name="line320">320: </a>  double    xtrapf = 4.0;
+<a name="line321">321: </a>  double    finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
+<a name="line322">322: </a>  double    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1=0.0;
+<a name="line323">323: </a>  int       info;
+<a name="line324">324: </a>  TaoInt  i, stage1;
+<a name="line325">325: </a>  int    need_gradient=0;
+
+<a name="line327">327: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line328">328: </a>  PetscScalar    cdginit, cdg, cstep = 0.0;
+<a name="line329">329: </a><font color="#A020F0">#endif</font>
+
+<a name="line331">331: </a>  TaoFunctionBegin;
+<a name="line332">332: </a>  <font color="#B22222">/* neP-&gt;stepmin - lower bound for step */</font>
+<a name="line333">333: </a>  <font color="#B22222">/* neP-&gt;stepmax - upper bound for step */</font>
+<a name="line334">334: </a>  <font color="#B22222">/* neP-&gt;rtol           - relative tolerance for an acceptable step */</font>
+<a name="line335">335: </a>  <font color="#B22222">/* neP-&gt;ftol           - tolerance for sufficient decrease condition */</font>
+<a name="line336">336: </a>  <font color="#B22222">/* neP-&gt;gtol           - tolerance for curvature condition */</font>
+<a name="line337">337: </a>  <font color="#B22222">/* neP-&gt;nfev           - number of function evaluations */</font>
+<a name="line338">338: </a>  <font color="#B22222">/* neP-&gt;maxfev  - maximum number of function evaluations */</font>
+
+<a name="line340">340: </a>  *info2 = 0;
+
+<a name="line342">342: </a>  <font color="#B22222">/* Check input parameters for errors */</font>
+<a name="line343">343: </a>  <font color="#4169E1">if</font> (*step &lt; 0.0) {
+<a name="line344">344: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: step (%g) &lt; 0\n"</font>,*step); CHKERRQ(info);
+<a name="line345">345: </a>    *info2 = -1;
+<a name="line346">346: </a>  } 
+<a name="line347">347: </a>  
+<a name="line348">348: </a>  <font color="#4169E1">if</font> (neP-&gt;ftol &lt; 0.0) {
+<a name="line349">349: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: ftol (%g) &lt; 0\n"</font>,neP-&gt;ftol); CHKERRQ(info);
+<a name="line350">350: </a>    *info2 = -2;
+<a name="line351">351: </a>  } 
+<a name="line352">352: </a>  
+<a name="line353">353: </a>  <font color="#4169E1">if</font> (neP-&gt;rtol &lt; 0.0) {
+<a name="line354">354: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: rtol (%g) &lt; 0\n"</font>,neP-&gt;rtol); CHKERRQ(info);
+<a name="line355">355: </a>    *info2 = -3;
+<a name="line356">356: </a>  } 
+
+<a name="line358">358: </a>  <font color="#4169E1">if</font> (neP-&gt;gtol &lt; 0.0) {
+<a name="line359">359: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: gtol (%g) &lt; 0\n"</font>,neP-&gt;gtol); CHKERRQ(info);
+<a name="line360">360: </a>    *info2 = -4;
+<a name="line361">361: </a>  } 
+
+<a name="line363">363: </a>  <font color="#4169E1">if</font> (neP-&gt;stepmin &lt; 0.0) {
+<a name="line364">364: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: stepmin (%g) &lt; 0\n"</font>,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line365">365: </a>    *info2 = -5;
+<a name="line366">366: </a>  } 
+
+<a name="line368">368: </a>  <font color="#4169E1">if</font> (neP-&gt;stepmax &lt; neP-&gt;stepmin) {
+<a name="line369">369: </a>    info = PetscInfo2(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: stepmax (%g) &lt; stepmin (%g)\n"</font>, neP-&gt;stepmax,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line370">370: </a>    *info2 = -6;
+<a name="line371">371: </a>  }
+<a name="line372">372: </a>  
+<a name="line373">373: </a>  <font color="#4169E1">if</font> (neP-&gt;maxfev &lt; 0) {
+<a name="line374">374: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: maxfev (%d) &lt; 0\n"</font>,neP-&gt;maxfev); CHKERRQ(info);
+<a name="line375">375: </a>    *info2 = -7;
+<a name="line376">376: </a>  }
+
+<a name="line378">378: </a>  <font color="#4169E1">if</font> (TaoInfOrNaN(*f)) {
+<a name="line379">379: </a>    info = PetscInfo1(tao, <font color="#666666">"TaoApply_LineSearch: Line search error: function (%g) inf or nan\n"</font>, *f); CHKERRQ(info);
+<a name="line380">380: </a>    *info2 = -8;
+<a name="line381">381: </a>  }
+
+<a name="line383">383: </a>  <font color="#B22222">/* Check that search direction is a descent direction */</font>
+
+<a name="line385">385: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line386">386: </a>  info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;cdginit);CHKERRQ(info); dginit = TaoReal(cdginit);
+<a name="line387">387: </a><font color="#A020F0">#else</font>
+<a name="line388">388: </a>  info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;dginit);CHKERRQ(info);
+<a name="line389">389: </a><font color="#A020F0">#endif</font>
+
+<a name="line391">391: </a>  <font color="#4169E1">if</font> (TaoInfOrNaN(dginit)) {
+<a name="line392">392: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_LineSearch: Line search error: dginit (%g) inf or nan\n"</font>, dginit); CHKERRQ(info);
+<a name="line393">393: </a>    *info2 = -9;
+<a name="line394">394: </a>  }
+
+<a name="line396">396: </a>  <font color="#4169E1">if</font> (dginit &gt;= 0.0) {
+<a name="line397">397: </a>    info = PetscInfo(tao,<font color="#666666">"TaoApply_LineSearch:Search direction not a descent direction\n"</font>); CHKERRQ(info);
+<a name="line398">398: </a>    *info2 = -10;
+<a name="line399">399: </a>  }
+
+<a name="line401">401: </a>  <font color="#4169E1">if</font> (*info2) {
+<a name="line402">402: </a>    TaoFunctionReturn(0);
+<a name="line403">403: </a>  }
+
+<a name="line405">405: </a>  <font color="#B22222">/* Initialization */</font>
+<a name="line406">406: </a>  neP-&gt;bracket = 0;
+<a name="line407">407: </a>  *info2 = 0;
+<a name="line408">408: </a>  stage1 = 1;
+<a name="line409">409: </a>  finit = *f;
+<a name="line410">410: </a>  dgtest = neP-&gt;ftol * dginit;
+<a name="line411">411: </a>  width = neP-&gt;stepmax - neP-&gt;stepmin;
+<a name="line412">412: </a>  width1 = width * 2.0;
+<a name="line413">413: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X);CHKERRQ(info);
+<a name="line414">414: </a>  <font color="#B22222">/* Variable dictionary:  </font>
+<a name="line415">415: </a><font color="#B22222">     stx, fx, dgx - the step, function, and derivative at the best step</font>
+<a name="line416">416: </a><font color="#B22222">     sty, fy, dgy - the step, function, and derivative at the other endpoint </font>
+<a name="line417">417: </a><font color="#B22222">                   of the interval of uncertainty</font>
+<a name="line418">418: </a><font color="#B22222">     step, f, dg - the step, function, and derivative at the current step */</font>
+
+<a name="line420">420: </a>  stx = 0.0;
+<a name="line421">421: </a>  fx  = finit;
+<a name="line422">422: </a>  dgx = dginit;
+<a name="line423">423: </a>  sty = 0.0;
+<a name="line424">424: </a>  fy  = finit;
+<a name="line425">425: </a>  dgy = dginit;
+<a name="line426">426: </a> 
+<a name="line427">427: </a>  neP-&gt;nfev = 0;
+<a name="line428">428: </a>  tao-&gt;new_search=TAO_TRUE;
+<a name="line429">429: </a>  <font color="#4169E1">for</font> (i=0; i&lt; neP-&gt;maxfev; i++) {
+<a name="line430">430: </a>    <font color="#B22222">/* Set min and max steps to correspond to the interval of uncertainty */</font>
+<a name="line431">431: </a>    <font color="#4169E1">if</font> (neP-&gt;bracket) {
+<a name="line432">432: </a>      neP-&gt;stepmin = TaoMin(stx,sty); 
+<a name="line433">433: </a>      neP-&gt;stepmax = TaoMax(stx,sty); 
+<a name="line434">434: </a>    } 
+<a name="line435">435: </a>    <font color="#4169E1">else</font> {
+<a name="line436">436: </a>      neP-&gt;stepmin = stx;
+<a name="line437">437: </a>      neP-&gt;stepmax = *step + xtrapf * (*step - stx);
+<a name="line438">438: </a>    }
+
+<a name="line440">440: </a>    <font color="#B22222">/* Force the step to be within the bounds */</font>
+<a name="line441">441: </a>    *step = TaoMax(*step,neP-&gt;stepmin);
+<a name="line442">442: </a>    *step = TaoMin(*step,neP-&gt;stepmax);
+<a name="line443">443: </a>    
+<a name="line444">444: </a>    <font color="#B22222">/* If an unusual termination is to occur, then let step be the lowest</font>
+<a name="line445">445: </a><font color="#B22222">       point obtained thus far */</font>
+<a name="line446">446: </a>    <font color="#4169E1">if</font> (((neP-&gt;bracket) &amp;&amp; (*step &lt;= neP-&gt;stepmin || *step &gt;= neP-&gt;stepmax)) ||
+<a name="line447">447: </a>        ((neP-&gt;bracket) &amp;&amp; (neP-&gt;stepmax - neP-&gt;stepmin &lt;= neP-&gt;rtol * neP-&gt;stepmax)) ||
+<a name="line448">448: </a>        (neP-&gt;nfev &gt;= neP-&gt;maxfev - 1) || (neP-&gt;infoc == 0)) {
+<a name="line449">449: </a>      *step = stx;
+<a name="line450">450: </a>    }
+
+<a name="line452">452: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line453">453: </a>    cstep = *step;
+<a name="line454">454: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(cstep,S,1.0,X);CHKERRQ(info);
+<a name="line455">455: </a><font color="#A020F0">#else</font>
+<a name="line456">456: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(*step,S,1.0,X);CHKERRQ(info);         <font color="#B22222">/* W = X + step*S */</font>
+<a name="line457">457: </a><font color="#A020F0">#endif</font>
+<a name="line458">458: </a>    tao-&gt;current_step=*step;
+<a name="line459">459: </a>    <font color="#4169E1">if</font> (tao-&gt;MeritFunctionGTSApply) {
+<a name="line460">460: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunctionGTS.html#TaoComputeMeritFunctionGTS">TaoComputeMeritFunctionGTS</A>(tao,W,S,f,&amp;dg); CHKERRQ(info);
+<a name="line461">461: </a>      need_gradient = 1;
+<a name="line462">462: </a>    } <font color="#4169E1">else</font> {
+<a name="line463">463: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunctionGradient.html#TaoComputeMeritFunctionGradient">TaoComputeMeritFunctionGradient</A>(tao,W,f,G);CHKERRQ(info);
+<a name="line464">464: </a>      tao-&gt;new_search=TAO_FALSE;
+<a name="line465">465: </a>      neP-&gt;nfev++;
+<a name="line466">466: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line467">467: </a>      info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;cdg);CHKERRQ(info); dg = TaoReal(cdg);
+<a name="line468">468: </a><font color="#A020F0">#else</font>
+<a name="line469">469: </a>      info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;dg);CHKERRQ(info);                <font color="#B22222">/* dg = G^T S */</font>
+<a name="line470">470: </a><font color="#A020F0">#endif</font>
+<a name="line471">471: </a>    }
+<a name="line472">472: </a>    <font color="#4169E1">if</font> (0 == i) {
+<a name="line473">473: </a>      *f_full = *f;
+<a name="line474">474: </a>    }
+<a name="line475">475: </a>      
+<a name="line476">476: </a>    <font color="#4169E1">if</font> (TaoInfOrNaN(*f) || TaoInfOrNaN(dg)) {
+<a name="line477">477: </a>      // User provided compute function generated Not-a-Number, assume 
+<a name="line478">478: </a>      // domain violation and set function value and directional
+<a name="line479">479: </a>      // derivative to infinity.
+<a name="line480">480: </a>      *f = TAO_INFINITY;
+<a name="line481">481: </a>      dg = TAO_INFINITY;
+<a name="line482">482: </a>    }
+
+<a name="line484">484: </a>    ftest1 = finit + *step * dgtest;
+
+<a name="line486">486: </a>    <font color="#B22222">/* Convergence testing */</font>
+<a name="line487">487: </a>    <font color="#4169E1">if</font> (((*f - ftest1 &lt;= 1.0e-10 * fabs(finit)) &amp;&amp; 
+<a name="line488">488: </a>         (TaoAbsDouble(dg) + neP-&gt;gtol*dginit &lt;= 0.0))) {
+<a name="line489">489: </a>      info = PetscInfo(tao, <font color="#666666">"TaoApply_LineSearch:Line search success: Sufficient decrease and directional deriv conditions hold\n"</font>); CHKERRQ(info);
+<a name="line490">490: </a>      *info2 = 0; 
+<a name="line491">491: </a>      <font color="#4169E1">break</font>;
+<a name="line492">492: </a>    }
+
+<a name="line494">494: </a>    <font color="#B22222">/* Checks for bad cases */</font>
+<a name="line495">495: </a>    <font color="#4169E1">if</font> (((neP-&gt;bracket) &amp;&amp; (*step &lt;= neP-&gt;stepmin||*step &gt;= neP-&gt;stepmax)) || (!neP-&gt;infoc)) {
+<a name="line496">496: </a>      info = PetscInfo(tao,<font color="#666666">"TaoApply_LineSearch:Rounding errors may prevent further progress.  May not be a step satisfying\n"</font>); CHKERRQ(info);
+<a name="line497">497: </a>      info = PetscInfo(tao,<font color="#666666">"TaoApply_LineSearch:sufficient decrease and curvature conditions. Tolerances may be too small.\n"</font>); CHKERRQ(info);
+<a name="line498">498: </a>      *info2 = 6; <font color="#4169E1">break</font>;
+<a name="line499">499: </a>    }
+<a name="line500">500: </a>    <font color="#4169E1">if</font> ((*step == neP-&gt;stepmax) &amp;&amp; (*f &lt;= ftest1) &amp;&amp; (dg &lt;= dgtest)) {
+<a name="line501">501: </a>      info = PetscInfo1(tao,<font color="#666666">"TaoApply_LineSearch:Step is at the upper bound, stepmax (%g)\n"</font>,neP-&gt;stepmax); CHKERRQ(info);
+<a name="line502">502: </a>      *info2 = 5; <font color="#4169E1">break</font>;
+<a name="line503">503: </a>    }
+<a name="line504">504: </a>    <font color="#4169E1">if</font> ((*step == neP-&gt;stepmin) &amp;&amp; (*f &gt;= ftest1) &amp;&amp; (dg &gt;= dgtest)) {
+<a name="line505">505: </a>      info = PetscInfo1(tao,<font color="#666666">"TaoApply_LineSearch:Step is at the lower bound, stepmin (%g)\n"</font>,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line506">506: </a>      *info2 = 4; <font color="#4169E1">break</font>;
+<a name="line507">507: </a>    }
+<a name="line508">508: </a>    <font color="#4169E1">if</font> (neP-&gt;nfev &gt;= neP-&gt;maxfev) {
+<a name="line509">509: </a>      info = PetscInfo2(tao,<font color="#666666">"TaoApply_LineSearch:Number of line search function evals (%d) &gt; maximum (%d)\n"</font>,neP-&gt;nfev,neP-&gt;maxfev); CHKERRQ(info);
+<a name="line510">510: </a>      *info2 = 3; <font color="#4169E1">break</font>;
+<a name="line511">511: </a>    }
+<a name="line512">512: </a>    <font color="#4169E1">if</font> ((neP-&gt;bracket) &amp;&amp; (neP-&gt;stepmax - neP-&gt;stepmin &lt;= neP-&gt;rtol*neP-&gt;stepmax)){
+<a name="line513">513: </a>      info = PetscInfo1(tao,<font color="#666666">"TaoApply_LineSearch:Relative width of interval of uncertainty is at most rtol (%g)\n"</font>,neP-&gt;rtol); CHKERRQ(info);
+<a name="line514">514: </a>      *info2 = 2; <font color="#4169E1">break</font>;
+<a name="line515">515: </a>    }
+
+<a name="line517">517: </a>    <font color="#B22222">/* In the first stage, we seek a step for which the modified function</font>
+<a name="line518">518: </a><font color="#B22222">       has a nonpositive value and nonnegative derivative */</font>
+<a name="line519">519: </a>    <font color="#4169E1">if</font> ((stage1) &amp;&amp; (*f &lt;= ftest1) &amp;&amp; (dg &gt;= dginit * TaoMin(neP-&gt;ftol, neP-&gt;gtol))) {
+<a name="line520">520: </a>      stage1 = 0;
+<a name="line521">521: </a>    }
+
+<a name="line523">523: </a>    <font color="#B22222">/* A modified function is used to predict the step only if we</font>
+<a name="line524">524: </a><font color="#B22222">       have not obtained a step for which the modified function has a </font>
+<a name="line525">525: </a><font color="#B22222">       nonpositive function value and nonnegative derivative, and if a</font>
+<a name="line526">526: </a><font color="#B22222">       lower function value has been obtained but the decrease is not</font>
+<a name="line527">527: </a><font color="#B22222">       sufficient */</font>
+
+<a name="line529">529: </a>    <font color="#4169E1">if</font> ((stage1) &amp;&amp; (*f &lt;= fx) &amp;&amp; (*f &gt; ftest1)) {
+<a name="line530">530: </a>      fm   = *f - *step * dgtest;        <font color="#B22222">/* Define modified function */</font>
+<a name="line531">531: </a>      fxm  = fx - stx * dgtest;                <font color="#B22222">/* and derivatives */</font>
+<a name="line532">532: </a>      fym  = fy - sty * dgtest;
+<a name="line533">533: </a>      dgm  = dg - dgtest;
+<a name="line534">534: </a>      dgxm = dgx - dgtest;
+<a name="line535">535: </a>      dgym = dgy - dgtest;
+<a name="line536">536: </a>      
+<a name="line537">537: </a>      <font color="#B22222">/* Update the interval of uncertainty and compute the new step */</font>
+<a name="line538">538: </a>      info = TaoStep_LineSearch(tao,&amp;stx,&amp;fxm,&amp;dgxm,&amp;sty,&amp;fym,&amp;dgym,step,&amp;fm,&amp;dgm);CHKERRQ(info);
+<a name="line539">539: </a>      
+<a name="line540">540: </a>      fx  = fxm + stx * dgtest;        <font color="#B22222">/* Reset the function and */</font>
+<a name="line541">541: </a>      fy  = fym + sty * dgtest;        <font color="#B22222">/* gradient values */</font>
+<a name="line542">542: </a>      dgx = dgxm + dgtest; 
+<a name="line543">543: </a>      dgy = dgym + dgtest; 
+<a name="line544">544: </a>    } 
+<a name="line545">545: </a>    <font color="#4169E1">else</font> {
+<a name="line546">546: </a>      <font color="#B22222">/* Update the interval of uncertainty and compute the new step */</font>
+<a name="line547">547: </a>      info = TaoStep_LineSearch(tao,&amp;stx,&amp;fx,&amp;dgx,&amp;sty,&amp;fy,&amp;dgy,step,f,&amp;dg);CHKERRQ(info);
+<a name="line548">548: </a>    }
+<a name="line549">549: </a>    
+<a name="line550">550: </a>    <font color="#B22222">/* Force a sufficient decrease in the interval of uncertainty */</font>
+<a name="line551">551: </a>    <font color="#4169E1">if</font> (neP-&gt;bracket) {
+<a name="line552">552: </a>      <font color="#4169E1">if</font> (TaoAbsDouble(sty - stx) &gt;= 0.66 * width1) *step = stx + 0.5*(sty - stx);
+<a name="line553">553: </a>      width1 = width;
+<a name="line554">554: </a>      width = TaoAbsDouble(sty - stx);
+<a name="line555">555: </a>    }
+<a name="line556">556: </a>  }
+<a name="line557">557: </a>  
+<a name="line558">558: </a>  <font color="#B22222">/* Finish computations */</font>
+<a name="line559">559: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(W); CHKERRQ(info);
+<a name="line560">560: </a>  <font color="#4169E1">if</font> (need_gradient) {
+<a name="line561">561: </a>    info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritGradient.html#TaoComputeMeritGradient">TaoComputeMeritGradient</A>(tao,X,G); CHKERRQ(info);
+<a name="line562">562: </a>  }
+<a name="line563">563: </a>  info = PetscInfo2(tao,<font color="#666666">"TaoApply_LineSearch:%d function evals in line search, step = %10.4f\n"</font>,neP-&gt;nfev,*step); CHKERRQ(info);
+<a name="line564">564: </a>  TaoFunctionReturn(0);
+<a name="line565">565: </a>}
+
+<a name="line569">569: </a><font color="#B22222">/* @ </font>
+<a name="line570">570: </a><font color="#B22222">   TaoApply_BoundLineSearch - This routine performs a line search algorithm.</font>
+
+<a name="line572">572: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line573">573: </a><font color="#B22222">+  tao - TAO_SOLVER context</font>
+<a name="line574">574: </a><font color="#B22222">.  X - current iterate (on output X contains new iterate, X + step*S)</font>
+<a name="line575">575: </a><font color="#B22222">.  S - search direction</font>
+<a name="line576">576: </a><font color="#B22222">.  f - objective function evaluated at X</font>
+<a name="line577">577: </a><font color="#B22222">.  G - gradient evaluated at X</font>
+<a name="line578">578: </a><font color="#B22222">.  W - work vector</font>
+<a name="line579">579: </a><font color="#B22222">-  step - initial estimate of step length</font>
+
+<a name="line581">581: </a><font color="#B22222">   Output parameters:</font>
+<a name="line582">582: </a><font color="#B22222">+  f - objective function evaluated at new iterate, X + step*S</font>
+<a name="line583">583: </a><font color="#B22222">.  G - gradient evaluated at new iterate, X + step*S</font>
+<a name="line584">584: </a><font color="#B22222">.  X - new iterate</font>
+<a name="line585">585: </a><font color="#B22222">.  gnorm - 2-norm of G</font>
+<a name="line586">586: </a><font color="#B22222">-  step - final step length</font>
+
+
+<a name="line589">589: </a><font color="#B22222">   Info is set to one of:</font>
+<a name="line590">590: </a><font color="#B22222">+   0 - the line search succeeds; the sufficient decrease</font>
+<a name="line591">591: </a><font color="#B22222">   condition and the directional derivative condition hold</font>
+
+<a name="line593">593: </a><font color="#B22222">   negative number if an input parameter is invalid</font>
+<a name="line594">594: </a><font color="#B22222">.   -1 -  step &lt; 0 </font>
+<a name="line595">595: </a><font color="#B22222">.   -2 -  ftol &lt; 0 </font>
+<a name="line596">596: </a><font color="#B22222">.   -3 -  rtol &lt; 0 </font>
+<a name="line597">597: </a><font color="#B22222">.   -4 -  gtol &lt; 0 </font>
+<a name="line598">598: </a><font color="#B22222">.   -5 -  stepmin &lt; 0 </font>
+<a name="line599">599: </a><font color="#B22222">.   -6 -  stepmax &lt; stepmin</font>
+<a name="line600">600: </a><font color="#B22222">-   -7 -  maxfev &lt; 0</font>
+
+<a name="line602">602: </a><font color="#B22222">   positive number &gt; 1 if the line search otherwise terminates</font>
+<a name="line603">603: </a><font color="#B22222">+    2 -  Relative width of the interval of uncertainty is </font>
+<a name="line604">604: </a><font color="#B22222">         at most rtol.</font>
+<a name="line605">605: </a><font color="#B22222">.    3 -  Maximum number of function evaluations (maxfev) has </font>
+<a name="line606">606: </a><font color="#B22222">         been reached.</font>
+<a name="line607">607: </a><font color="#B22222">.    4 -  Step is at the lower bound, stepmin.</font>
+<a name="line608">608: </a><font color="#B22222">.    5 -  Step is at the upper bound, stepmax.</font>
+<a name="line609">609: </a><font color="#B22222">.    6 -  Rounding errors may prevent further progress. </font>
+<a name="line610">610: </a><font color="#B22222">         There may not be a step that satisfies the </font>
+<a name="line611">611: </a><font color="#B22222">         sufficient decrease and curvature conditions.  </font>
+<a name="line612">612: </a><font color="#B22222">         Tolerances may be too small.</font>
+<a name="line613">613: </a><font color="#B22222">-    7 -  Search direction is not a descent direction.</font>
+
+<a name="line615">615: </a><font color="#B22222">   Notes:</font>
+<a name="line616">616: </a><font color="#B22222">   This algorithm is is a modification of the algorithm by More' and</font>
+<a name="line617">617: </a><font color="#B22222">   Thuente.  The modifications concern bounds.  This algorithm steps</font>
+<a name="line618">618: </a><font color="#B22222">   in the direction passed into this routine.  This point get</font>
+<a name="line619">619: </a><font color="#B22222">   projected back into the feasible set.  In the context of bound</font>
+<a name="line620">620: </a><font color="#B22222">   constrained optimization, there may not be a point in the piecewise</font>
+<a name="line621">621: </a><font color="#B22222">   linear path that satisfies the Wolfe conditions.  When the active</font>
+<a name="line622">622: </a><font color="#B22222">   set is changing, decrease in the objective function may be</font>
+<a name="line623">623: </a><font color="#B22222">   sufficient to terminate this line search.</font>
+
+<a name="line625">625: </a><font color="#B22222">   Note: Much of this coded is identical to the More' Thuente line search.</font>
+<a name="line626">626: </a><font color="#B22222">   Variations to the code are commented.</font>
+
+<a name="line628">628: </a><font color="#B22222">   Notes:</font>
+<a name="line629">629: </a><font color="#B22222">   This routine is used within the following TAO bound constrained minimization</font>
+<a name="line630">630: </a><font color="#B22222">   solvers: Newton linesearch (tao_tron) and limited memory variable metric</font>
+<a name="line631">631: </a><font color="#B22222">   (tao_blmvm).</font>
+
+<a name="line633">633: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line635">635: </a><font color="#B22222">.keywords: TAO_SOLVER, linesearch</font>
+<a name="line636">636: </a><font color="#B22222">@ */</font>
+<a name="line637">637: </a><strong><font color="#4169E1"><a name="TaoApply_BoundLineSearch"></a>static int TaoApply_BoundLineSearch(TAO_SOLVER tao,TaoVec* X,TaoVec* G,TaoVec* S,TaoVec* W,double *f, double *f_full,</font></strong>
+<a name="line638">638: </a><strong><font color="#4169E1">                        double *step,TaoInt *info2,void*ctx)</font></strong>
+<a name="line639">639: </a>{
+<a name="line640">640: </a>  TAO_LINESEARCH *neP = (TAO_LINESEARCH *) tao-&gt;linectx;
+<a name="line641">641: </a>  TaoVec *XL,*XU;
+<a name="line642">642: </a>  double    xtrapf = 4.0;
+<a name="line643">643: </a>  double    finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
+<a name="line644">644: </a>  double    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1=0.0, ftest2=0.0;
+<a name="line645">645: </a>  double    bstepmin1, bstepmin2, bstepmax;
+<a name="line646">646: </a>  double    dg1, dg2;
+<a name="line647">647: </a>  int       info;
+<a name="line648">648: </a>  int       need_gradient=0;
+<a name="line649">649: </a>  TaoInt    i, stage1;
+
+<a name="line651">651: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line652">652: </a>  PetscScalar    cdginit, cdg, cstep = 0.0;
+<a name="line653">653: </a><font color="#A020F0">#endif</font>
+
+<a name="line655">655: </a>  TaoFunctionBegin;
+<a name="line656">656: </a>  <font color="#B22222">/* neP-&gt;stepmin - lower bound for step */</font>
+<a name="line657">657: </a>  <font color="#B22222">/* neP-&gt;stepmax - upper bound for step */</font>
+<a name="line658">658: </a>  <font color="#B22222">/* neP-&gt;rtol           - relative tolerance for an acceptable step */</font>
+<a name="line659">659: </a>  <font color="#B22222">/* neP-&gt;ftol           - tolerance for sufficient decrease condition */</font>
+<a name="line660">660: </a>  <font color="#B22222">/* neP-&gt;gtol           - tolerance for curvature condition */</font>
+<a name="line661">661: </a>  <font color="#B22222">/* neP-&gt;nfev           - number of function evaluations */</font>
+<a name="line662">662: </a>  <font color="#B22222">/* neP-&gt;maxfev  - maximum number of function evaluations */</font>
+
+<a name="line664">664: </a>  <font color="#B22222">/* Check input parameters for errors */</font>
+<a name="line665">665: </a>  <font color="#4169E1">if</font> (*step &lt; 0.0) {
+<a name="line666">666: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search error: step (%g) &lt; 0\n"</font>,*step); CHKERRQ(info);
+<a name="line667">667: </a>    *info2 = -1; TaoFunctionReturn(0);
+<a name="line668">668: </a>  } 
+<a name="line669">669: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;ftol &lt; 0.0) {
+<a name="line670">670: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search error: ftol (%g) &lt; 0\n"</font>,neP-&gt;ftol); CHKERRQ(info);
+<a name="line671">671: </a>    *info2 = -2; TaoFunctionReturn(0);
+<a name="line672">672: </a>  } 
+<a name="line673">673: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;rtol &lt; 0.0) {
+<a name="line674">674: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search error: rtol (%g) &lt; 0\n"</font>,neP-&gt;rtol); CHKERRQ(info);
+<a name="line675">675: </a>    *info2 = -3; TaoFunctionReturn(0);
+<a name="line676">676: </a>  } 
+<a name="line677">677: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;gtol &lt; 0.0) {
+<a name="line678">678: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search error: gtol (%g) &lt; 0\n"</font>,neP-&gt;gtol); CHKERRQ(info);
+<a name="line679">679: </a>    *info2 = -4; TaoFunctionReturn(0);
+<a name="line680">680: </a>  } 
+<a name="line681">681: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;stepmin &lt; 0.0) {
+<a name="line682">682: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search error: stepmin (%g) &lt; 0\n"</font>,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line683">683: </a>    *info2 = -5; TaoFunctionReturn(0);
+<a name="line684">684: </a>  }
+<a name="line685">685: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;stepmax &lt; neP-&gt;stepmin) {
+<a name="line686">686: </a>    info = PetscInfo2(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search error: stepmax (%g) &lt; stepmin (%g)\n"</font>, neP-&gt;stepmax,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line687">687: </a>    *info2 = -6; TaoFunctionReturn(0);
+<a name="line688">688: </a>  } 
+<a name="line689">689: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (neP-&gt;maxfev &lt; 0.0) {
+<a name="line690">690: </a>    info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search error: maxfev (%d) &lt; 0\n"</font>,neP-&gt;maxfev); CHKERRQ(info);
+<a name="line691">691: </a>    *info2 = -7; TaoFunctionReturn(0);
+<a name="line692">692: </a>  }
+
+<a name="line694">694: </a>  <font color="#B22222">/* Compute step length needed to make all variables equal a bound */</font> 
+<a name="line695">695: </a>  <font color="#B22222">/* Compute the smallest steplength that will make one nonbinding  */</font>
+<a name="line696">696: </a>  <font color="#B22222">/* variable equal the bound */</font> 
+<a name="line697">697: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao,&amp;XL,&amp;XU); CHKERRQ(info);
+<a name="line698">698: </a>  info = S-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line699">699: </a>  info = S-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(S,XL,X,XU); CHKERRQ(info);
+<a name="line700">700: </a>  info = S-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line701">701: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/StepBoundInfo.html#StepBoundInfo">StepBoundInfo</A>(XL,XU,S,&amp;bstepmin1,&amp;bstepmin2,&amp;bstepmax); CHKERRQ(info);
+<a name="line702">702: </a>  neP-&gt;stepmax=TaoMin(bstepmax,1.0e+15);
+
+<a name="line704">704: </a>  <font color="#B22222">/* Check that search direction is a descent direction */</font>
+
+<a name="line706">706: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line707">707: </a>  info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;cdginit);CHKERRQ(info); dginit = TaoReal(cdginit);
+<a name="line708">708: </a><font color="#A020F0">#else</font>
+<a name="line709">709: </a>  info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;dginit);CHKERRQ(info);
+<a name="line710">710: </a><font color="#A020F0">#endif</font>
+
+<a name="line712">712: </a>  <font color="#4169E1">if</font> (dginit &gt;= 0.0) {
+<a name="line713">713: </a>    info = PetscInfo(tao,<font color="#666666">"TaoApply_BoundLineSearch:Search direction not a descent direction\n"</font>); CHKERRQ(info);
+<a name="line714">714: </a>    *info2 = 7; TaoFunctionReturn(0);
+<a name="line715">715: </a>  }
+
+<a name="line717">717: </a>  <font color="#B22222">/* Initialization */</font>
+<a name="line718">718: </a>  neP-&gt;bracket = 0;
+<a name="line719">719: </a>  *info2  = 0;
+<a name="line720">720: </a>  stage1  = 1;
+<a name="line721">721: </a>  finit   = *f;
+<a name="line722">722: </a>  dgtest  = neP-&gt;ftol * dginit;
+<a name="line723">723: </a>  width   = neP-&gt;stepmax - neP-&gt;stepmin;
+<a name="line724">724: </a>  width1  = width * 2.0;
+<a name="line725">725: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X);CHKERRQ(info);
+<a name="line726">726: </a>  <font color="#B22222">/* Variable dictionary:  </font>
+<a name="line727">727: </a><font color="#B22222">     stx, fx, dgx - the step, function, and derivative at the best step</font>
+<a name="line728">728: </a><font color="#B22222">     sty, fy, dgy - the step, function, and derivative at the other endpoint </font>
+<a name="line729">729: </a><font color="#B22222">                   of the interval of uncertainty</font>
+<a name="line730">730: </a><font color="#B22222">     step, f, dg - the step, function, and derivative at the current step */</font>
+
+<a name="line732">732: </a>  stx = 0.0;
+<a name="line733">733: </a>  fx  = finit;
+<a name="line734">734: </a>  dgx = dginit;
+<a name="line735">735: </a>  sty = 0.0;
+<a name="line736">736: </a>  fy  = finit;
+<a name="line737">737: </a>  dgy = dginit;
+<a name="line738">738: </a> 
+<a name="line739">739: </a>  neP-&gt;nfev = 0;
+<a name="line740">740: </a>  tao-&gt;new_search=TAO_TRUE;
+<a name="line741">741: </a>  <font color="#4169E1">for</font> (i=0; i&lt; neP-&gt;maxfev; i++) {
+<a name="line742">742: </a>    <font color="#B22222">/* Set min and max steps to correspond to the interval of uncertainty */</font>
+<a name="line743">743: </a>    <font color="#4169E1">if</font> (neP-&gt;bracket) {
+<a name="line744">744: </a>      neP-&gt;stepmin = TaoMin(stx,sty); 
+<a name="line745">745: </a>      neP-&gt;stepmax = TaoMax(stx,sty); 
+<a name="line746">746: </a>    } <font color="#4169E1">else</font> {
+<a name="line747">747: </a>      neP-&gt;stepmin = stx;
+<a name="line748">748: </a>      neP-&gt;stepmax = *step + xtrapf * (*step - stx);
+<a name="line749">749: </a>    }
+
+<a name="line751">751: </a>    <font color="#B22222">/* Force the step to be within the bounds */</font>
+<a name="line752">752: </a>    *step = TaoMax(*step,neP-&gt;stepmin);
+<a name="line753">753: </a>    *step = TaoMin(*step,neP-&gt;stepmax);
+
+<a name="line755">755: </a>    <font color="#B22222">/* If an unusual termination is to occur, then let step be the lowest</font>
+<a name="line756">756: </a><font color="#B22222">       point obtained thus far */</font>
+<a name="line757">757: </a>    <font color="#4169E1">if</font> (((neP-&gt;bracket) &amp;&amp; (*step &lt;= neP-&gt;stepmin || *step &gt;= neP-&gt;stepmax)) ||
+<a name="line758">758: </a>        ((neP-&gt;bracket) &amp;&amp; (neP-&gt;stepmax - neP-&gt;stepmin &lt;= neP-&gt;rtol * neP-&gt;stepmax)) ||
+<a name="line759">759: </a>        (neP-&gt;nfev &gt;= neP-&gt;maxfev - 1) || (neP-&gt;infoc == 0)) {
+<a name="line760">760: </a>      *step = stx;
+<a name="line761">761: </a>    }
+<a name="line762">762: </a> 
+<a name="line763">763: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line764">764: </a>    cstep = *step;
+<a name="line765">765: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(cstep,S,1.0,X);CHKERRQ(info);
+<a name="line766">766: </a><font color="#A020F0">#else</font>
+<a name="line767">767: </a>    info = W-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(*step,S,1.0,X);CHKERRQ(info);         <font color="#B22222">/* W = X + step*S */</font>
+<a name="line768">768: </a><font color="#A020F0">#endif</font>
+
+<a name="line770">770: </a>    info=W-&gt;<A href="../../../../docs/manualpages/vector/Median.html#Median">Median</A>(XL,W,XU);CHKERRQ(info);
+<a name="line771">771: </a>    tao-&gt;current_step=*step;
+<a name="line772">772: </a>    <font color="#4169E1">if</font> (tao-&gt;MeritFunctionGTSApply) {
+<a name="line773">773: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunctionGTS.html#TaoComputeMeritFunctionGTS">TaoComputeMeritFunctionGTS</A>(tao,W,S,f,&amp;dg); CHKERRQ(info);
+<a name="line774">774: </a>      need_gradient = 1;
+<a name="line775">775: </a>    } <font color="#4169E1">else</font> {
+<a name="line776">776: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunctionGradient.html#TaoComputeMeritFunctionGradient">TaoComputeMeritFunctionGradient</A>(tao,W,f,G);CHKERRQ(info);
+<a name="line777">777: </a>      tao-&gt;new_search=TAO_FALSE;
+<a name="line778">778: </a>      neP-&gt;nfev++;
+<a name="line779">779: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line780">780: </a>      info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(S,&amp;cdg);CHKERRQ(info); dg = TaoReal(cdg);
+<a name="line781">781: </a><font color="#A020F0">#else</font>
+<a name="line782">782: </a>      info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(X,&amp;dg1);CHKERRQ(info);                <font color="#B22222">/* dg = G^T S */</font>
+<a name="line783">783: </a>      info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(W,&amp;dg2);CHKERRQ(info);                <font color="#B22222">/* dg = G^T S */</font>
+<a name="line784">784: </a>      dg = (dg2-dg1) / (*step);
+<a name="line785">785: </a><font color="#A020F0">#endif</font>
+<a name="line786">786: </a>    }
+<a name="line787">787: </a>    <font color="#4169E1">if</font> (0 == i) {
+<a name="line788">788: </a>      *f_full = *f;
+<a name="line789">789: </a>    }
+
+<a name="line791">791: </a>    <font color="#4169E1">if</font> ((*f != *f) || (dg1 != dg1) || (dg2 != dg2) || (dg != dg)) {
+<a name="line792">792: </a>      // User provided compute function generated Not-a-Number, assume
+<a name="line793">793: </a>      // domain violation and set function value and directional
+<a name="line794">794: </a>      // derivative to infinity.
+<a name="line795">795: </a>      *f = TAO_INFINITY;
+<a name="line796">796: </a>      dg = TAO_INFINITY;
+<a name="line797">797: </a>      dg1 = TAO_INFINITY;
+<a name="line798">798: </a>      dg2 = TAO_INFINITY;
+<a name="line799">799: </a>    }
+
+<a name="line801">801: </a>    ftest1 = finit + (*step) * dgtest;
+<a name="line802">802: </a>    ftest2 = finit + (*step) * dgtest * neP-&gt;ftol;        // Armijo
+
+<a name="line804">804: </a>    <font color="#B22222">/* Convergence testing */</font>
+<a name="line805">805: </a>    <font color="#4169E1">if</font> ((*f &lt;= ftest1) &amp;&amp; (TaoAbsDouble(dg) &lt;= neP-&gt;gtol*(-dginit))) {
+<a name="line806">806: </a>      info = PetscInfo(tao, <font color="#666666">"TaoApply_BoundLineSearch:Line search success: Sufficient decrease and directional deriv conditions hold\n"</font>); CHKERRQ(info);
+<a name="line807">807: </a>      *info2 = 0; 
+<a name="line808">808: </a>      <font color="#4169E1">break</font>;
+<a name="line809">809: </a>    }
+
+<a name="line811">811: </a>    <font color="#B22222">/* Check Armijo if beyond the first breakpoint */</font>
+<a name="line812">812: </a>    <font color="#4169E1">if</font> ((*f &lt;= ftest2) &amp;&amp; (*step &gt;= bstepmin2)) {
+<a name="line813">813: </a>      info = PetscInfo(tao,<font color="#666666">"TaoApply_BoundLineSearch:Line search success: Sufficient decrease\n"</font>); CHKERRQ(info);
+<a name="line814">814: </a>      *info2 = 0; 
+<a name="line815">815: </a>      <font color="#4169E1">break</font>;
+<a name="line816">816: </a>    }
+
+<a name="line818">818: </a>    <font color="#B22222">/* Checks for bad cases */</font>
+<a name="line819">819: </a>    <font color="#4169E1">if</font> (((neP-&gt;bracket) &amp;&amp; (*step &lt;= neP-&gt;stepmin||*step &gt;= neP-&gt;stepmax)) || (!neP-&gt;infoc)) {
+<a name="line820">820: </a>      info = PetscInfo(tao,<font color="#666666">"TaoApply_LineSearch:Rounding errors may prevent further progress.  May not be a step satisfying\n"</font>); CHKERRQ(info);
+<a name="line821">821: </a>      info = PetscInfo(tao,<font color="#666666">"TaoApply_BoundLineSearch:sufficient decrease and curvature conditions. Tolerances may be too small.\n"</font>); CHKERRQ(info);
+<a name="line822">822: </a>      *info2 = 6; <font color="#4169E1">break</font>;
+<a name="line823">823: </a>    }
+<a name="line824">824: </a>    <font color="#4169E1">if</font> ((*step == neP-&gt;stepmax) &amp;&amp; (*f &lt;= ftest1) &amp;&amp; (dg &lt;= dgtest)) {
+<a name="line825">825: </a>      info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Step is at the upper bound, stepmax (%g)\n"</font>,neP-&gt;stepmax); CHKERRQ(info);
+<a name="line826">826: </a>      *info2 = 5; <font color="#4169E1">break</font>;
+<a name="line827">827: </a>    }
+<a name="line828">828: </a>    <font color="#4169E1">if</font> ((*step == neP-&gt;stepmin) &amp;&amp; (*f &gt;= ftest1) &amp;&amp; (dg &gt;= dgtest)) {
+<a name="line829">829: </a>      info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Step is at the lower bound, stepmin (%g)\n"</font>,neP-&gt;stepmin); CHKERRQ(info);
+<a name="line830">830: </a>      *info2 = 4; <font color="#4169E1">break</font>;
+<a name="line831">831: </a>    }
+<a name="line832">832: </a>    <font color="#4169E1">if</font> (neP-&gt;nfev &gt;= neP-&gt;maxfev) {
+<a name="line833">833: </a>      info = PetscInfo2(tao,<font color="#666666">"TaoApply_BoundLineSearch:Number of line search function evals (%d) &gt; maximum (%d)\n"</font>,neP-&gt;nfev,neP-&gt;maxfev); CHKERRQ(info);
+<a name="line834">834: </a>      *info2 = 3; <font color="#4169E1">break</font>;
+<a name="line835">835: </a>    }
+<a name="line836">836: </a>    <font color="#4169E1">if</font> ((neP-&gt;bracket) &amp;&amp; (neP-&gt;stepmax - neP-&gt;stepmin &lt;= neP-&gt;rtol*neP-&gt;stepmax)){
+<a name="line837">837: </a>      info = PetscInfo1(tao,<font color="#666666">"TaoApply_BoundLineSearch:Relative width of interval of uncertainty is at most rtol (%g)\n"</font>,neP-&gt;rtol); CHKERRQ(info);
+<a name="line838">838: </a>      *info2 = 2; <font color="#4169E1">break</font>;
+<a name="line839">839: </a>    }
+
+<a name="line841">841: </a>    <font color="#B22222">/* In the first stage, we seek a step for which the modified function</font>
+<a name="line842">842: </a><font color="#B22222">        has a nonpositive value and nonnegative derivative */</font>
+<a name="line843">843: </a>    <font color="#4169E1">if</font> ((stage1) &amp;&amp; (*f &lt;= ftest1) &amp;&amp; (dg &gt;= dginit * TaoMin(neP-&gt;ftol, neP-&gt;gtol)))
+<a name="line844">844: </a>      stage1 = 0;
+
+<a name="line846">846: </a>    <font color="#B22222">/* A modified function is used to predict the step only if we</font>
+<a name="line847">847: </a><font color="#B22222">       have not obtained a step for which the modified function has a </font>
+<a name="line848">848: </a><font color="#B22222">       nonpositive function value and nonnegative derivative, and if a</font>
+<a name="line849">849: </a><font color="#B22222">       lower function value has been obtained but the decrease is not</font>
+<a name="line850">850: </a><font color="#B22222">       sufficient */</font>
+
+<a name="line852">852: </a>    <font color="#4169E1">if</font> ((stage1) &amp;&amp; (*f &lt;= fx) &amp;&amp; (*f &gt; ftest1)) {
+<a name="line853">853: </a>      fm   = *f - *step * dgtest;        <font color="#B22222">/* Define modified function */</font>
+<a name="line854">854: </a>      fxm  = fx - stx * dgtest;                <font color="#B22222">/* and derivatives */</font>
+<a name="line855">855: </a>      fym  = fy - sty * dgtest;
+<a name="line856">856: </a>      dgm  = dg - dgtest;
+<a name="line857">857: </a>      dgxm = dgx - dgtest;
+<a name="line858">858: </a>      dgym = dgy - dgtest;
+
+<a name="line860">860: </a>      <font color="#B22222">/* Update the interval of uncertainty and compute the new step */</font>
+<a name="line861">861: </a>      info = TaoStep_LineSearch(tao,&amp;stx,&amp;fxm,&amp;dgxm,&amp;sty,&amp;fym,&amp;dgym,step,&amp;fm,&amp;dgm);CHKERRQ(info);
+
+<a name="line863">863: </a>      fx  = fxm + stx * dgtest;        <font color="#B22222">/* Reset the function and */</font>
+<a name="line864">864: </a>      fy  = fym + sty * dgtest;        <font color="#B22222">/* gradient values */</font>
+<a name="line865">865: </a>      dgx = dgxm + dgtest; 
+<a name="line866">866: </a>      dgy = dgym + dgtest; 
+<a name="line867">867: </a>    } <font color="#4169E1">else</font> {
+<a name="line868">868: </a>      <font color="#B22222">/* Update the interval of uncertainty and compute the new step */</font>
+<a name="line869">869: </a>      info = TaoStep_LineSearch(tao,&amp;stx,&amp;fx,&amp;dgx,&amp;sty,&amp;fy,&amp;dgy,step,f,&amp;dg);CHKERRQ(info);
+<a name="line870">870: </a>    }
+
+<a name="line872">872: </a>    <font color="#B22222">/* Force a sufficient decrease in the interval of uncertainty */</font>
+<a name="line873">873: </a>    <font color="#4169E1">if</font> (neP-&gt;bracket) {
+<a name="line874">874: </a>      <font color="#4169E1">if</font> (TaoAbsDouble(sty - stx) &gt;= 0.66 * width1) *step = stx + 0.5*(sty - stx);
+<a name="line875">875: </a>      width1 = width;
+<a name="line876">876: </a>      width = TaoAbsDouble(sty - stx);
+<a name="line877">877: </a>    }
+<a name="line878">878: </a>  }
+
+<a name="line880">880: </a>  <font color="#B22222">/* Finish computations */</font>
+<a name="line881">881: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(W); CHKERRQ(info);
+<a name="line882">882: </a>  <font color="#4169E1">if</font> (need_gradient) {
+<a name="line883">883: </a>    info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritGradient.html#TaoComputeMeritGradient">TaoComputeMeritGradient</A>(tao,X,G); CHKERRQ(info);
+<a name="line884">884: </a>  }
+<a name="line885">885: </a>  info = PetscInfo2(tao,<font color="#666666">"TaoApply_BoundLineSearch:%d function evals in line search, step = %10.4e\n"</font>,neP-&gt;nfev,*step); CHKERRQ(info);
+<a name="line886">886: </a>  TaoFunctionReturn(0);
+<a name="line887">887: </a>}
+
+<a name="line891">891: </a><strong><font color="#4169E1"><a name="TaoDestroy_LineSearch"></a>static int TaoDestroy_LineSearch(TAO_SOLVER tao, void *ctx)</font></strong>
+<a name="line892">892: </a>{
+<a name="line893">893: </a>  int  info;
+
+<a name="line895">895: </a>  TaoFunctionBegin;
+<a name="line896">896: </a>  info = TaoFree(tao-&gt;linectx);CHKERRQ(info);
+<a name="line897">897: </a>  TaoFunctionReturn(0);
+<a name="line898">898: </a>}
+
+<a name="line902">902: </a><strong><font color="#4169E1"><a name="TaoSetOptions_LineSearch"></a>static int TaoSetOptions_LineSearch(TAO_SOLVER tao, void*linectx)</font></strong>
+<a name="line903">903: </a>{
+<a name="line904">904: </a>  TAO_LINESEARCH *ctx = (TAO_LINESEARCH *)linectx;
+<a name="line905">905: </a>  int            info;
+
+<a name="line907">907: </a>  TaoFunctionBegin;
+<a name="line908">908: </a>  info = TaoOptionsHead(<font color="#666666">"More-Thuente line line search options for minimization"</font>);CHKERRQ(info);
+<a name="line909">909: </a>  info = TaoOptionInt(<font color="#666666">"-tao_ls_maxfev"</font>,<font color="#666666">"max function evals in line search"</font>,<font color="#666666">""</font>,ctx-&gt;maxfev,&amp;ctx-&gt;maxfev,0);CHKERRQ(info);
+<a name="line910">910: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ls_ftol"</font>,<font color="#666666">"tol for sufficient decrease"</font>,<font color="#666666">""</font>,ctx-&gt;ftol,&amp;ctx-&gt;ftol,0);CHKERRQ(info);
+<a name="line911">911: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ls_gtol"</font>,<font color="#666666">"tol for curvature condition"</font>,<font color="#666666">""</font>,ctx-&gt;gtol,&amp;ctx-&gt;gtol,0);CHKERRQ(info);
+<a name="line912">912: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ls_rtol"</font>,<font color="#666666">"relative tol for acceptable step"</font>,<font color="#666666">""</font>,ctx-&gt;rtol,&amp;ctx-&gt;rtol,0);CHKERRQ(info);
+<a name="line913">913: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ls_stepmin"</font>,<font color="#666666">"lower bound for step"</font>,<font color="#666666">""</font>,ctx-&gt;stepmin,&amp;ctx-&gt;stepmin,0);CHKERRQ(info);
+<a name="line914">914: </a>  info = TaoOptionDouble(<font color="#666666">"-tao_ls_stepmax"</font>,<font color="#666666">"upper bound for step"</font>,<font color="#666666">""</font>,ctx-&gt;stepmax,&amp;ctx-&gt;stepmax,0);CHKERRQ(info);
+<a name="line915">915: </a>  info = TaoOptionsTail();CHKERRQ(info);
+<a name="line916">916: </a>  TaoFunctionReturn(0);
+<a name="line917">917: </a>}
+
+<a name="line921">921: </a><strong><font color="#4169E1"><a name="TaoView_LineSearch"></a>static int TaoView_LineSearch(TAO_SOLVER tao, void*ctx)</font></strong>
+<a name="line922">922: </a>{
+<a name="line923">923: </a>  TAO_LINESEARCH *ls = (TAO_LINESEARCH *)ctx;
+<a name="line924">924: </a>  int            info;
+
+<a name="line926">926: </a>  TaoFunctionBegin;
+<a name="line927">927: </a>  info=TaoPrintInt(tao,<font color="#666666">"    More'-Thuente Line search: maxf=%d,"</font>,ls-&gt;maxfev);CHKERRQ(info);
+<a name="line928">928: </a>  info=TaoPrintDouble(tao,<font color="#666666">" ftol=%g,"</font>,ls-&gt;ftol);CHKERRQ(info);
+<a name="line929">929: </a>  info=TaoPrintDouble(tao,<font color="#666666">" rtol=%g,"</font>,ls-&gt;rtol);CHKERRQ(info);
+<a name="line930">930: </a>  info=TaoPrintDouble(tao,<font color="#666666">" gtol=%g\n"</font>,ls-&gt;gtol);CHKERRQ(info);
+<a name="line931">931: </a>  TaoFunctionReturn(0);
+<a name="line932">932: </a>}
+
+<a name="line936">936: </a><font color="#B22222">/*@C</font>
+<a name="line937">937: </a><font color="#B22222">   <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteLineSearch.html#TaoCreateMoreThuenteLineSearch">TaoCreateMoreThuenteLineSearch</A> - Create a line search</font>
+
+<a name="line939">939: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line940">940: </a><font color="#B22222">+  tao - TAO_SOLVER context</font>
+<a name="line941">941: </a><font color="#B22222">.  fftol - the sufficient descent parameter , greater than 0.</font>
+<a name="line942">942: </a><font color="#B22222">-  ggtol - the curvature tolerance, greater than 0, less than 1.</font>
+
+
+<a name="line945">945: </a><font color="#B22222">   Note:</font>
+<a name="line946">946: </a><font color="#B22222">   If either fftol or ggtol is 0, default parameters will be used.</font>
+
+<a name="line948">948: </a><font color="#B22222">   Note:</font>
+<a name="line949">949: </a><font color="#B22222">   This algorithm is taken from More' and Thuente, "Line search algorithms</font>
+<a name="line950">950: </a><font color="#B22222">   with guaranteed sufficient decrease", Argonne National Laboratory, </font>
+<a name="line951">951: </a><font color="#B22222">   Technical Report MCS-P330-1092.</font>
+
+<a name="line953">953: </a><font color="#B22222">   Note:</font>
+<a name="line954">954: </a><font color="#B22222">   This line search enforces the strong Wolfe conditions for unconstrained</font>
+<a name="line955">955: </a><font color="#B22222">   optimization.  This routine is used within the following TAO unconstrained</font>
+<a name="line956">956: </a><font color="#B22222">   minimization solvers: Newton linesearch (tao_nls), limited memory variable </font>
+<a name="line957">957: </a><font color="#B22222">   metric (tao_lmvm), and nonlinear conjugate gradient methods.</font>
+
+<a name="line959">959: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line961">961: </a><font color="#B22222">.keywords: TAO_SOLVER, linesearch</font>
+<a name="line962">962: </a><font color="#B22222">@*/</font>
+<a name="line963">963: </a><strong><font color="#4169E1"><a name="TaoCreateMoreThuenteLineSearch"></a>int <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteLineSearch.html#TaoCreateMoreThuenteLineSearch">TaoCreateMoreThuenteLineSearch</A>(TAO_SOLVER tao, double fftol, double ggtol)</font></strong>
+<a name="line964">964: </a>{
+<a name="line965">965: </a>  int info;
+<a name="line966">966: </a>  TAO_LINESEARCH *neP;
+
+<a name="line968">968: </a>  TaoFunctionBegin;
+
+<a name="line970">970: </a>  info = TaoNew(TAO_LINESEARCH,&amp;neP); CHKERRQ(info);
+<a name="line971">971: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_LINESEARCH)); CHKERRQ(info);
+
+<a name="line973">973: </a>  <font color="#4169E1">if</font> (fftol&lt;=0) fftol=0.0001;
+<a name="line974">974: </a>  <font color="#4169E1">if</font> (ggtol&lt;=0) ggtol=0.9;
+
+<a name="line976">976: </a>  neP-&gt;ftol                  = fftol;
+<a name="line977">977: </a>  neP-&gt;rtol                  = 1.0e-10;
+<a name="line978">978: </a>  neP-&gt;gtol                  = ggtol;
+<a name="line979">979: </a>  neP-&gt;stepmin                  = 1.0e-20;
+<a name="line980">980: </a>  neP-&gt;stepmax                  = 1.0e+20;
+<a name="line981">981: </a>  neP-&gt;nfev                  = 0; 
+<a name="line982">982: </a>  neP-&gt;bracket                  = 0; 
+<a name="line983">983: </a>  neP-&gt;infoc              = 1;
+<a name="line984">984: </a>  neP-&gt;maxfev                  = 30;
+
+<a name="line986">986: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLineSearch.html#TaoSetLineSearch">TaoSetLineSearch</A>(tao,0,
+<a name="line987">987: </a>                          TaoSetOptions_LineSearch,
+<a name="line988">988: </a>                          TaoApply_LineSearch,
+<a name="line989">989: </a>                          TaoView_LineSearch,
+<a name="line990">990: </a>                          TaoDestroy_LineSearch,
+<a name="line991">991: </a>                          (void *) neP);CHKERRQ(info);
+
+<a name="line993">993: </a>  TaoFunctionReturn(0);
+<a name="line994">994: </a>}
+
+<a name="line998">998: </a><font color="#B22222">/*@C</font>
+<a name="line999">999: </a><font color="#B22222">   <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteBoundLineSearch.html#TaoCreateMoreThuenteBoundLineSearch">TaoCreateMoreThuenteBoundLineSearch</A> - Create a line search</font>
+
+<a name="line1001">1001: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1002">1002: </a><font color="#B22222">+  tao - TAO_SOLVER context</font>
+<a name="line1003">1003: </a><font color="#B22222">.  fftol - the sufficient descent parameter , greater than 0.</font>
+<a name="line1004">1004: </a><font color="#B22222">-  ggtol - the curvature tolerance, greater than 0, less than 1.</font>
+
+
+<a name="line1007">1007: </a><font color="#B22222">   Note:</font>
+<a name="line1008">1008: </a><font color="#B22222">   If either fftol or ggtol is 0, default parameters will be used.</font>
+
+<a name="line1010">1010: </a><font color="#B22222">   Note:</font>
+<a name="line1011">1011: </a><font color="#B22222">   This algorithm is is a modification of the algorithm by More' and Thuente.</font>
+<a name="line1012">1012: </a><font color="#B22222">   The modifications concern bounds.  This algorithm steps in the direction</font>
+<a name="line1013">1013: </a><font color="#B22222">   passed into this routine.  This point get projected back into the feasible set.</font>
+<a name="line1014">1014: </a><font color="#B22222">   It tries to satisfy the Wolfe conditions, but in the context of bound constrained</font>
+<a name="line1015">1015: </a><font color="#B22222">   optimization, there may not be a point in the piecewise linear </font>
+<a name="line1016">1016: </a><font color="#B22222">   path that satisfies the Wolfe conditions.  When the active set</font>
+<a name="line1017">1017: </a><font color="#B22222">   is changing, decrease in the objective function may be sufficient</font>
+<a name="line1018">1018: </a><font color="#B22222">   to terminate this line search.</font>
+
+<a name="line1020">1020: </a><font color="#B22222">   Note:</font>
+<a name="line1021">1021: </a><font color="#B22222">   This routine is used within the following TAO bound constrained</font>
+<a name="line1022">1022: </a><font color="#B22222">   minimization solvers: Newton trust region (tao_tron) and limited memory variable </font>
+<a name="line1023">1023: </a><font color="#B22222">   metric (tao_blmvm).</font>
+
+<a name="line1025">1025: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line1027">1027: </a><font color="#B22222">.keywords: TAO_SOLVER, linesearch</font>
+<a name="line1028">1028: </a><font color="#B22222">@*/</font>
+<a name="line1029">1029: </a><strong><font color="#4169E1"><a name="TaoCreateMoreThuenteBoundLineSearch"></a>int <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteBoundLineSearch.html#TaoCreateMoreThuenteBoundLineSearch">TaoCreateMoreThuenteBoundLineSearch</A>(TAO_SOLVER tao, double fftol, double ggtol)</font></strong>
+<a name="line1030">1030: </a>{
+<a name="line1031">1031: </a>  int info;
+<a name="line1032">1032: </a>  TAO_LINESEARCH *neP;
+
+<a name="line1034">1034: </a>  TaoFunctionBegin;
+
+<a name="line1036">1036: </a>  info = TaoNew(TAO_LINESEARCH,&amp;neP); CHKERRQ(info);
+<a name="line1037">1037: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_LINESEARCH)); CHKERRQ(info);
+
+<a name="line1039">1039: </a>  <font color="#4169E1">if</font> (fftol&lt;=0) fftol=0.0001;
+<a name="line1040">1040: </a>  <font color="#4169E1">if</font> (ggtol&lt;=0) ggtol=0.9;
+
+<a name="line1042">1042: </a>  neP-&gt;ftol                  = fftol;
+<a name="line1043">1043: </a>  neP-&gt;rtol                  = 1.0e-10;
+<a name="line1044">1044: </a>  neP-&gt;gtol                  = ggtol;
+<a name="line1045">1045: </a>  neP-&gt;stepmin                  = 1.0e-20;
+<a name="line1046">1046: </a>  neP-&gt;stepmax                  = 1.0e+20;
+<a name="line1047">1047: </a>  neP-&gt;nfev                  = 0; 
+<a name="line1048">1048: </a>  neP-&gt;bracket                  = 0; 
+<a name="line1049">1049: </a>  neP-&gt;infoc              = 1;
+<a name="line1050">1050: </a>  neP-&gt;maxfev                  = 30;
+
+<a name="line1052">1052: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLineSearch.html#TaoSetLineSearch">TaoSetLineSearch</A>(tao,0,
+<a name="line1053">1053: </a>                          TaoSetOptions_LineSearch,
+<a name="line1054">1054: </a>                          TaoApply_BoundLineSearch,
+<a name="line1055">1055: </a>                          TaoView_LineSearch,
+<a name="line1056">1056: </a>                          TaoDestroy_LineSearch,
+<a name="line1057">1057: </a>                          (void *) neP);CHKERRQ(info);
+
+<a name="line1059">1059: </a>  TaoFunctionReturn(0);
+<a name="line1060">1060: </a>}
+
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,140 @@
+<center><a href="taolinearsolver.c">Actual source code: taolinearsolver.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"tao_solver.h"</font><font color="#A020F0">    </font><font color="#B22222">/*I "tao_solver.h"  I*/</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"taolinearsolver.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a><font color="#B22222">/*@C</font>
+<a name="line7">  7: </a><font color="#B22222">   <A href="../../docs/manualpages/lsolver/PreSolve.html#PreSolve">PreSolve</A> - Prepares a matrix for the linear solve.</font>
+
+<a name="line9">  9: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line10"> 10: </a><font color="#B22222">.  M - the matrix</font>
+
+<a name="line12"> 12: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line13"> 13: </a><font color="#B22222">@*/</font>
+<a name="line14"> 14: </a>int TaoLinearSolver::<A href="../../docs/manualpages/lsolver/PreSolve.html#PreSolve">PreSolve</A>(TaoMat *M)
+<a name="line15"> 15: </a>{
+<a name="line16"> 16: </a>  TaoFunctionBegin;
+<a name="line17"> 17: </a>  SETERRQ(56, <font color="#666666">"Operation not defined"</font>);
+<a name="line18"> 18: </a>  TaoFunctionReturn(1);
+<a name="line19"> 19: </a>}
+
+<a name="line23"> 23: </a><font color="#B22222">/*@C</font>
+<a name="line24"> 24: </a><font color="#B22222">   <A href="../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> - Finds the solution to A x = b .</font>
+
+<a name="line26"> 26: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line27"> 27: </a><font color="#B22222">.  b - the right-hand side</font>
+
+<a name="line29"> 29: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line30"> 30: </a><font color="#B22222">+  x - the solution</font>
+<a name="line31"> 31: </a><font color="#B22222">-  flag - TAO_TRUE if successful solve, TAO_FALSE otherwise.</font>
+
+<a name="line33"> 33: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line34"> 34: </a><font color="#B22222">@*/</font>
+<a name="line35"> 35: </a>int TaoLinearSolver::<A href="../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(TaoVec *b, TaoVec *x, TaoTruth *flag)
+<a name="line36"> 36: </a>{
+<a name="line37"> 37: </a>  TaoFunctionBegin;
+<a name="line38"> 38: </a>  SETERRQ(56, <font color="#666666">"Operation not defined"</font>);
+<a name="line39"> 39: </a>  TaoFunctionReturn(1);
+<a name="line40"> 40: </a>}
+
+<a name="line44"> 44: </a><font color="#B22222">/*@C</font>
+<a name="line45"> 45: </a><font color="#B22222">   <A href="../../docs/manualpages/lsolver/SolveTrustRegion.html#SolveTrustRegion">SolveTrustRegion</A> - Finds the solution to the trust-region problem </font>
+<a name="line46"> 46: </a><font color="#B22222">       min &lt;x, Ax - b&gt;</font>
+<a name="line47"> 47: </a><font color="#B22222">       st  |x| &lt;= r</font>
+<a name="line48"> 48: </a><font color="#B22222">   If A is a symmetrix positive definite matrix and r is large enough,</font>
+<a name="line49"> 49: </a><font color="#B22222">   then x solves the system of equations Ax = b.</font>
+<a name="line50"> 50: </a><font color="#B22222">   </font>
+<a name="line51"> 51: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line52"> 52: </a><font color="#B22222">.  b - the right-hand side</font>
+<a name="line53"> 53: </a><font color="#B22222">.  r - the trust-region radius</font>
+
+<a name="line55"> 55: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line56"> 56: </a><font color="#B22222">+  x - the solution</font>
+<a name="line57"> 57: </a><font color="#B22222">-  flag - TAO_TRUE if successful solve, TAO_FALSE otherwise.</font>
+
+<a name="line59"> 59: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line60"> 60: </a><font color="#B22222">@*/</font>
+<a name="line61"> 61: </a>int TaoLinearSolver::<A href="../../docs/manualpages/lsolver/SolveTrustRegion.html#SolveTrustRegion">SolveTrustRegion</A>(TaoVec *b, TaoVec *x, double r, 
+<a name="line62"> 62: </a>                                      TaoTruth *t)
+<a name="line63"> 63: </a>{
+<a name="line64"> 64: </a>  TaoFunctionBegin;
+<a name="line65"> 65: </a>  SETERRQ(56,<font color="#666666">"Operation not defined"</font>);
+<a name="line66"> 66: </a>  TaoFunctionReturn(1);
+<a name="line67"> 67: </a>}
+
+<a name="line71"> 71: </a><font color="#B22222">/*@C</font>
+<a name="line72"> 72: </a><font color="#B22222">   <A href="../../docs/manualpages/lsolver/GetNumberIterations.html#GetNumberIterations">GetNumberIterations</A> - Gets the number of iterations used to solve the system.</font>
+
+<a name="line74"> 74: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line75"> 75: </a><font color="#B22222">.  iters - the number of iterations</font>
+
+<a name="line77"> 77: </a><font color="#B22222">   Level: intermediate</font>
+<a name="line78"> 78: </a><font color="#B22222">@*/</font>
+<a name="line79"> 79: </a>int TaoLinearSolver::<A href="../../docs/manualpages/lsolver/GetNumberIterations.html#GetNumberIterations">GetNumberIterations</A>(int * iters){
+<a name="line80"> 80: </a>  int info;
+<a name="line81"> 81: </a>  TaoFunctionBegin;
+<a name="line82"> 82: </a>  info = PetscInfo(0,<font color="#666666">"TaoLinearSolver::<A href="../../docs/manualpages/lsolver/GetNumberIterations.html#GetNumberIterations">GetNumberIterations</A>() iterations not available.\n"</font>); CHKERRQ(info);
+<a name="line83"> 83: </a>  TaoFunctionReturn(0);
+<a name="line84"> 84: </a>}
+
+<a name="line88"> 88: </a><font color="#B22222">/*@C </font>
+<a name="line89"> 89: </a><font color="#B22222">  <A href="../../docs/manualpages/lsolver/SetTolerances.html#SetTolerances">SetTolerances</A> - Sets the convergence tolerances for solving the linear system</font>
+<a name="line90"> 90: </a><font color="#B22222">  </font>
+<a name="line91"> 91: </a><font color="#B22222">  Input Parameters:</font>
+<a name="line92"> 92: </a><font color="#B22222">+ rtol - the relative tolerance</font>
+<a name="line93"> 93: </a><font color="#B22222">. atol - the absolute tolerance</font>
+<a name="line94"> 94: </a><font color="#B22222">. dtol - the divergence tolerance</font>
+<a name="line95"> 95: </a><font color="#B22222">- maxits - the maximum number of iterates</font>
+
+<a name="line97"> 97: </a><font color="#B22222">  Level: intermediate</font>
+<a name="line98"> 98: </a><font color="#B22222">@*/</font>  
+
+<a name="line100">100: </a>int TaoLinearSolver::<A href="../../docs/manualpages/lsolver/SetTolerances.html#SetTolerances">SetTolerances</A>(double rtol, double atol, double dtol, int maxits) {
+<a name="line101">101: </a>  int info;
+<a name="line102">102: </a>  info = PetscInfo(0,<font color="#666666">"inherited method not defined.  Tolerances ignored.\n"</font>);
+<a name="line103">103: </a>  CHKERRQ(info);
+<a name="line104">104: </a>  TaoFunctionReturn(0);
+<a name="line105">105: </a>}
+<a name="line108">108: </a><font color="#B22222">/*@C</font>
+<a name="line109">109: </a><font color="#B22222">  <A href="../../docs/manualpages/lsolver/SetOptions.html#SetOptions">SetOptions</A> - Sets any relevant options from the command line.</font>
+
+<a name="line111">111: </a><font color="#B22222">  Input Parameters: none</font>
+<a name="line112">112: </a><font color="#B22222">  </font>
+<a name="line113">113: </a><font color="#B22222">  Level: intermediate</font>
+<a name="line114">114: </a><font color="#B22222">@*/</font>
+<a name="line115">115: </a>int TaoLinearSolver::<A href="../../docs/manualpages/lsolver/SetOptions.html#SetOptions">SetOptions</A>(){
+<a name="line116">116: </a>  int info;
+<a name="line117">117: </a>  TaoFunctionBegin;
+<a name="line118">118: </a>  info = PetscInfo(0,<font color="#666666">"TaoLinearSolver::<A href="../../docs/manualpages/lsolver/SetOptions.html#SetOptions">SetOptions</A>(): method not defined or implemented.\n"</font>); CHKERRQ(info);
+<a name="line119">119: </a>  info = TaoOptionsHead(<font color="#666666">"TaoLinearSolverOptions:  Not currently implemented through TAO"</font>);CHKERRQ(info);
+<a name="line120">120: </a>  info = TaoOptionsTail();CHKERRQ(info);
+<a name="line121">121: </a>  TaoFunctionReturn(0);
+<a name="line122">122: </a>}
+
+<a name="line126">126: </a><font color="#B22222">/*@C</font>
+<a name="line127">127: </a><font color="#B22222">  <A href="../../docs/manualpages/lsolver/View.html#View">View</A> - Views the linear solver.</font>
+
+<a name="line129">129: </a><font color="#B22222">  Input Parameters: none</font>
+<a name="line130">130: </a><font color="#B22222">  </font>
+<a name="line131">131: </a><font color="#B22222">  Level: intermediate</font>
+<a name="line132">132: </a><font color="#B22222">@*/</font>
+<a name="line133">133: </a>int TaoLinearSolver::<A href="../../docs/manualpages/lsolver/View.html#View">View</A>(){
+<a name="line134">134: </a>  int info;
+<a name="line135">135: </a>  TaoFunctionBegin;
+<a name="line136">136: </a>  info = PetscInfo(0,<font color="#666666">"TaoLinearSolver::<A href="../../docs/manualpages/lsolver/View.html#View">View</A>() method not defined.\n"</font>); CHKERRQ(info);
+<a name="line137">137: </a>  info = <A href="../../docs/manualpages/solver/TaoPrintStatement.html#TaoPrintStatement">TaoPrintStatement</A>(0,<font color="#666666">"  TaoLinearSolverView: No information available: \n"</font>);CHKERRQ(info);
+<a name="line138">138: </a>  TaoFunctionReturn(0);
+<a name="line139">139: </a>}
+
+</pre>
+</body>
+
+</html>

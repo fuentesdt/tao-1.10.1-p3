@@ -1,0 +1,542 @@
+<center><a href="tron.c">Actual source code: tron.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*$Id$*/</font>
+
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"tron.h"</font><font color="#A020F0">       </font><font color="#B22222">/*I "tao_solver.h" I*/</font><font color="#A020F0"></font>
+
+<a name="line5">  5: </a><font color="#B22222">/* TRON Routines */</font>
+<a name="line6">  6: </a><strong><font color="#4169E1">static int TaoGradProjections(TAO_SOLVER,TAO_TRON *)</font></strong>;
+<a name="line7">  7: </a><strong><font color="#4169E1">static int TronCheckOptimalFace(TaoVec*, TaoVec*, TaoVec*, TaoVec*, TaoVec*, </font></strong>
+<a name="line8">  8: </a><strong><font color="#4169E1">                                TaoIndexSet*, TaoIndexSet*, TaoTruth *optimal)</font></strong>;
+
+<a name="line10"> 10: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line13"> 13: </a><strong><font color="#4169E1"><a name="TaoSetDown_TRON"></a>static int TaoSetDown_TRON(TAO_SOLVER tao, void*solver)</font></strong>
+<a name="line14"> 14: </a>{
+<a name="line15"> 15: </a>  TAO_TRON *tron = (TAO_TRON *)solver;
+<a name="line16"> 16: </a>  int      info;
+<a name="line17"> 17: </a>  <font color="#B22222">/* Free allocated memory in TRON structure */</font>
+<a name="line18"> 18: </a>  TaoFunctionBegin;
+<a name="line19"> 19: </a>  
+<a name="line20"> 20: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;X_New);CHKERRQ(info);
+<a name="line21"> 21: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;G_New);CHKERRQ(info);
+<a name="line22"> 22: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;DX);CHKERRQ(info);tron-&gt;DX=0;
+<a name="line23"> 23: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;Work);CHKERRQ(info);
+<a name="line24"> 24: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;DXFree);CHKERRQ(info);
+<a name="line25"> 25: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;R);CHKERRQ(info);
+<a name="line26"> 26: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;G);CHKERRQ(info);
+<a name="line27"> 27: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;PG);CHKERRQ(info);
+<a name="line28"> 28: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;XL);CHKERRQ(info);
+<a name="line29"> 29: </a>  info = <A href="../../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(tron-&gt;XU);CHKERRQ(info);
+<a name="line30"> 30: </a>  
+<a name="line31"> 31: </a>  info = <A href="../../../../docs/manualpages/indexset/TaoIndexSetDestroy.html#TaoIndexSetDestroy">TaoIndexSetDestroy</A>(tron-&gt;Free_Local);CHKERRQ(info);
+<a name="line32"> 32: </a>  info = <A href="../../../../docs/manualpages/indexset/TaoIndexSetDestroy.html#TaoIndexSetDestroy">TaoIndexSetDestroy</A>(tron-&gt;TT);CHKERRQ(info);
+<a name="line33"> 33: </a>  info = <A href="../../../../docs/manualpages/matrix/TaoMatDestroy.html#TaoMatDestroy">TaoMatDestroy</A>(tron-&gt;Hsub);CHKERRQ(info);
+
+<a name="line35"> 35: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao,0);CHKERRQ(info);
+<a name="line36"> 36: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao,0);CHKERRQ(info);
+<a name="line37"> 37: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetVariableBounds.html#TaoSetVariableBounds">TaoSetVariableBounds</A>(tao,0,0);CHKERRQ(info);
+
+<a name="line39"> 39: </a>  TaoFunctionReturn(0);
+<a name="line40"> 40: </a>}
+
+<a name="line42"> 42: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line45"> 45: </a><strong><font color="#4169E1"><a name="TaoSetOptions_TRON"></a>static int TaoSetOptions_TRON(TAO_SOLVER tao, void*solver)</font></strong>
+<a name="line46"> 46: </a>{
+<a name="line47"> 47: </a>  TAO_TRON  *tron = (TAO_TRON *)solver;
+<a name="line48"> 48: </a>  int        info;
+<a name="line49"> 49: </a>  TaoInt     ival;
+<a name="line50"> 50: </a>  TaoTruth flg;
+
+<a name="line52"> 52: </a>  TaoFunctionBegin;
+
+<a name="line54"> 54: </a>  info = TaoOptionsHead(<font color="#666666">"Newton Trust Region Method for bound constrained optimization"</font>);CHKERRQ(info);
+
+<a name="line56"> 56: </a>  info = TaoOptionInt(<font color="#666666">"-tron_maxgpits"</font>,<font color="#666666">"maximum number of gradient projections per TRON iterate"</font>,<font color="#666666">"TaoSetMaxGPIts"</font>,tron-&gt;maxgpits,&amp;tron-&gt;maxgpits,&amp;flg);
+<a name="line57"> 57: </a>  CHKERRQ(info);
+
+<a name="line59"> 59: </a>  info = TaoOptionInt(<font color="#666666">"-redistribute"</font>,<font color="#666666">"Redistribute Free variables (&gt; 1 processors, only)"</font>,<font color="#666666">"TaoPetscISType"</font>,1,&amp;ival,&amp;flg); CHKERRQ(info);
+
+<a name="line61"> 61: </a>  info = TaoOptionName(<font color="#666666">"-submatrixfree"</font>,<font color="#666666">"Mask full matrix instead of extract submatrices"</font>,<font color="#666666">"TaoPetscISType"</font>,&amp;flg); CHKERRQ(info);
+
+<a name="line63"> 63: </a>  info = TaoOptionsTail();CHKERRQ(info);
+<a name="line64"> 64: </a>  info = <A href="../../../../docs/manualpages/solver/TaoLineSearchSetFromOptions.html#TaoLineSearchSetFromOptions">TaoLineSearchSetFromOptions</A>(tao);CHKERRQ(info);
+
+<a name="line66"> 66: </a>  TaoFunctionReturn(0);
+<a name="line67"> 67: </a>}
+
+<a name="line69"> 69: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line72"> 72: </a><strong><font color="#4169E1"><a name="TaoView_TRON"></a>static int TaoView_TRON(TAO_SOLVER tao,void*solver)</font></strong>
+<a name="line73"> 73: </a>{
+<a name="line74"> 74: </a>  TAO_TRON  *tron = (TAO_TRON *)solver;
+<a name="line75"> 75: </a>  int        info;
+
+<a name="line77"> 77: </a>  TaoFunctionBegin;
+<a name="line78"> 78: </a>  <font color="#B22222">/*</font>
+<a name="line79"> 79: </a><font color="#B22222">  info = TaoPrintf1(tao," Variables, Total: %d,",tron-&gt;n);</font>
+<a name="line80"> 80: </a><font color="#B22222">  info = TaoPrintf3(tao,"Free: %d,  Binding: %d \n",</font>
+<a name="line81"> 81: </a><font color="#B22222">                    tron-&gt;n_free, tron-&gt;n - tron-&gt;n_free,</font>
+<a name="line82"> 82: </a><font color="#B22222">                    tron-&gt;n_bind);CHKERRQ(info);</font>
+<a name="line83"> 83: </a><font color="#B22222">  info = TaoPrintf1(tao,"            Equal lower bound: %d,",</font>
+<a name="line84"> 84: </a><font color="#B22222">                    tron-&gt;n_lower);CHKERRQ(info);</font>
+<a name="line85"> 85: </a><font color="#B22222">  info = TaoPrintf1(tao,"  Equal upper bound: %d \n",</font>
+<a name="line86"> 86: </a><font color="#B22222">                    tron-&gt;n_upper);CHKERRQ(info);</font>
+<a name="line87"> 87: </a><font color="#B22222">  */</font>
+<a name="line88"> 88: </a>  info = TaoPrintInt(tao,<font color="#666666">" Total PG its: %d,"</font>,tron-&gt;total_gp_its);CHKERRQ(info);
+<a name="line89"> 89: </a>  info = TaoPrintDouble(tao,<font color="#666666">" PG tolerance: %4.3f \n"</font>,tron-&gt;pg_ftol);CHKERRQ(info);
+<a name="line90"> 90: </a>  info = <A href="../../../../docs/manualpages/solver/TaoLineSearchView.html#TaoLineSearchView">TaoLineSearchView</A>(tao);CHKERRQ(info);
+<a name="line91"> 91: </a>  info = <A href="../../../../docs/manualpages/solver/TaoPrintStatement.html#TaoPrintStatement">TaoPrintStatement</A>(tao,<font color="#666666">"  Linear Solver minimizes quadratic over Trust Region: \n"</font>);CHKERRQ(info);
+
+<a name="line93"> 93: </a>  TaoFunctionReturn(0);
+<a name="line94"> 94: </a>}
+
+
+<a name="line97"> 97: </a><font color="#B22222">/* ---------------------------------------------------------- */</font>
+<a name="line100">100: </a><strong><font color="#4169E1"><a name="TaoSetUp_TRON"></a>static int TaoSetUp_TRON(TAO_SOLVER tao, void*solver)</font></strong>{
+
+<a name="line102">102: </a>  int info;
+<a name="line103">103: </a>  TAO_TRON *tron = (TAO_TRON *)solver;
+<a name="line104">104: </a>  TaoVec* X;
+<a name="line105">105: </a>  TaoMat *HH;
+<a name="line106">106: </a>  TaoIndexSet *TIS;
+
+<a name="line108">108: </a>  TaoFunctionBegin;
+<a name="line109">109: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;tron-&gt;X);CHKERRQ(info); X=tron-&gt;X;
+<a name="line110">110: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetHessian.html#TaoGetHessian">TaoGetHessian</A>(tao,&amp;tron-&gt;H);CHKERRQ(info);  HH=tron-&gt;H;
+
+<a name="line112">112: </a>  <font color="#B22222">/* Allocate some arrays */</font>
+<a name="line113">113: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;DX); CHKERRQ(info);
+<a name="line114">114: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;X_New); CHKERRQ(info);
+<a name="line115">115: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;G_New); CHKERRQ(info);
+<a name="line116">116: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;Work); CHKERRQ(info);
+<a name="line117">117: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;DXFree); CHKERRQ(info);
+<a name="line118">118: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;R); CHKERRQ(info);
+<a name="line119">119: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;G); CHKERRQ(info);
+<a name="line120">120: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;PG); CHKERRQ(info);
+<a name="line121">121: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;XL); CHKERRQ(info);
+<a name="line122">122: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Clone.html#Clone">Clone</A>(&amp;tron-&gt;XU); CHKERRQ(info);
+
+<a name="line124">124: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetLagrangianGradientVector.html#TaoSetLagrangianGradientVector">TaoSetLagrangianGradientVector</A>(tao,tron-&gt;PG);CHKERRQ(info);
+<a name="line125">125: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetStepDirectionVector.html#TaoSetStepDirectionVector">TaoSetStepDirectionVector</A>(tao,tron-&gt;DX);CHKERRQ(info);
+<a name="line126">126: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetVariableBounds.html#TaoSetVariableBounds">TaoSetVariableBounds</A>(tao,tron-&gt;XL,tron-&gt;XU);CHKERRQ(info);
+
+<a name="line128">128: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>(&amp;tron-&gt;n); CHKERRQ(info);
+<a name="line129">129: </a>  
+<a name="line130">130: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/CreateIndexSet.html#CreateIndexSet">CreateIndexSet</A>(&amp;tron-&gt;Free_Local); CHKERRQ(info);
+<a name="line131">131: </a>  info = tron-&gt;Free_Local-&gt;<A href="../../../../docs/manualpages/indexset/Duplicate.html#Duplicate">Duplicate</A>(&amp;tron-&gt;TT); CHKERRQ(info);
+
+<a name="line133">133: </a>  TIS=tron-&gt;Free_Local;
+<a name="line134">134: </a>  info = tron-&gt;H-&gt;<A href="../../../../docs/manualpages/matrix/CreateReducedMatrix.html#CreateReducedMatrix">CreateReducedMatrix</A>(TIS,TIS,&amp;tron-&gt;Hsub); CHKERRQ(info);
+<a name="line135">135: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateLinearSolver.html#TaoCreateLinearSolver">TaoCreateLinearSolver</A>(tao,HH,220,0); CHKERRQ(info);
+
+<a name="line137">137: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCheckFGH.html#TaoCheckFGH">TaoCheckFGH</A>(tao);CHKERRQ(info);
+
+<a name="line139">139: </a>  TaoFunctionReturn(0);
+<a name="line140">140: </a>}
+
+
+
+<a name="line146">146: </a><strong><font color="#4169E1"><a name="TaoSolve_TRON"></a>static int TaoSolve_TRON(TAO_SOLVER tao, void*solver)</font></strong>{
+
+<a name="line148">148: </a>  TAO_TRON *tron = (TAO_TRON *)solver;
+<a name="line149">149: </a>  int info;
+<a name="line150">150: </a>  TaoInt lsflag,iter=0;
+<a name="line151">151: </a>  TaoTerminateReason reason;
+<a name="line152">152: </a>  TaoTruth optimal_face=TAO_FALSE,success;
+<a name="line153">153: </a>  double prered,actred,delta,f,f_new,f_full,rhok,gnorm,gdx,xdiff,stepsize;
+<a name="line154">154: </a>  TaoVec *XU, *XL;
+<a name="line155">155: </a>  TaoVec *X,  *G;
+<a name="line156">156: </a>  TaoVec *PG=tron-&gt;PG;
+<a name="line157">157: </a>  TaoVec *R=tron-&gt;R, *DXFree=tron-&gt;DXFree;
+<a name="line158">158: </a>  TaoVec *X_New=tron-&gt;X_New, *G_New=tron-&gt;G_New;
+<a name="line159">159: </a>  TaoVec *DX=tron-&gt;DX, *Work=tron-&gt;Work;
+<a name="line160">160: </a>  TaoMat *H, *Hsub=tron-&gt;Hsub;
+<a name="line161">161: </a>  TaoIndexSet *Free_Local = tron-&gt;Free_Local, *TIS=tron-&gt;TT;
+
+<a name="line163">163: </a>  TaoFunctionBegin;
+
+<a name="line165">165: </a>  // Get initial trust region radius
+<a name="line166">166: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetInitialTrustRegionRadius.html#TaoGetInitialTrustRegionRadius">TaoGetInitialTrustRegionRadius</A>(tao, &amp;tron-&gt;delta); CHKERRQ(info);
+<a name="line167">167: </a>  <font color="#4169E1">if</font> (tron-&gt;delta &lt;= 0) {
+<a name="line168">168: </a>    SETERRQ(1, <font color="#666666">"Initial trust region radius must be positive"</font>);
+<a name="line169">169: </a>  }
+
+<a name="line171">171: </a>  // Get vectors we will need
+<a name="line172">172: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao, &amp;X); CHKERRQ(info);
+<a name="line173">173: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetGradient.html#TaoGetGradient">TaoGetGradient</A>(tao, &amp;G); CHKERRQ(info);
+<a name="line174">174: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetHessian.html#TaoGetHessian">TaoGetHessian</A>(tao, &amp;H); CHKERRQ(info);
+<a name="line175">175: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao, &amp;XL, &amp;XU); CHKERRQ(info);
+
+<a name="line177">177: </a>  // Check that upper bound greater than lower bound
+<a name="line178">178: </a>  info = <A href="../../../../docs/manualpages/solver/TaoEvaluateVariableBounds.html#TaoEvaluateVariableBounds">TaoEvaluateVariableBounds</A>(tao, XL, XU); CHKERRQ(info);
+
+<a name="line180">180: </a>  tron-&gt;pgstepsize=1.0;
+
+<a name="line182">182: </a>  <font color="#B22222">/*   Project the current point onto the feasible set */</font>
+<a name="line183">183: </a>  info = X-&gt;<A href="../../../../docs/manualpages/vector/Median.html#Median">Median</A>(XL,X,XU); CHKERRQ(info);
+<a name="line184">184: </a>  
+<a name="line185">185: </a>  info = <A href="../../../../docs/manualpages/solver/TaoComputeMeritFunctionGradient.html#TaoComputeMeritFunctionGradient">TaoComputeMeritFunctionGradient</A>(tao,X,&amp;tron-&gt;f,G);CHKERRQ(info);
+<a name="line186">186: </a>  info = Free_Local-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(XL,X,XU); CHKERRQ(info);
+<a name="line187">187: </a>  
+<a name="line188">188: </a>  <font color="#B22222">/* Project the gradient and calculate the norm */</font>
+<a name="line189">189: </a>  //  info = G_New-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G);CHKERRQ(info);
+<a name="line190">190: </a>  info = PG-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(G,XL,X,XU);CHKERRQ(info);
+<a name="line191">191: </a>  info = PG-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;tron-&gt;gnorm); CHKERRQ(info);
+
+<a name="line193">193: </a>  <font color="#4169E1">if</font> (tron-&gt;delta &lt;= 0.0){
+<a name="line194">194: </a>    tron-&gt;delta=TaoMax(tron-&gt;gnorm*tron-&gt;gnorm,1.0);
+<a name="line195">195: </a>    //    tron-&gt;delta = TAO_INFINITY;
+<a name="line196">196: </a>  }
+
+<a name="line198">198: </a>  tron-&gt;stepsize=tron-&gt;delta;
+
+<a name="line200">200: </a>  info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao,iter++,tron-&gt;f,tron-&gt;gnorm,0.0,tron-&gt;delta,&amp;reason);
+<a name="line201">201: </a>  CHKERRQ(info);
+
+<a name="line203">203: </a>  <font color="#4169E1">while</font> (reason==TAO_CONTINUE_ITERATING){
+<a name="line204">204: </a>    
+<a name="line205">205: </a>    info = TaoGradProjections(tao,tron); CHKERRQ(info);
+
+<a name="line207">207: </a>    info = Free_Local-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(XL,X,XU); CHKERRQ(info);
+<a name="line208">208: </a>    info = Free_Local-&gt;<A href="../../../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(&amp;tron-&gt;n_free); CHKERRQ(info);
+<a name="line209">209: </a>    f=tron-&gt;f; delta=tron-&gt;delta; gnorm=tron-&gt;gnorm; 
+
+<a name="line211">211: </a>    <font color="#4169E1">if</font> (tron-&gt;n_free &gt; 0){
+<a name="line212">212: </a>      
+<a name="line213">213: </a>      info = <A href="../../../../docs/manualpages/solver/TaoComputeHessian.html#TaoComputeHessian">TaoComputeHessian</A>(tao,X,H);CHKERRQ(info);
+
+<a name="line215">215: </a>      <font color="#B22222">/* Create a reduced linear system */</font>
+<a name="line216">216: </a>      info = R-&gt;<A href="../../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(G,Free_Local);CHKERRQ(info);
+<a name="line217">217: </a>      info = R-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+<a name="line218">218: </a>      info = DXFree-&gt;<A href="../../../../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(DX,Free_Local);CHKERRQ(info);
+<a name="line219">219: </a>      info = DXFree-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+
+<a name="line221">221: </a>      info = Hsub-&gt;<A href="../../../../docs/manualpages/matrix/SetReducedMatrix.html#SetReducedMatrix">SetReducedMatrix</A>(H,Free_Local,Free_Local);CHKERRQ(info);
+
+<a name="line223">223: </a>      info = <A href="../../../../docs/manualpages/solver/TaoPreLinearSolve.html#TaoPreLinearSolve">TaoPreLinearSolve</A>(tao,Hsub);CHKERRQ(info);
+
+<a name="line225">225: </a>      <font color="#4169E1">while</font> (1) {
+
+<a name="line227">227: </a>         <font color="#B22222">/* Approximately solve the reduced linear system */</font>
+
+<a name="line229">229: </a>        info = <A href="../../../../docs/manualpages/solver/TaoLinearSolveTrustRegion.html#TaoLinearSolveTrustRegion">TaoLinearSolveTrustRegion</A>(tao, Hsub, R, DXFree, delta, &amp;success); CHKERRQ(info);
+
+<a name="line231">231: </a>        info=DX-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line232">232: </a>        info=DX-&gt;<A href="../../../../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A>(DXFree,Free_Local);CHKERRQ(info);
+
+<a name="line234">234: </a>        info = G-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(DX,&amp;gdx); CHKERRQ(info);
+<a name="line235">235: </a>        info = PetscInfo1(tao,<font color="#666666">"Expected decrease in function value: %14.12e\n"</font>,gdx); CHKERRQ(info);
+
+<a name="line237">237: </a>        stepsize=1.0; f_new=f;
+<a name="line238">238: </a>        info = X_New-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X); CHKERRQ(info);
+<a name="line239">239: </a>        info = G_New-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G); CHKERRQ(info);
+<a name="line240">240: </a>        
+<a name="line241">241: </a>        info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao,X_New,G_New,DX,Work,
+<a name="line242">242: </a>                                  &amp;f_new,&amp;f_full,&amp;stepsize,&amp;lsflag);
+<a name="line243">243: </a>        CHKERRQ(info);
+<a name="line244">244: </a>        info = H-&gt;<A href="../../../../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A>(DX,Work); CHKERRQ(info);
+<a name="line245">245: </a>        info = Work-&gt;<A href="../../../../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A>(0.5,G); CHKERRQ(info);
+<a name="line246">246: </a>        info = Work-&gt;<A href="../../../../docs/manualpages/vector/Dot.html#Dot">Dot</A>(DX,&amp;prered); CHKERRQ(info);
+<a name="line247">247: </a>        actred = f_new - f;
+<a name="line248">248: </a>        
+<a name="line249">249: </a>        <font color="#4169E1">if</font> (actred&lt;0) rhok=TaoAbsScalar(-actred/prered);
+<a name="line250">250: </a>        <font color="#4169E1">else</font> rhok=0.0;
+
+<a name="line252">252: </a>        <font color="#B22222">/* Compare actual improvement to the quadratic model */</font>
+<a name="line253">253: </a>        <font color="#4169E1">if</font> (rhok &gt; tron-&gt;eta1) { <font color="#B22222">/* Accept the point */</font>
+
+<a name="line255">255: </a>          info = DX-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(1.0,X_New,-1.0, X); CHKERRQ(info);
+<a name="line256">256: </a>          info = DX-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;xdiff); CHKERRQ(info);
+<a name="line257">257: </a>          xdiff*=stepsize;
+
+<a name="line259">259: </a>          <font color="#B22222">/* Adjust trust region size */</font>
+<a name="line260">260: </a>          <font color="#4169E1">if</font> (rhok &lt; tron-&gt;eta2 ){
+<a name="line261">261: </a>            delta = TaoMin(xdiff,delta)*tron-&gt;sigma1;
+<a name="line262">262: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (rhok &gt; tron-&gt;eta4 ){
+<a name="line263">263: </a>            delta= TaoMin(xdiff,delta)*tron-&gt;sigma3;
+<a name="line264">264: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (rhok &gt; tron-&gt;eta3 ){
+<a name="line265">265: </a>            delta=TaoMin(xdiff,delta)*tron-&gt;sigma2;
+<a name="line266">266: </a>          }
+
+<a name="line268">268: </a>          info =  PG-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(G_New,XL,X_New,XU);
+<a name="line269">269: </a>          CHKERRQ(info);
+<a name="line270">270: </a>          info = PG-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;gnorm);  CHKERRQ(info);
+<a name="line271">271: </a>          info = TronCheckOptimalFace(X_New,XL,XU,G_New,PG, Free_Local, TIS,
+<a name="line272">272: </a>                                      &amp;optimal_face); CHKERRQ(info);          
+<a name="line273">273: </a>          <font color="#4169E1">if</font> (stepsize &lt; 1 || optimal_face==TAO_FALSE || reason!=TAO_CONTINUE_ITERATING ){
+<a name="line274">274: </a>            f=f_new;
+<a name="line275">275: </a>            info = X-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(X_New); CHKERRQ(info);
+<a name="line276">276: </a>            info = G-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(G_New); CHKERRQ(info);
+<a name="line277">277: </a>            <font color="#4169E1">break</font>;
+<a name="line278">278: </a>          }
+<a name="line279">279: </a>          <font color="#4169E1">if</font> (delta&lt;=1e-30){
+<a name="line280">280: </a>            <font color="#4169E1">break</font>;
+<a name="line281">281: </a>          }
+<a name="line282">282: </a>        } 
+<a name="line283">283: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (delta &lt;= 1e-30) {
+<a name="line284">284: </a>          <font color="#4169E1">break</font>;
+<a name="line285">285: </a>        }
+<a name="line286">286: </a>        <font color="#4169E1">else</font> {
+<a name="line287">287: </a>          delta /= 4.0;
+<a name="line288">288: </a>        }
+<a name="line289">289: </a>      } <font color="#B22222">/* end linear solve loop */</font>
+<a name="line290">290: </a>      
+<a name="line291">291: </a>    } <font color="#4169E1">else</font> {
+<a name="line292">292: </a>      
+<a name="line293">293: </a>      actred=0;
+<a name="line294">294: </a>      info =  Work-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(G,XL,X,XU);
+<a name="line295">295: </a>      CHKERRQ(info);
+<a name="line296">296: </a>      info = Work-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;gnorm);  CHKERRQ(info);
+<a name="line297">297: </a>      <font color="#B22222">/* if there were no free variables, no cg method */</font>
+
+<a name="line299">299: </a>    }
+
+<a name="line301">301: </a>    tron-&gt;f=f;tron-&gt;gnorm=gnorm; tron-&gt;actred=actred; tron-&gt;delta=delta;
+<a name="line302">302: </a>    info = <A href="../../../../docs/manualpages/solver/TaoMonitor.html#TaoMonitor">TaoMonitor</A>(tao,iter,f,gnorm,0.0,delta,&amp;reason); CHKERRQ(info);
+<a name="line303">303: </a>    <font color="#4169E1">if</font> (reason!=TAO_CONTINUE_ITERATING) <font color="#4169E1">break</font>;
+<a name="line304">304: </a>    iter++;
+<a name="line305">305: </a>    
+<a name="line306">306: </a>  }  <font color="#B22222">/* END MAIN LOOP  */</font>
+
+<a name="line308">308: </a>  TaoFunctionReturn(0);
+<a name="line309">309: </a>}
+
+
+<a name="line314">314: </a><strong><font color="#4169E1"><a name="TaoGradProjections"></a>static int TaoGradProjections(TAO_SOLVER tao,TAO_TRON *tron)</font></strong>
+<a name="line315">315: </a>{
+<a name="line316">316: </a>  int info;
+<a name="line317">317: </a>  TaoInt lsflag=0,i;
+<a name="line318">318: </a>  TaoTruth sameface=TAO_FALSE;
+<a name="line319">319: </a>  double actred=-1.0,actred_max=0.0;
+<a name="line320">320: </a>  double f_new, f_full;
+<a name="line321">321: </a>  TaoVec *DX=tron-&gt;DX,*XL=tron-&gt;XL,*XU=tron-&gt;XU,*Work=tron-&gt;Work;
+<a name="line322">322: </a>  TaoVec *X=tron-&gt;X,*G=tron-&gt;G;
+<a name="line323">323: </a>  TaoIndexSet *TT1=tron-&gt;Free_Local, *TT2=tron-&gt;TT, *TT3;
+<a name="line324">324: </a>  <font color="#B22222">/*</font>
+<a name="line325">325: </a><font color="#B22222">     The gradient and function value passed into and out of this</font>
+<a name="line326">326: </a><font color="#B22222">     routine should be current and correct.</font>
+<a name="line327">327: </a><font color="#B22222">     </font>
+<a name="line328">328: </a><font color="#B22222">     The free, active, and binding variables should be already identified</font>
+<a name="line329">329: </a><font color="#B22222">  */</font>
+<a name="line330">330: </a>  
+<a name="line331">331: </a>  TaoFunctionBegin;
+<a name="line332">332: </a>  
+<a name="line333">333: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;X);CHKERRQ(info);
+<a name="line334">334: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetGradient.html#TaoGetGradient">TaoGetGradient</A>(tao,&amp;G);CHKERRQ(info);
+<a name="line335">335: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao,&amp;XL,&amp;XU);CHKERRQ(info);
+
+<a name="line337">337: </a>  info = TT1-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(XL,X,XU); CHKERRQ(info);
+
+<a name="line339">339: </a>  <font color="#4169E1">for</font> (i=0;i&lt;tron-&gt;maxgpits;i++){
+
+<a name="line341">341: </a>    <font color="#4169E1">if</font> ( -actred &lt;= (tron-&gt;pg_ftol)*actred_max) <font color="#4169E1">break</font>;
+<a name="line342">342: </a>  
+<a name="line343">343: </a>    tron-&gt;gp_iterates++; tron-&gt;total_gp_its++;      
+<a name="line344">344: </a>    f_new=tron-&gt;f;
+
+<a name="line346">346: </a>    info = DX-&gt;<A href="../../../../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>(-1.0,G); CHKERRQ(info);
+
+<a name="line348">348: </a>    info = <A href="../../../../docs/manualpages/solver/TaoLineSearchApply.html#TaoLineSearchApply">TaoLineSearchApply</A>(tao,X,G,DX,Work,
+<a name="line349">349: </a>                              &amp;f_new,&amp;f_full,&amp;tron-&gt;pgstepsize,&amp;lsflag);
+<a name="line350">350: </a>    CHKERRQ(info);
+
+<a name="line352">352: </a>    <font color="#B22222">/* Update the iterate */</font>
+<a name="line353">353: </a>    actred = f_new - tron-&gt;f;
+<a name="line354">354: </a>    actred_max = TaoMax(actred_max,-(f_new - tron-&gt;f));
+<a name="line355">355: </a>    tron-&gt;f = f_new;
+
+<a name="line357">357: </a>    info = TT2-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(XL,X,XU); CHKERRQ(info);
+<a name="line358">358: </a>    info = TT2-&gt;<A href="../../../../docs/manualpages/indexset/IsSame.html#IsSame">IsSame</A>(TT1,&amp;sameface);  CHKERRQ(info);
+<a name="line359">359: </a>    <font color="#4169E1">if</font> (sameface==TAO_TRUE) {
+<a name="line360">360: </a>      <font color="#4169E1">break</font>;
+<a name="line361">361: </a>    } <font color="#4169E1">else</font> {
+<a name="line362">362: </a>      //      info = TT1-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(XL,X,XU); CHKERRQ(info);
+<a name="line363">363: </a>      TT3=TT2;
+<a name="line364">364: </a>      TT2=TT1;
+<a name="line365">365: </a>      TT1=TT3;
+<a name="line366">366: </a>    }
+
+<a name="line368">368: </a>  }
+<a name="line369">369: </a>  
+<a name="line370">370: </a>  TaoFunctionReturn(0);
+<a name="line371">371: </a>}
+
+
+<a name="line376">376: </a><strong><font color="#4169E1"><a name="TronCheckOptimalFace"></a>static int TronCheckOptimalFace(TaoVec *X,TaoVec *XL,TaoVec*XU,TaoVec *PG,TaoVec*W,</font></strong>
+<a name="line377">377: </a><strong><font color="#4169E1">                                TaoIndexSet*Free_Local, TaoIndexSet*TT,</font></strong>
+<a name="line378">378: </a><strong><font color="#4169E1">                                TaoTruth *optimal)</font></strong>
+<a name="line379">379: </a>{
+<a name="line380">380: </a>  int info;
+<a name="line381">381: </a>  TaoInt n_free;
+<a name="line382">382: </a>  double rr;
+<a name="line383">383: </a>  TaoTruth same;
+
+<a name="line385">385: </a>  TaoFunctionBegin;
+<a name="line386">386: </a>  *optimal = TAO_FALSE;
+
+<a name="line388">388: </a>  <font color="#B22222">/* Also check to see if the active set is the same */</font>
+
+<a name="line390">390: </a>  info = TT-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(XL,X,XU); CHKERRQ(info);
+<a name="line391">391: </a>  info = Free_Local-&gt;<A href="../../../../docs/manualpages/indexset/IsSame.html#IsSame">IsSame</A>(TT,&amp;same); CHKERRQ(info);
+<a name="line392">392: </a>  info = Free_Local-&gt;<A href="../../../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(&amp;n_free); CHKERRQ(info);
+<a name="line393">393: </a>  <font color="#4169E1">if</font> (same == TAO_FALSE){
+<a name="line394">394: </a>    info = Free_Local-&gt;<A href="../../../../docs/manualpages/indexset/WhichBetween.html#WhichBetween">WhichBetween</A>(XL,X,XU); CHKERRQ(info);
+<a name="line395">395: </a>    *optimal = TAO_FALSE;
+<a name="line396">396: </a>    TaoFunctionReturn(0);
+<a name="line397">397: </a>  } <font color="#4169E1">else</font> {
+<a name="line398">398: </a>    *optimal = TAO_TRUE;
+<a name="line399">399: </a>  }
+
+<a name="line401">401: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>(PG); CHKERRQ(info);
+<a name="line402">402: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/Negate.html#Negate">Negate</A>(); CHKERRQ(info);
+
+<a name="line404">404: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(W,XL,X,XU); CHKERRQ(info);
+<a name="line405">405: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>(1.0,PG); CHKERRQ(info);
+
+<a name="line407">407: </a>  info = W-&gt;<A href="../../../../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>(&amp;rr); CHKERRQ(info);
+<a name="line408">408: </a>  <font color="#4169E1">if</font> (rr&gt;0) *optimal = TAO_FALSE;
+
+<a name="line410">410: </a>  *optimal = TAO_FALSE;
+<a name="line411">411: </a>  <font color="#B22222">/*</font>
+<a name="line412">412: </a><font color="#B22222">    info = tron-&gt;TT-&gt;whichNonNegative(W); CHKERRQ(info);</font>
+<a name="line413">413: </a><font color="#B22222">    info = tron-&gt;TT-&gt;<A href="../../../../docs/manualpages/indexset/GetSize.html#GetSize">GetSize</A>(&amp;n); CHKERRQ(info);</font>
+<a name="line414">414: </a><font color="#B22222">    if (n==0) *optimal = TAO_TRUE;</font>
+<a name="line415">415: </a><font color="#B22222">  */</font>
+<a name="line416">416: </a>  TaoFunctionReturn(0);
+<a name="line417">417: </a>}
+
+
+
+<a name="line423">423: </a><strong><font color="#4169E1"><a name="TaoDefaultMonitor_TRON"></a>int TaoDefaultMonitor_TRON(TAO_SOLVER tao,void *dummy)</font></strong>
+<a name="line424">424: </a>{
+<a name="line425">425: </a>  int info;
+<a name="line426">426: </a>  TaoInt its,nfree,nbind;
+<a name="line427">427: </a>  double fct,gnorm;
+<a name="line428">428: </a>  TAO_TRON *tron;
+
+<a name="line430">430: </a>  TaoFunctionBegin;
+<a name="line431">431: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolutionStatus.html#TaoGetSolutionStatus">TaoGetSolutionStatus</A>(tao,&amp;its,&amp;fct,&amp;gnorm,0,0,0);CHKERRQ(info);
+<a name="line432">432: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolverContext.html#TaoGetSolverContext">TaoGetSolverContext</A>(tao,<font color="#666666">"tao_tron"</font>,(void**)&amp;tron); CHKERRQ(info);
+<a name="line433">433: </a>  <font color="#4169E1">if</font> (tron){
+<a name="line434">434: </a>    nfree=tron-&gt;n_free;
+<a name="line435">435: </a>    nbind=tron-&gt;n_bind;
+<a name="line436">436: </a>    info=TaoPrintInt(tao,<font color="#666666">"iter = %d,"</font>,its); CHKERRQ(info);
+<a name="line437">437: </a>    info=TaoPrintDouble(tao,<font color="#666666">" Function value: %g,"</font>,fct); CHKERRQ(info);
+<a name="line438">438: </a>    info=TaoPrintDouble(tao,<font color="#666666">"  Residual: %g \n"</font>,gnorm);CHKERRQ(info);
+<a name="line439">439: </a>    
+<a name="line440">440: </a>    info=TaoPrintInt(tao,<font color="#666666">" free vars = %d,"</font>,nfree); CHKERRQ(info);
+<a name="line441">441: </a>    info=TaoPrintInt(tao,<font color="#666666">" binding vars = %d\n"</font>,nbind); CHKERRQ(info);
+<a name="line442">442: </a>  }
+<a name="line443">443: </a>  TaoFunctionReturn(0);
+<a name="line444">444: </a>}
+
+<a name="line446">446: </a><strong><font color="#4169E1"><a name="TaoSetMaxGPIts"></a>int TaoSetMaxGPIts(TAO_SOLVER tao, int its)</font></strong>{
+<a name="line447">447: </a>  int info;
+<a name="line448">448: </a>  TAO_TRON  *tron;
+
+<a name="line450">450: </a>  TaoFunctionBegin;
+
+<a name="line452">452: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolverContext.html#TaoGetSolverContext">TaoGetSolverContext</A>(tao,<font color="#666666">"tao_tron"</font>,(void**)&amp;tron); CHKERRQ(info);
+<a name="line453">453: </a>  <font color="#4169E1">if</font> (tron){
+<a name="line454">454: </a>    tron-&gt;maxgpits     = its;
+<a name="line455">455: </a>  }
+<a name="line456">456: </a>  TaoFunctionReturn(0);
+<a name="line457">457: </a>}
+
+
+<a name="line462">462: </a><strong><font color="#4169E1"><a name="TaoGetDualVariables_TRON"></a>static int TaoGetDualVariables_TRON(TAO_SOLVER tao, TaoVec* DXL, TaoVec* DXU, void *solver)</font></strong>{
+
+<a name="line464">464: </a>  TAO_TRON *tron = (TAO_TRON *) solver;
+<a name="line465">465: </a>  TaoVec  *G=tron-&gt;G,*GP=tron-&gt;Work;
+<a name="line466">466: </a>  TaoVec  *X,*XL,*XU;
+<a name="line467">467: </a>  int       info;
+
+<a name="line469">469: </a>  TaoFunctionBegin;
+<a name="line470">470: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;X); CHKERRQ(info);
+<a name="line471">471: </a>  info = <A href="../../../../docs/manualpages/solver/TaoGetVariableBounds.html#TaoGetVariableBounds">TaoGetVariableBounds</A>(tao,&amp;XL,&amp;XU); CHKERRQ(info);
+<a name="line472">472: </a>  info = GP-&gt;<A href="../../../../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(G,XL,X,XU); CHKERRQ(info);
+
+<a name="line474">474: </a>  info = DXL-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(-1.0,G,1.0,GP); CHKERRQ(info);
+<a name="line475">475: </a>  info = DXU-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line476">476: </a>  info = DXL-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>(DXL,DXU); CHKERRQ(info);
+
+<a name="line478">478: </a>  info = DXU-&gt;<A href="../../../../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>(-1.0,GP,1.0,G); CHKERRQ(info);
+<a name="line479">479: </a>  info = GP-&gt;<A href="../../../../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>(); CHKERRQ(info);
+<a name="line480">480: </a>  info = DXU-&gt;<A href="../../../../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A>(GP,DXU); CHKERRQ(info);
+
+<a name="line482">482: </a>  TaoFunctionReturn(0);
+<a name="line483">483: </a>}
+
+<a name="line485">485: </a><font color="#B22222">/*------------------------------------------------------------*/</font>
+<a name="line489">489: </a><strong><font color="#4169E1"><a name="TaoCreate_TRON"></a>int TaoCreate_TRON(TAO_SOLVER tao)</font></strong>
+<a name="line490">490: </a>{
+<a name="line491">491: </a>  TAO_TRON *tron;
+<a name="line492">492: </a>  int      info;
+
+<a name="line494">494: </a>  TaoFunctionBegin;
+
+<a name="line496">496: </a>  info = TaoNew(TAO_TRON,&amp;tron); CHKERRQ(info);
+<a name="line497">497: </a>  info = PetscLogObjectMemory(tao,<font color="#4169E1">sizeof</font>(TAO_TRON)); CHKERRQ(info);
+
+<a name="line499">499: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSolveRoutine.html#TaoSetTaoSolveRoutine">TaoSetTaoSolveRoutine</A>(tao,TaoSolve_TRON,(void*)tron); CHKERRQ(info);
+<a name="line500">500: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoSetUpDownRoutines.html#TaoSetTaoSetUpDownRoutines">TaoSetTaoSetUpDownRoutines</A>(tao,TaoSetUp_TRON,TaoSetDown_TRON); CHKERRQ(info);
+<a name="line501">501: </a>  info=TaoSetTaoOptionsRoutine(tao,TaoSetOptions_TRON); CHKERRQ(info);
+<a name="line502">502: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoViewRoutine.html#TaoSetTaoViewRoutine">TaoSetTaoViewRoutine</A>(tao,TaoView_TRON); CHKERRQ(info);
+<a name="line503">503: </a>  info=<A href="../../../../docs/manualpages/solver/TaoSetTaoDualVariablesRoutine.html#TaoSetTaoDualVariablesRoutine">TaoSetTaoDualVariablesRoutine</A>(tao,TaoGetDualVariables_TRON); CHKERRQ(info);
+
+<a name="line505">505: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetMaximumIterates.html#TaoSetMaximumIterates">TaoSetMaximumIterates</A>(tao, 50); CHKERRQ(info);
+<a name="line506">506: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTolerances.html#TaoSetTolerances">TaoSetTolerances</A>(tao, 1e-10, 1e-10, 0, 0); CHKERRQ(info);
+
+<a name="line508">508: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTrustRegionRadius.html#TaoSetTrustRegionRadius">TaoSetTrustRegionRadius</A>(tao, 1.0); CHKERRQ(info);
+<a name="line509">509: </a>  info = <A href="../../../../docs/manualpages/solver/TaoSetTrustRegionTolerance.html#TaoSetTrustRegionTolerance">TaoSetTrustRegionTolerance</A>(tao, 1.0e-12); CHKERRQ(info);
+
+<a name="line511">511: </a>  <font color="#B22222">/* Initialize pointers and variables */</font>
+<a name="line512">512: </a>  tron-&gt;n            = 0;
+<a name="line513">513: </a>  tron-&gt;delta        = -1.0;
+<a name="line514">514: </a>  tron-&gt;maxgpits     = 3;
+<a name="line515">515: </a>  tron-&gt;pg_ftol      = 0.001;
+
+<a name="line517">517: </a>  tron-&gt;eta1         = 1.0e-4;
+<a name="line518">518: </a>  tron-&gt;eta2         = 0.25;
+<a name="line519">519: </a>  tron-&gt;eta3         = 0.50;
+<a name="line520">520: </a>  tron-&gt;eta4         = 0.90;
+
+<a name="line522">522: </a>  tron-&gt;sigma1       = 0.5;
+<a name="line523">523: </a>  tron-&gt;sigma2       = 2.0;
+<a name="line524">524: </a>  tron-&gt;sigma3       = 4.0;
+
+<a name="line526">526: </a>  tron-&gt;gp_iterates  = 0; <font color="#B22222">/* Cumulative number */</font>
+<a name="line527">527: </a>  tron-&gt;cgits        = 0; <font color="#B22222">/* Current iteration */</font>
+<a name="line528">528: </a>  tron-&gt;total_gp_its = 0;
+<a name="line529">529: </a>  tron-&gt;cg_iterates  = 0;
+<a name="line530">530: </a>  tron-&gt;total_cgits  = 0;
+<a name="line531">531: </a> 
+<a name="line532">532: </a>  tron-&gt;n_bind       = 0;
+<a name="line533">533: </a>  tron-&gt;n_free       = 0;
+<a name="line534">534: </a>  tron-&gt;n_upper      = 0;
+<a name="line535">535: </a>  tron-&gt;n_lower      = 0;
+
+<a name="line537">537: </a>  tron-&gt;DX=0;
+<a name="line538">538: </a>  tron-&gt;DXFree=0;
+<a name="line539">539: </a>  tron-&gt;R=0;
+<a name="line540">540: </a>  tron-&gt;X_New=0;
+<a name="line541">541: </a>  tron-&gt;G_New=0;
+<a name="line542">542: </a>  tron-&gt;Work=0;
+<a name="line543">543: </a>  tron-&gt;Free_Local=0;
+<a name="line544">544: </a>  tron-&gt;TT=0;
+<a name="line545">545: </a>  tron-&gt;Hsub=0;
+
+<a name="line547">547: </a>  info = <A href="../../../../docs/manualpages/solver/TaoCreateMoreThuenteBoundLineSearch.html#TaoCreateMoreThuenteBoundLineSearch">TaoCreateMoreThuenteBoundLineSearch</A>(tao, 0 , 0); CHKERRQ(info);
+<a name="line548">548: </a>  TaoFunctionReturn(0);
+<a name="line549">549: </a>}
+</pre>
+</body>
+
+</html>

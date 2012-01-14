@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>DAAppSetADElementFunctionGradient2</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="DAAppSetADElementFunctionGradient2"><H1>DAAppSetADElementFunctionGradient2</H1></A>
+Set routine that evaluates the local part of a function on a 2-dimensional periodic DA with 4 degrees of freedom.  
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int DAAppSetADElementFunctionGradient2(TAO_APPLICATION daapplication, 
+                                     int (*funcgrad)(int[2],DERIV_TYPE[16],DERIV_TYPE*,void*), 
+                                     int flops, void *ctx)</PRE>
+Collective on TAO_APPLICATION
+<P>
+<H2><FONT COLOR="#CC3333">Input Parameters</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>daapp </B></TD><TD>- the TAO_DA_APPLICATION solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>funcgrad </B></TD><TD>- local function gradient routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>flops </B></TD><TD>- the number of flops done performed in the funcgrad routine
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>fgctx </B></TD><TD>- [optional] user-defined context for private data for the evaluation.
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Calling sequence of funcgrad</FONT></H2>
+<pre>
+    int funcgrad(int coordinates[2], DERIV_TYPE x[16], DERIV_TYPE *f, void* ctx)
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>coord </B></TD><TD>- the global coordinates [i j] in each direction of the DA
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- the variables on the DA ( da[j][i], da[j][j+1], da[j+1][i], da[j+1][i+1] ) (bottom left, bottom right, top left, top right)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>g </B></TD><TD>- the ADIC differentiated objective function with respect to each variable
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user defined context
+</TD></TR></TABLE>
+<P>
+Calling sequence of func before calling ADIC
+<pre>
+    int func(int coordinates[2], double x[16], double *f, void* ctx)
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>coord </B></TD><TD>- the global coordinates [i j] in each direction of the DA
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>x </B></TD><TD>- the variables on the DA ( da[j][i], da[j][j+1], da[j+1][i], da[j+1][i+1] ) (bottom left, bottom right, top left, top right)
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>f </B></TD><TD>- the objective function
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>- user defined context
+</TD></TR></TABLE>
+<P>
+<P>
+Note: This function requires ADIC to be installed and the ADIC-specific variables to be set in
+$TAO_DIR/bmake/packages.$PETSC_ARCH
+<P>
+
+<P>
+Concepts: DA, gradient, ADIC
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../daapp/DAAppSetObjectiveAndGradientRoutine.html#DAAppSetObjectiveAndGradientRoutine">DAAppSetObjectiveAndGradientRoutine</A>(), <A HREF="../daapp/DAAppSetADElementFunctionGradient.html#DAAppSetADElementFunctionGradient">DAAppSetADElementFunctionGradient</A>()
+<BR><P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>intermediate
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/gridapplication/daadic/adelement2.c.html#DAAppSetADElementFunctionGradient2">src/petsctao/gridapplication/daadic/adelement2.c</A>
+<BR><A HREF="./index.html">TAO DA Application Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

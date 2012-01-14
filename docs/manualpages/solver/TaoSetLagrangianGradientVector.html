@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSetLagrangianGradientVector</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSetLagrangianGradientVector"><H1>TaoSetLagrangianGradientVector</H1></A>
+Sets a pointer to the address of a TaoVector that contains the gradient of the Lagrangian function. 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao_solver.h"  
+int TaoSetLagrangianGradientVector(TAO_SOLVER solver,TaoVec* gg)
+</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>solver </B></TD><TD>- the TAO_SOLVER solver context
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>gg </B></TD><TD>- the gradient of the Lagrangian function
+</TD></TR></TABLE>
+<P>
+
+<P>
+Note:  This routine does not create a vector.  The vector specified
+here will be returned whenever <A HREF="../solver/TaoGetGradient.html#TaoGetGradient">TaoGetGradient</A>() is called.
+<P>
+<H2><FONT COLOR="#CC3333">Keywords</FONT></H2>
+ Gradient
+<BR>
+<P>
+<H2><FONT COLOR="#CC3333">See Also</FONT></H2>
+ <A HREF="../solver/TaoGetGradient.html#TaoGetGradient">TaoGetGradient</A>()
+<BR>
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>developer
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/interface/tao_fghj.c.html#TaoSetLagrangianGradientVector">src/interface/tao_fghj.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

@@ -1,0 +1,63 @@
+
+---- Journal Bearing Problem -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value 0, Residual: 0.596075 
+iter = 1, Function value -0.135416, Residual: 0.437581 
+iter = 2, Function value -0.162139, Residual: 0.507867 
+iter = 3, Function value -0.176315, Residual: 0.170421 
+iter = 4, Function value -0.177948, Residual: 0.039241 
+iter = 5, Function value -0.178108, Residual: 0.031483 
+iter = 6, Function value -0.178414, Residual: 0.025980 
+iter = 7, Function value -0.178456, Residual: 0.042453 
+iter = 8, Function value -0.178533, Residual: 0.010366 
+iter = 9, Function value -0.178541, Residual: 0.003855 
+
+---- Journal Bearing Problem -----
+
+Grid: 0,    mx: 5     my: 15   
+iter = 0, Function value 0, Residual: 0.809084 
+iter = 1, Function value -0.162271, Residual: 0.353966 
+iter = 2, Function value -0.200034, Residual: 0.140486 
+iter = 3, Function value -0.201882, Residual: 0.188141 
+iter = 4, Function value -0.205331, Residual: 0.031742 
+iter = 5, Function value -0.205438, Residual: 0.012877 
+iter = 6, Function value -0.20546, Residual: 0.007119 
+iter = 7, Function value -0.205475, Residual: 0.002284 
+Grid: 1,    mx: 9     my: 29   
+iter = 0, Function value -0.14815, Residual: 0.433808 
+iter = 1, Function value -0.183479, Residual: 0.140928 
+iter = 2, Function value -0.187436, Residual: 0.056697 
+iter = 3, Function value -0.188078, Residual: 0.043660 
+iter = 4, Function value -0.188331, Residual: 0.020426 
+iter = 5, Function value -0.188459, Residual: 0.016614 
+iter = 6, Function value -0.188568, Residual: 0.018841 
+iter = 7, Function value -0.188588, Residual: 0.025674 
+iter = 8, Function value -0.188636, Residual: 0.009135 
+iter = 9, Function value -0.188655, Residual: 0.006714 
+iter = 10, Function value -0.188683, Residual: 0.006874 
+iter = 11, Function value -0.188688, Residual: 0.006692 
+iter = 12, Function value -0.188692, Residual: 0.002013 
+Grid: 2,    mx: 17     my: 57   
+iter = 0, Function value -0.175441, Residual: 0.215395 
+iter = 1, Function value -0.181946, Residual: 0.065392 
+iter = 2, Function value -0.18248, Residual: 0.017075 
+iter = 3, Function value -0.182525, Residual: 0.010150 
+iter = 4, Function value -0.182555, Residual: 0.007158 
+iter = 5, Function value -0.182566, Residual: 0.011330 
+iter = 6, Function value -0.182577, Residual: 0.006709 
+iter = 7, Function value -0.182585, Residual: 0.004296 
+iter = 8, Function value -0.182589, Residual: 0.003985 
+Grid: 3,    mx: 33     my: 113   
+iter = 0, Function value -0.179382, Residual: 0.103443 
+iter = 1, Function value -0.180947, Residual: 0.031144 
+iter = 2, Function value -0.181066, Residual: 0.006702 
+iter = 3, Function value -0.181074, Residual: 0.004179 
+Grid: 4,    mx: 65     my: 225   
+iter = 0, Function value -0.180277, Residual: 0.051821 
+iter = 1, Function value -0.180662, Residual: 0.014646 
+iter = 2, Function value -0.180688, Residual: 0.003456 
+Grid: 5,    mx: 129     my: 449   
+iter = 0, Function value -0.180489, Residual: 0.026283 
+iter = 1, Function value -0.180589, Residual: 0.006306 
+iter = 2, Function value -0.180594, Residual: 0.001761 

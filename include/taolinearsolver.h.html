@@ -1,0 +1,50 @@
+<center><a href="taolinearsolver.h">Actual source code: taolinearsolver.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:15+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOLINEARSOLVER_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOLINEARSOLVER_H</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include </font><font color="#666666">"tao_basictypes.h"</font><font color="#A020F0"></font>
+
+<a name="line6">  6: </a>class TaoIndexSet;
+<a name="line7">  7: </a>class TaoVec;
+<a name="line8">  8: </a>class TaoMat;
+
+<a name="line10"> 10: </a><font color="#B22222">/** </font>
+<a name="line11"> 11: </a><font color="#B22222">    An abstract class representing the implementation of a Linear Solver</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>class TaoLinearSolver {
+
+<a name="line16"> 16: </a><strong><font color="#FF0000">protected:</font></strong>
+<a name="line17"> 17: </a>  
+<a name="line18"> 18: </a><strong><font color="#FF0000">public:</font></strong>
+<a name="line19"> 19: </a>  TaoLinearSolver() { };
+<a name="line20"> 20: </a>  virtual ~TaoLinearSolver() { };
+
+<a name="line22"> 22: </a>  <font color="#B22222">/* These two methods are very important */</font>
+<a name="line23"> 23: </a>  virtual int <A href="../docs/manualpages/lsolver/PreSolve.html#PreSolve">PreSolve</A>(TaoMat *);
+<a name="line24"> 24: </a>  virtual int <A href="../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(TaoVec *, TaoVec *, TaoTruth *);
+
+<a name="line26"> 26: </a>  <font color="#B22222">/* Some solvers need this method */</font>
+<a name="line27"> 27: </a>  virtual int <A href="../docs/manualpages/lsolver/SolveTrustRegion.html#SolveTrustRegion">SolveTrustRegion</A>(TaoVec *, TaoVec *, double, TaoTruth *);
+<a name="line28"> 28: </a>  virtual int <A href="../docs/manualpages/lsolver/SetTolerances.html#SetTolerances">SetTolerances</A>(double rtol, double atol, double dtol, int maxits);
+
+<a name="line30"> 30: </a>  <font color="#B22222">/* These methods are nice to have but not necessary */</font>
+<a name="line31"> 31: </a>  virtual int <A href="../docs/manualpages/lsolver/SetOptions.html#SetOptions">SetOptions</A>();
+<a name="line32"> 32: </a>  virtual int <A href="../docs/manualpages/lsolver/GetNumberIterations.html#GetNumberIterations">GetNumberIterations</A>(int *);
+<a name="line33"> 33: </a>  virtual int <A href="../docs/manualpages/lsolver/View.html#View">View</A>();
+<a name="line34"> 34: </a>};
+
+<a name="line36"> 36: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

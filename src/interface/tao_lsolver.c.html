@@ -1,0 +1,258 @@
+<center><a href="tao_lsolver.c">Actual source code: tao_lsolver.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:07+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"src/tao_impl.h"</font><font color="#A020F0">      </font><font color="#B22222">/*I "tao_solver.h"  I*/</font><font color="#A020F0"></font>
+
+
+<a name="line6">  6: </a><font color="#B22222">/*@C</font>
+<a name="line7">  7: </a><font color="#B22222">  <A href="../../docs/manualpages/solver/TaoCreateLinearSolver.html#TaoCreateLinearSolver">TaoCreateLinearSolver</A> - Create a linear solver for use in TAO</font>
+
+<a name="line9">  9: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line10"> 10: </a><font color="#B22222">+  tao - the TAO_SOLVER context</font>
+<a name="line11"> 11: </a><font color="#B22222">.  MM  - the matrix associated with the solver</font>
+<a name="line12"> 12: </a><font color="#B22222">-  stype - the type of linear solver</font>
+
+<a name="line14"> 14: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line15"> 15: </a><font color="#B22222">.  ksp - a linear solver</font>
+
+<a name="line17"> 17: </a><font color="#B22222">   Types of linear solvers:</font>
+<a name="line18"> 18: </a><font color="#B22222">+  100 - Solver for any square matrix</font>
+<a name="line19"> 19: </a><font color="#B22222">.  110 - GMRES</font>
+<a name="line20"> 20: </a><font color="#B22222">.  200 - Any symmetric matrix</font>
+<a name="line21"> 21: </a><font color="#B22222">.  210 - MINRES</font>
+<a name="line22"> 22: </a><font color="#B22222">.  220 - CG with Trust Region</font>
+<a name="line23"> 23: </a><font color="#B22222">.  230 - SYMMLQ</font>
+<a name="line24"> 24: </a><font color="#B22222">.  300 - Any symmetric positive definite</font>
+<a name="line25"> 25: </a><font color="#B22222">-  310 - Conjugate Gradient</font>
+
+<a name="line27"> 27: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line29"> 29: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>()</font>
+
+<a name="line31"> 31: </a><font color="#B22222">.keywords: linear solver</font>
+<a name="line32"> 32: </a><font color="#B22222">@*/</font>
+<a name="line33"> 33: </a><strong><font color="#4169E1"><a name="TaoCreateLinearSolver"></a>int <A href="../../docs/manualpages/solver/TaoCreateLinearSolver.html#TaoCreateLinearSolver">TaoCreateLinearSolver</A>(TAO_SOLVER tao, TaoMat *MM, TaoInt stype, TaoLinearSolver **ksp)</font></strong>
+<a name="line34"> 34: </a>{
+<a name="line35"> 35: </a>  int info;
+<a name="line36"> 36: </a>  TaoVec *xx;
+<a name="line37"> 37: </a>  TaoLinearSolver* nksp=0;
+
+<a name="line39"> 39: </a>  TaoFunctionBegin;
+<a name="line40"> 40: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line41"> 41: </a>  info = <A href="../../docs/manualpages/solver/TaoGetSolution.html#TaoGetSolution">TaoGetSolution</A>(tao,&amp;xx);CHKERRQ(info);
+<a name="line42"> 42: </a>  <font color="#4169E1">if</font> (MM){
+<a name="line43"> 43: </a>    <font color="#4169E1">if</font> (tao-&gt;taoappl){
+<a name="line44"> 44: </a>      info = tao-&gt;taoappl-&gt;<A href="../../docs/manualpages/taoapp/GetLinearSolver.html#GetLinearSolver">GetLinearSolver</A>(MM,stype,&amp;nksp);CHKERRQ(info);
+<a name="line45"> 45: </a>      <font color="#4169E1">if</font> (ksp){
+<a name="line46"> 46: </a>        *ksp = nksp;
+<a name="line47"> 47: </a>      } 
+<a name="line48"> 48: </a>      tao-&gt;ksp = nksp;
+<a name="line49"> 49: </a>    }
+<a name="line50"> 50: </a>  } <font color="#4169E1">else</font> {
+<a name="line51"> 51: </a>    SETERRQ(1,<font color="#666666">"No matrix specified."</font>);
+<a name="line52"> 52: </a>  }
+<a name="line53"> 53: </a>  TaoFunctionReturn(0);
+<a name="line54"> 54: </a>}
+
+<a name="line58"> 58: </a><font color="#B22222">/*@C</font>
+<a name="line59"> 59: </a><font color="#B22222">  <A href="../../docs/manualpages/solver/TaoDestroyLinearSolver.html#TaoDestroyLinearSolver">TaoDestroyLinearSolver</A> - Destroy the linear solver used in TAO</font>
+
+<a name="line61"> 61: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line62"> 62: </a><font color="#B22222">.  tao - the TAO_SOLVER context</font>
+
+<a name="line64"> 64: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line66"> 66: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoGetLinearSolver.html#TaoGetLinearSolver">TaoGetLinearSolver</A>()</font>
+
+<a name="line68"> 68: </a><font color="#B22222">.keywords: linear solver</font>
+<a name="line69"> 69: </a><font color="#B22222">@*/</font>
+<a name="line70"> 70: </a><strong><font color="#4169E1"><a name="TaoDestroyLinearSolver"></a>int <A href="../../docs/manualpages/solver/TaoDestroyLinearSolver.html#TaoDestroyLinearSolver">TaoDestroyLinearSolver</A>(TAO_SOLVER tao)</font></strong>
+<a name="line71"> 71: </a>{
+<a name="line72"> 72: </a>  TaoFunctionBegin;
+<a name="line73"> 73: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line74"> 74: </a>  tao-&gt;ksp=0;
+<a name="line75"> 75: </a>  TaoFunctionReturn(0);
+<a name="line76"> 76: </a>}
+
+
+<a name="line81"> 81: </a><font color="#B22222">/*@C</font>
+<a name="line82"> 82: </a><font color="#B22222">  <A href="../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A> - <A href="../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A> a linear system</font>
+
+<a name="line84"> 84: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line85"> 85: </a><font color="#B22222">+  tao - the TAO_SOLVER context</font>
+<a name="line86"> 86: </a><font color="#B22222">.  AA - the matrix</font>
+<a name="line87"> 87: </a><font color="#B22222">-  bb - the right hand side</font>
+
+<a name="line89"> 89: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line90"> 90: </a><font color="#B22222">+  xx - the solution</font>
+<a name="line91"> 91: </a><font color="#B22222">-  success - false if linear solve is not successful </font>
+
+<a name="line93"> 93: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line95"> 95: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>()</font>
+
+<a name="line97"> 97: </a><font color="#B22222">.keywords: linear solver</font>
+<a name="line98"> 98: </a><font color="#B22222">@*/</font>
+<a name="line99"> 99: </a><strong><font color="#4169E1"><a name="TaoLinearSolve"></a>int <A href="../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>(TAO_SOLVER tao, TaoMat *AA, TaoVec *bb, TaoVec* xx, TaoTruth *success)</font></strong>
+<a name="line100">100: </a>{
+<a name="line101">101: </a>  int info,lits;
+<a name="line102">102: </a>  TaoFunctionBegin;
+<a name="line103">103: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line104">104: </a>  <font color="#4169E1">if</font> (tao-&gt;ksp){
+<a name="line105">105: </a>    info = tao-&gt;ksp-&gt;<A href="../../docs/manualpages/lsolver/Solve.html#Solve">Solve</A>(bb,xx,success);CHKERRQ(info);
+<a name="line106">106: </a>    info = tao-&gt;ksp-&gt;<A href="../../docs/manualpages/lsolver/GetNumberIterations.html#GetNumberIterations">GetNumberIterations</A>(&amp;lits);CHKERRQ(info);
+<a name="line107">107: </a>    tao-&gt;linear_its += lits;
+<a name="line108">108: </a>    TaoFunctionReturn(0);
+<a name="line109">109: </a>  } <font color="#4169E1">else</font> {
+<a name="line110">110: </a>    TaoFunctionReturn(1);
+<a name="line111">111: </a>  }
+<a name="line112">112: </a>}
+
+<a name="line116">116: </a><font color="#B22222">/*@C</font>
+<a name="line117">117: </a><font color="#B22222">  <A href="../../docs/manualpages/solver/TaoLinearSolveTrustRegion.html#TaoLinearSolveTrustRegion">TaoLinearSolveTrustRegion</A> - Minimize the quadratic function &lt;x, Qx - b&gt; </font>
+<a name="line118">118: </a><font color="#B22222">  with the trust region constraint norm(x, M) &lt;= r, where M is a symmetric </font>
+<a name="line119">119: </a><font color="#B22222">  positive definite preconditioner.</font>
+
+<a name="line121">121: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line122">122: </a><font color="#B22222">+  tao - the TAO_SOLVER context</font>
+<a name="line123">123: </a><font color="#B22222">.  Q - the matrix</font>
+<a name="line124">124: </a><font color="#B22222">.  b - the right hand side</font>
+<a name="line125">125: </a><font color="#B22222">-  r - the trust region radius</font>
+
+<a name="line127">127: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line128">128: </a><font color="#B22222">+  x - the solution</font>
+<a name="line129">129: </a><font color="#B22222">-  success - false if minimization is not successful</font>
+
+<a name="line131">131: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line133">133: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>()</font>
+
+<a name="line135">135: </a><font color="#B22222">.keywords: linear solver</font>
+<a name="line136">136: </a><font color="#B22222">@*/</font>
+<a name="line137">137: </a><strong><font color="#4169E1"><a name="TaoLinearSolveTrustRegion"></a>int <A href="../../docs/manualpages/solver/TaoLinearSolveTrustRegion.html#TaoLinearSolveTrustRegion">TaoLinearSolveTrustRegion</A>(TAO_SOLVER tao, TaoMat *Q, TaoVec *b, TaoVec *x, </font></strong>
+<a name="line138">138: </a><strong><font color="#4169E1">                              double r, TaoTruth *success)</font></strong>
+<a name="line139">139: </a>{
+<a name="line140">140: </a>  int lits,info;
+<a name="line141">141: </a>  TaoFunctionBegin;
+<a name="line142">142: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line143">143: </a>  info = tao-&gt;ksp-&gt;<A href="../../docs/manualpages/lsolver/SolveTrustRegion.html#SolveTrustRegion">SolveTrustRegion</A>(b, x, r, success); CHKERRQ(info);
+<a name="line144">144: </a>  info = tao-&gt;ksp-&gt;<A href="../../docs/manualpages/lsolver/GetNumberIterations.html#GetNumberIterations">GetNumberIterations</A>(&amp;lits);CHKERRQ(info);
+<a name="line145">145: </a>  tao-&gt;linear_its += lits;
+<a name="line146">146: </a>  TaoFunctionReturn(0);
+<a name="line147">147: </a>}
+
+<a name="line151">151: </a><font color="#B22222">/*@C</font>
+<a name="line152">152: </a><font color="#B22222">  <A href="../../docs/manualpages/solver/TaoPreLinearSolve.html#TaoPreLinearSolve">TaoPreLinearSolve</A> - Prepare to solve a linear system</font>
+
+<a name="line154">154: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line155">155: </a><font color="#B22222">+  tao - the TAO_SOLVER context</font>
+<a name="line156">156: </a><font color="#B22222">-  AA - the matrix</font>
+
+<a name="line158">158: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line160">160: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>()</font>
+
+<a name="line162">162: </a><font color="#B22222">.keywords: linear solver</font>
+<a name="line163">163: </a><font color="#B22222">@*/</font>
+<a name="line164">164: </a><strong><font color="#4169E1"><a name="TaoPreLinearSolve"></a>int <A href="../../docs/manualpages/solver/TaoPreLinearSolve.html#TaoPreLinearSolve">TaoPreLinearSolve</A>(TAO_SOLVER tao, TaoMat *AA)</font></strong>
+<a name="line165">165: </a>{
+<a name="line166">166: </a>  int info;
+<a name="line167">167: </a>  TaoFunctionBegin;
+<a name="line168">168: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line169">169: </a>  info = tao-&gt;ksp-&gt;<A href="../../docs/manualpages/lsolver/PreSolve.html#PreSolve">PreSolve</A>(AA);CHKERRQ(info);
+<a name="line170">170: </a>  TaoFunctionReturn(0);
+<a name="line171">171: </a>}
+
+
+<a name="line176">176: </a><font color="#B22222">/*@C</font>
+<a name="line177">177: </a><font color="#B22222">   <A href="../../docs/manualpages/solver/TaoGetLinearSolver.html#TaoGetLinearSolver">TaoGetLinearSolver</A> - Returns the KSP context for a TAO_SOLVER solver.</font>
+
+<a name="line179">179: </a><font color="#B22222">   Not Collective, but if TAO_SOLVER object is parallel, then KSP object is parallel</font>
+
+<a name="line181">181: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line182">182: </a><font color="#B22222">.  solver -  a TAO optimization solver</font>
+
+<a name="line184">184: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line185">185: </a><font color="#B22222">.  ksp - the KSP context</font>
+
+<a name="line187">187: </a><font color="#B22222">   Notes:</font>
+<a name="line188">188: </a><font color="#B22222">   The user can then directly modify the linear solver context to modify the Krylov method, preconditioner,</font>
+<a name="line189">189: </a><font color="#B22222">   and tolerances.</font>
+
+<a name="line191">191: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line193">193: </a><font color="#B22222">.keywords: Linear Solver, context</font>
+<a name="line194">194: </a><font color="#B22222">x</font>
+<a name="line195">195: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/ptaopages/TaoGetKSP.html#TaoGetKSP">TaoGetKSP</A>()</font>
+<a name="line196">196: </a><font color="#B22222">@*/</font>
+<a name="line197">197: </a><strong><font color="#4169E1"><a name="TaoGetLinearSolver"></a>int <A href="../../docs/manualpages/solver/TaoGetLinearSolver.html#TaoGetLinearSolver">TaoGetLinearSolver</A>(TAO_SOLVER tao,TaoLinearSolver **ksp)</font></strong>
+<a name="line198">198: </a>{
+<a name="line199">199: </a>  TaoFunctionBegin;
+<a name="line200">200: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line201">201: </a>  <font color="#4169E1">if</font> (ksp){
+<a name="line202">202: </a>    *ksp = tao-&gt;ksp;
+<a name="line203">203: </a>  }
+<a name="line204">204: </a>  TaoFunctionReturn(0);
+<a name="line205">205: </a>}
+
+
+<a name="line210">210: </a><font color="#B22222">/*@C</font>
+<a name="line211">211: </a><font color="#B22222">  <A href="../../docs/manualpages/solver/TaoViewLinearSolver.html#TaoViewLinearSolver">TaoViewLinearSolver</A> - <A href="../../docs/manualpages/lsolver/View.html#View">View</A> the linear solver</font>
+
+<a name="line213">213: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line214">214: </a><font color="#B22222">.  tao - the TAO_SOLVER context</font>
+
+<a name="line216">216: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line217">217: </a><font color="#B22222">.  -tao_kspview - Calls <A href="../../docs/manualpages/solver/TaoViewLinearSolver.html#TaoViewLinearSolver">TaoViewLinearSolver</A>() at end of <A href="../../docs/manualpages/solver/TaoSolve.html#TaoSolve">TaoSolve</A>()</font>
+
+<a name="line219">219: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line221">221: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoView.html#TaoView">TaoView</A>(), <A href="../../docs/manualpages/solver/TaoLinearSolve.html#TaoLinearSolve">TaoLinearSolve</A>()</font>
+
+<a name="line223">223: </a><font color="#B22222">.keywords: linear solver</font>
+<a name="line224">224: </a><font color="#B22222">@*/</font>
+<a name="line225">225: </a><strong><font color="#4169E1"><a name="TaoViewLinearSolver"></a>int <A href="../../docs/manualpages/solver/TaoViewLinearSolver.html#TaoViewLinearSolver">TaoViewLinearSolver</A>(TAO_SOLVER solver)</font></strong>{
+<a name="line226">226: </a>  int info;
+<a name="line227">227: </a>  TaoFunctionBegin;
+<a name="line228">228: </a>  TaoValidHeaderSpecific(solver,TAO_COOKIE,1);
+<a name="line229">229: </a>  <font color="#4169E1">if</font> (solver-&gt;ksp){
+<a name="line230">230: </a>    info = solver-&gt;ksp-&gt;<A href="../../docs/manualpages/lsolver/View.html#View">View</A>();CHKERRQ(info);
+<a name="line231">231: </a>  }
+<a name="line232">232: </a>  TaoFunctionReturn(0);
+<a name="line233">233: </a>}
+
+<a name="line237">237: </a><font color="#B22222">/*@C</font>
+<a name="line238">238: </a><font color="#B22222">   <A href="../../docs/manualpages/solver/TaoSetLinearSolverOptions.html#TaoSetLinearSolverOptions">TaoSetLinearSolverOptions</A> - Set options for the linear solver</font>
+
+<a name="line240">240: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line242">242: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line243">243: </a><font color="#B22222">.  tao - the TAO_SOLVER solver context</font>
+
+<a name="line245">245: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line247">247: </a><font color="#B22222">.keywords: line search, options</font>
+
+<a name="line249">249: </a><font color="#B22222">.seealso: <A href="../../docs/manualpages/solver/TaoGetLinearSolver.html#TaoGetLinearSolver">TaoGetLinearSolver</A>()</font>
+<a name="line250">250: </a><font color="#B22222">@*/</font>
+<a name="line251">251: </a><strong><font color="#4169E1"><a name="TaoSetLinearSolverOptions"></a>int <A href="../../docs/manualpages/solver/TaoSetLinearSolverOptions.html#TaoSetLinearSolverOptions">TaoSetLinearSolverOptions</A>(TAO_SOLVER tao)</font></strong>{
+<a name="line252">252: </a>  int info;
+<a name="line253">253: </a>  TaoFunctionBegin;
+<a name="line254">254: </a>  TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+<a name="line255">255: </a>  <font color="#4169E1">if</font> (tao-&gt;ksp){
+<a name="line256">256: </a>    info = tao-&gt;ksp-&gt;<A href="../../docs/manualpages/lsolver/SetOptions.html#SetOptions">SetOptions</A>();CHKERRQ(info);
+<a name="line257">257: </a>  }
+<a name="line258">258: </a>  TaoFunctionReturn(0);
+<a name="line259">259: </a>}
+
+</pre>
+</body>
+
+</html>

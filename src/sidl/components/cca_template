@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<libInfo>
+<scl>
+  <library uri="@TAO_DIR@/lib/@PETSC_ARCH@/@LIBNAME@"
+           scope="global"
+           resolution="now">
+    <class name="@COMPONENT@" desc="ior/impl" />
+  </library>
+</scl>
+
+<componentDeployment  name="@COMPONENT@"  paletteClassAlias="@COMPONENT@">
+    <environment>
+        <ccaSpec binding="babel" />
+        <library loading="dynamic" />
+    </environment>
+</componentDeployment>
+</libInfo>

@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoSelectSubset</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoSelectSubset"><H1>TaoSelectSubset</H1></A>
+Select the manner in which subsets of variables in a matrix are selected 
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+#include "tao.h" 
+int TaoSelectSubset( TaoPetscISType type)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<DT><B>type </B> -the manner is which subsets are chosen.  
+<br>
+<P>
+<H2><FONT COLOR="#CC3333">Choice of types</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>TaoRedistributeSubset </B></TD><TD>- When using multiple processors, redistribute the subset of variables
+over the processors.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>TaoNoRedistributeSubset </B></TD><TD>- When using multiple processors, keep variables on current processors
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>TaoMaskFullSpace </B></TD><TD>- Use the full set of variables, and mask the unneeded ones.
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>TaoMatrixFree </B></TD><TD>- Use the full set of variables, and mask the unneeded ones.
+</TD></TR></TABLE>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+For use with active set methods in bound constrained optimization such as TRON and GPCG
+<P>
+
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/indexset/taois_petsc.c.html#TaoSelectSubset">src/petsctao/indexset/taois_petsc.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

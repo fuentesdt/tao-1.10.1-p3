@@ -1,0 +1,37 @@
+
+---- Steady-State Combustion Problem -----
+
+Grid: 0,    mx: 11     my: 11   
+iter = 0, Function value -4.66063, Residual: 1.836131 
+iter = 1, Function value -5.59497, Residual: 0.010808 
+
+---- Steady-State Combustion Problem -----
+
+Grid: 0,    mx: 3     my: 9   
+iter = 0, Function value -5.25931, Residual: 1.542294 
+iter = 1, Function value -5.42055, Residual: 0.013273 
+Grid: 1,    mx: 5     my: 17   
+iter = 0, Function value -5.45595, Residual: 0.503878 
+iter = 1, Function value -5.55864, Residual: 0.004308 
+Maximum Interpolation Error: 1.49e-01
+Average Interpolation Error: 4.23e-02
+Grid: 2,    mx: 9     my: 33   
+iter = 0, Function value -5.57179, Residual: 0.283788 
+iter = 1, Function value -5.59783, Residual: 0.000186 
+Maximum Interpolation Error: 4.41e-02
+Average Interpolation Error: 1.50e-02
+Grid: 3,    mx: 17     my: 65   
+iter = 0, Function value -5.60154, Residual: 0.149938 
+iter = 1, Function value -5.60804, Residual: 0.000006 
+Maximum Interpolation Error: 1.08e-02
+Average Interpolation Error: 3.97e-03
+Grid: 4,    mx: 33     my: 129   
+iter = 0, Function value -5.609, Residual: 0.076690 
+iter = 1, Function value -5.61062, Residual: 0.000001 
+Maximum Interpolation Error: 2.66e-03
+Average Interpolation Error: 1.02e-03
+Grid: 5,    mx: 65     my: 257   
+iter = 0, Function value -5.61087, Residual: 0.038748 
+iter = 1, Function value -5.61127, Residual: < 1.0e-6 
+Maximum Interpolation Error: 6.63e-04
+Average Interpolation Error: 2.60e-04

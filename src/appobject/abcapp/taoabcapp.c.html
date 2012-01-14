@@ -1,0 +1,219 @@
+<center><a href="taoabcapp.c">Actual source code: taoabcapp.c</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#include </font><font color="#666666">"src/tao_impl.h"</font><font color="#A020F0">     </font><font color="#B22222">/*I  "tao_solver.h"  I*/</font><font color="#A020F0"></font>
+<a name="line2">  2: </a><font color="#A020F0">#include </font><font color="#666666">"taoabcapp.h"</font><font color="#A020F0"></font>
+<a name="line3">  3: </a><font color="#A020F0">#include </font><font color="#666666">"src/vector/tvecdouble.h"</font><font color="#A020F0"></font>
+
+<a name="line7">  7: </a><strong><font color="#FF0000">TaoABCApplication:</font></strong>:TaoABCApplication(){
+<a name="line8">  8: </a>  this-&gt;taox=0;
+<a name="line9">  9: </a>  <font color="#4169E1">return</font>;
+<a name="line10"> 10: </a>}
+
+
+<a name="line15"> 15: </a><strong><font color="#FF0000">TaoABCApplication:</font></strong>:~TaoABCApplication(){
+<a name="line16"> 16: </a>  int info;
+<a name="line17"> 17: </a>  info = <A href="../../../docs/manualpages/vector/TaoVecDestroy.html#TaoVecDestroy">TaoVecDestroy</A>(this-&gt;taox);
+<a name="line18"> 18: </a>  <font color="#4169E1">if</font> (info) <font color="#4169E1">return</font>;
+<a name="line19"> 19: </a>  <font color="#4169E1">return</font>;
+<a name="line20"> 20: </a>}
+
+
+<a name="line25"> 25: </a><font color="#B22222">/* @C</font>
+<a name="line26"> 26: </a><font color="#B22222">   SetDimension - Set the number of variables in this application.</font>
+
+<a name="line28"> 28: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line29"> 29: </a><font color="#B22222">.  n - the number of variables</font>
+
+<a name="line31"> 31: </a><font color="#B22222">   Note:  This method should be called only once and be called before </font>
+<a name="line32"> 32: </a><font color="#B22222">   the application is set to the solver.</font>
+
+<a name="line34"> 34: </a><font color="#B22222">   Note: This routine creates a variables vector.  Applications derived</font>
+<a name="line35"> 35: </a><font color="#B22222">   from this object may create a TaoVec object and set the 'taox' field</font>
+<a name="line36"> 36: </a><font color="#B22222">   another way.</font>
+
+<a name="line38"> 38: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line40"> 40: </a><font color="#B22222">@ */</font>
+<a name="line41"> 41: </a>int TaoABCApplication::SetNumberOfVariables(TaoInt n){
+<a name="line42"> 42: </a>  TaoFunctionBegin; 
+<a name="line43"> 43: </a>  this-&gt;taox = new TaoVecDoubleArray(n);
+<a name="line44"> 44: </a>  TaoFunctionReturn(0);
+<a name="line45"> 45: </a>}
+
+<a name="line49"> 49: </a><font color="#B22222">/* @C</font>
+<a name="line50"> 50: </a><font color="#B22222">   GetSolutionAndGradient - Get the solution and and gradient arrays.</font>
+
+<a name="line52"> 52: </a><font color="#B22222">   Output Parameters:</font>
+
+<a name="line54"> 54: </a><font color="#B22222">+  n - the length of the arrays, which equals the number of variables</font>
+<a name="line55"> 55: </a><font color="#B22222">.  x - variables vector</font>
+<a name="line56"> 56: </a><font color="#B22222">-  g - gradient vector</font>
+
+<a name="line58"> 58: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line60"> 60: </a><font color="#B22222">@ */</font>
+<a name="line61"> 61: </a>int TaoABCApplication::GetSolution(double* &amp;x, TaoInt &amp;n){
+<a name="line62"> 62: </a>  TaoInt nn;
+<a name="line63"> 63: </a>  int info;
+<a name="line64"> 64: </a>  double *xx;
+<a name="line65"> 65: </a>  TaoFunctionBegin;
+<a name="line66"> 66: </a>  info = this-&gt;taox-&gt;GetDoubles(&amp;xx,&amp;nn);CHKERRQ(info);
+<a name="line67"> 67: </a>  x=xx; n=nn;
+<a name="line68"> 68: </a>  info = this-&gt;taox-&gt;RestoreDoubles(&amp;xx,&amp;nn);  CHKERRQ(info);
+<a name="line69"> 69: </a>  TaoFunctionReturn(0);
+<a name="line70"> 70: </a>}
+
+<a name="line74"> 74: </a>int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/GetVariableVector.html#GetVariableVector">GetVariableVector</A>(TaoVec **xx){
+
+<a name="line76"> 76: </a>  TaoFunctionBegin;
+<a name="line77"> 77: </a>  *xx= this-&gt;taox;
+<a name="line78"> 78: </a>  TaoFunctionReturn(0);
+<a name="line79"> 79: </a>}
+
+
+<a name="line84"> 84: </a>int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/EvaluateObjectiveFunction.html#EvaluateObjectiveFunction">EvaluateObjectiveFunction</A>(TaoVec *xx, double *ff){
+<a name="line85"> 85: </a>  TaoFunctionBegin;
+<a name="line86"> 86: </a>  TaoFunctionReturn(1);
+<a name="line87"> 87: </a>}
+
+
+<a name="line92"> 92: </a>int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/EvaluateGradient.html#EvaluateGradient">EvaluateGradient</A>(TaoVec *tx, TaoVec *tg){
+<a name="line93"> 93: </a>  TaoInt   n;
+<a name="line94"> 94: </a>  int info;
+<a name="line95"> 95: </a>  double *xptr,*gptr;
+<a name="line96"> 96: </a>  double ff;
+<a name="line97"> 97: </a>  TaoVecDoubleArray *xx=(TaoVecDoubleArray*)tx, *gg=(TaoVecDoubleArray*)tg;
+<a name="line98"> 98: </a>  TaoFunctionBegin;
+<a name="line99"> 99: </a>  info = xx-&gt;GetDoubles(&amp;xptr,&amp;n);CHKERRQ(info);
+<a name="line100">100: </a>  info = gg-&gt;GetDoubles(&amp;gptr,&amp;n);CHKERRQ(info);
+<a name="line101">101: </a>  info = this-&gt;<A href="../../../docs/manualpages/taoapp/ComputeObjectiveAndGradient.html#ComputeObjectiveAndGradient">ComputeObjectiveAndGradient</A>(xptr,n,&amp;ff,gptr);CHKERRQ(info);
+<a name="line102">102: </a>  info = gg-&gt;RestoreDoubles(&amp;gptr,&amp;n);CHKERRQ(info);
+<a name="line103">103: </a>  info = xx-&gt;RestoreDoubles(&amp;xptr,&amp;n);  CHKERRQ(info);
+<a name="line104">104: </a>  TaoFunctionReturn(0);
+<a name="line105">105: </a>}
+
+
+<a name="line110">110: </a>int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/EvaluateObjectiveAndGradient.html#EvaluateObjectiveAndGradient">EvaluateObjectiveAndGradient</A>(TaoVec *tx, double *ff, TaoVec *tg){
+<a name="line111">111: </a>  TaoInt     n;
+<a name="line112">112: </a>  int info;
+<a name="line113">113: </a>  double *xptr, *gptr;
+<a name="line114">114: </a>  TaoVecDoubleArray *xx=(TaoVecDoubleArray*)tx, *gg=(TaoVecDoubleArray*)tg;
+
+<a name="line116">116: </a>  TaoFunctionBegin;
+<a name="line117">117: </a>  info = xx-&gt;GetDoubles(&amp;xptr,&amp;n);CHKERRQ(info);
+<a name="line118">118: </a>  info = gg-&gt;GetDoubles(&amp;gptr,&amp;n);CHKERRQ(info);
+<a name="line119">119: </a>  info = this-&gt;<A href="../../../docs/manualpages/taoapp/ComputeObjectiveAndGradient.html#ComputeObjectiveAndGradient">ComputeObjectiveAndGradient</A>(xptr,n,ff,gptr);CHKERRQ(info);
+<a name="line120">120: </a>  info = gg-&gt;RestoreDoubles(&amp;gptr,&amp;n);CHKERRQ(info);
+<a name="line121">121: </a>  info = xx-&gt;RestoreDoubles(&amp;xptr,&amp;n);  CHKERRQ(info);
+<a name="line122">122: </a>  TaoFunctionReturn(0);
+<a name="line123">123: </a>}
+
+
+<a name="line128">128: </a><font color="#B22222">/*@C</font>
+<a name="line129">129: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/ComputeObjectiveAndGradient.html#ComputeObjectiveAndGradient">ComputeObjectiveAndGradient</A> - Compute the objective function and its gradient.</font>
+
+<a name="line131">131: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line132">132: </a><font color="#B22222">.  x - an array with the point at which the function and gradient should be evalutated.</font>
+<a name="line133">133: </a><font color="#B22222">.  g - an array that will contain the gradient vector.</font>
+<a name="line134">134: </a><font color="#B22222">+  n - the length of the arrays, which equals the number of variables</font>
+
+<a name="line136">136: </a><font color="#B22222">   Output Parameters:</font>
+
+<a name="line138">138: </a><font color="#B22222">.  f - function value</font>
+<a name="line139">139: </a><font color="#B22222">.  g - gradient vector</font>
+
+<a name="line141">141: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line143">143: </a><font color="#B22222">@*/</font>
+<a name="line144">144: </a>// virtual int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/ComputeObjectiveAndGradient.html#ComputeObjectiveAndGradient">ComputeObjectiveAndGradient</A>(double*x,TaoInt n,double*f,double *g){}
+
+
+<a name="line149">149: </a><font color="#B22222">/*@C</font>
+<a name="line150">150: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/StartingPoint.html#StartingPoint">StartingPoint</A> - Define the starting point for the solver.</font>
+
+<a name="line152">152: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line154">154: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line155">155: </a><font color="#B22222">+  x - vector to store initial variables</font>
+<a name="line156">156: </a><font color="#B22222">-  n - length of variable vector array</font>
+
+<a name="line158">158: </a><font color="#B22222">   Note: This virtual method should be implemented in the application</font>
+<a name="line159">159: </a><font color="#B22222">   if a starting point other than 0 is desired.</font>
+
+<a name="line161">161: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line163">163: </a><font color="#B22222">@*/</font>
+<a name="line164">164: </a>int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/StartingPoint.html#StartingPoint">StartingPoint</A>(double *x, TaoInt n){
+<a name="line165">165: </a>  TaoInt  i;
+<a name="line166">166: </a>  TaoFunctionBegin;
+<a name="line167">167: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) x[i]=0.0;
+<a name="line168">168: </a>  TaoFunctionReturn(0);
+<a name="line169">169: </a>}
+
+
+<a name="line174">174: </a>int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/InitializeVariables.html#InitializeVariables">InitializeVariables</A>(TaoVec *tx){
+<a name="line175">175: </a>  TaoInt n;
+<a name="line176">176: </a>  int info;
+<a name="line177">177: </a>  double *xptr;
+<a name="line178">178: </a>  TaoVecDoubleArray *xx=(TaoVecDoubleArray*)tx; 
+<a name="line179">179: </a>  TaoFunctionBegin; 
+<a name="line180">180: </a>  info = xx-&gt;GetDoubles(&amp;xptr,&amp;n);CHKERRQ(info);
+<a name="line181">181: </a>  info = this-&gt;<A href="../../../docs/manualpages/taoapp/StartingPoint.html#StartingPoint">StartingPoint</A>(xptr,n);CHKERRQ(info);
+<a name="line182">182: </a>  info = xx-&gt;RestoreDoubles(&amp;xptr,&amp;n);CHKERRQ(info);
+<a name="line183">183: </a>  TaoFunctionReturn(0);
+<a name="line184">184: </a>}
+
+<a name="line188">188: </a>int TaoABCApplication::<A href="../../../docs/manualpages/taoapp/EvaluateVariableBounds.html#EvaluateVariableBounds">EvaluateVariableBounds</A>(TaoVec *txl, TaoVec *txu){
+<a name="line189">189: </a>  TaoInt n;
+<a name="line190">190: </a>  int info;
+<a name="line191">191: </a>  double *xl,*xu;
+<a name="line192">192: </a>  TaoVecDoubleArray *xxll=(TaoVecDoubleArray*)txl, *xxuu=(TaoVecDoubleArray*)txu;
+<a name="line193">193: </a>  TaoFunctionBegin;
+<a name="line194">194: </a>  
+<a name="line195">195: </a>  info = xxll-&gt;GetDoubles(&amp;xl,&amp;n);CHKERRQ(info);
+<a name="line196">196: </a>  info = xxuu-&gt;GetDoubles(&amp;xu,&amp;n);CHKERRQ(info);
+<a name="line197">197: </a>  info = this-&gt;ComputeVariableBounds(xl, xu,n);CHKERRQ(info);
+<a name="line198">198: </a>  info = xxll-&gt;RestoreDoubles(&amp;xu,&amp;n);CHKERRQ(info);
+<a name="line199">199: </a>  info = xxuu-&gt;RestoreDoubles(&amp;xl,&amp;n);  CHKERRQ(info);
+
+<a name="line201">201: </a>  TaoFunctionReturn(0);
+<a name="line202">202: </a>}
+
+
+<a name="line207">207: </a><font color="#B22222">/*@C</font>
+<a name="line208">208: </a><font color="#B22222">   <A href="../../../docs/manualpages/taoapp/StartingPoint.html#StartingPoint">StartingPoint</A> - Define the lower and upper bounds on the variables.</font>
+
+<a name="line210">210: </a><font color="#B22222">   Collective on TAO_SOLVER</font>
+
+<a name="line212">212: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line213">213: </a><font color="#B22222">+  xl - array to store lower bounds</font>
+<a name="line214">214: </a><font color="#B22222">.  xu - array to store upper bounds</font>
+<a name="line215">215: </a><font color="#B22222">-  n - length of these arrays, which equals the number of variables</font>
+
+<a name="line217">217: </a><font color="#B22222">   Note:  This virtual method should be implemented by the application</font>
+<a name="line218">218: </a><font color="#B22222">   if there are lower or upper bounds on the variables.</font>
+
+<a name="line220">220: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line222">222: </a><font color="#B22222">@*/</font>
+<a name="line223">223: </a>int TaoABCApplication::ComputeVariableBounds(double *xl, double *xu, TaoInt n){
+<a name="line224">224: </a>  TaoInt  i;
+<a name="line225">225: </a>  TaoFunctionBegin;
+<a name="line226">226: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++){ 
+<a name="line227">227: </a>    xl[i]=TAO_NINFINITY;
+<a name="line228">228: </a>    xu[i]=TAO_INFINITY;
+<a name="line229">229: </a>  }
+<a name="line230">230: </a>  TaoFunctionReturn(0);
+<a name="line231">231: </a>}
+</pre>
+</body>
+
+</html>

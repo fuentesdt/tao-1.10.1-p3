@@ -1,0 +1,48 @@
+  
+Toolkit for Advanced Optimization (TAO)
+
+This is the main directory of the Toolkit for Advanced Optimization.
+This is work in progress, so changes in the interface will occur in
+the future.  For the most up-to-date TAO information, see the web page
+http://www.mcs.anl.gov/tao
+
+Contents:
+ - include       - public include files
+ - src           - source code
+ - lib           - compiled libraries
+ - docs          - documentation
+ - maint         - maintenance utilities
+ - bmake         - makefile utilities
+
+All library source code is within the source directory (src) and is
+organized by the type of optimization problem, including
+ - interface     - general TAO interface
+ - bound         - bound constrained minimization
+ - unconstrained - unconstrained minimization
+Some additional tools are also available:
+ - supplements   - supplementary tools
+ - fortran       - fortran interface
+Additional categories of optimization software (e.g., least squares,
+more general constrained optimization, etc.) are under development
+and will be included in future releases.
+
+
+       ---------------------------------- tao --------------------------------
+      /    /     /                  |                         \      \       \
+     /    /     /                   |                          \      \       \
+   lib  docs  include  --------------- src ------------       maint  bmake  (others)
+                        /                |            \
+                       /                 |             \
+                      /                  |              \
+               ------ bound ----      (others)     ------- unconstrained -------
+               /         |      \                  /                |           \
+              /          |       \                /                 |            \
+         -- impls --   interface  examples   interface   ------- impls -----   examples
+         /    |     \                                   /    |      |       \
+        /     |      \                                 /     |      |        \
+     blmvm  (others)   bqpip                        lmvm      nls   (others)   ntr
+  (bound              (bound                    (limited   (Newton            (Newton
+   limited            quadratic                  memory     line               trust
+   memory             programming                variable   search)            region)
+   variable           interior                   metric)
+   metric)            point)

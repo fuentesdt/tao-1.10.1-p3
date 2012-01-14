@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<TITLE>TaoVecGetPetscVec</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<A NAME="TaoVecGetPetscVec"><H1>TaoVecGetPetscVec</H1></A>
+Set the address of a Vec equal to the location of the underlying Vec structure in this TaoVecPetsc object.        
+<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>
+<PRE>
+int TaoVecGetPetscVec( TaoVec* TV, Vec *V)</PRE>
+<H2><FONT COLOR="#CC3333">Input Parameter</FONT></H2>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>TV </B></TD><TD>- the TaoVecPetsc                                              
+</TD></TR>
+<TR><TD WIDTH=20></TD><TD ALIGN=LEFT VALIGN=TOP><B>V </B></TD><TD>- the address of Vec                                           
+</TD></TR></TABLE>
+<H2><FONT COLOR="#CC3333">Output Parameter</FONT></H2>
+<DT><B>V </B> -the address of a specific Vec                                
+<br>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+This routine does not create a Vec.  It sets a pointer
+to the location of an existing Vec.
+<P>
+<P>
+<H2><FONT COLOR="#CC3333">Note</FONT></H2>
+<P>
+VecObject is a void* pointer that can be cast to the underlying Vec object.
+<P>
+
+<P>
+<P><P><B><FONT COLOR="#CC3333">Level:</FONT></B>advanced
+<BR><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../src/petsctao/vector/taovec_petsc.c.html#TaoVecGetPetscVec">src/petsctao/vector/taovec_petsc.c</A>
+<BR><A HREF="./index.html">TAO Solver Index</A><BR><A HREF="../index.html">Table of Contents</A>
+</BODY></HTML>
+</BODY></HTML>

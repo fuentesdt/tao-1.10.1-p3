@@ -1,0 +1,416 @@
+\section{Toolkit for Advanced Optimization}
+
+\label{sec:tao}
+
+\begin{comment}
+Scalable algorithms for mesh-based optimization problems of
+the form \Ref{eq:opt-mesh} generally require mesh-invariance
+in the sense that the number of iterations is independent of
+the mesh spacing.  In theory, mesh-invariance can be
+obtained with Newton's method \cite{ALD00}, although in practice
+there are numerous obstacles. In this section we discuss the
+computational requirements of a Newton method in \tao\ for
+mesh-based problems.  We illustrate our results with a
+benchmark obstacle problem based on a minimal surface
+problem.
+  
+\end{comment}
+
+The main obstacles in developing scalable algorithms for the
+solution of mesh-based optimization problems with Newton's
+method are the distribution of the mesh, the computation of
+the gradient $ \grad f $ and the Hessian matrix $ \grad^2 f
+$, and the use of appropriate preconditioners.
+In this section we discuss the \tao\ tools for 
+overcoming these obstacles.
+
+
+The Newton algorithm in \tao\ is based on the
+\tron\ code of Lin and Mor\'e \cite{CJL99,tron-home}.
+The major computational requirements of \tron\ 
+are to compute the quadratic
+\[
+q_k (w) = \langle \grad f ( x_k ) , w \rangle + \half
+                \langle w , \grad^2 f (x_k ) w \rangle ,
+\]
+which approximates the reduction $ f ( x_k + w ) - f ( x_k ) $,
+and to compute an approximate solution of 
+the trust region subproblem
+\[
+\min \left \{ q_k (w) : x_k + w  \in \Omega,
+\ \| w \| \le \Delta_k \right \} ,
+\]
+where $ \Omega $ is the feasible region
+\[
+\Omega = \left \{ x \in \R^n : x_l \le x \le x_u \right \} .
+\]
+\tron\ uses a gradient projection method to identify a Cauchy
+point $ x_k^C $ in the feasible region $ \Omega $ and
+explores the face which contains the Cauchy point using
+a preconditioned conjugate gradient method.  The
+efficiency of \tron\ can be partly attributed to the fact
+that only a few faces are explored in the typical
+optimization problem.  Convergence of \tron\ holds under
+very general conditions that include degeneracy.
+% For additional detail, see \cite{CJL99}.
+
+The version of \tron\ in \tao\ follows this general outline
+but with significant and important differences.  A major
+difference is that the \tao\ version was designed for a
+parallel environment, whereas the original version is
+restricted to single-processor environments.
+Another major difference is that the original version
+of \tron\ is restricted to the use of an incomplete
+Cholesky factorization \cite{CJL99a}, whereas the
+\tao\ version can use appropriate preconditioners in
+PETSc.
+
+\subsection{Benchmarks}
+
+\begin{comment}
+
+The elastic-plastic torsion problem arises from the
+determination of the stress field on an infinitely long
+cylindrical bar.  The infinite-dimensional version of this
+problem is of the form
+\[
+\min \{  \int_{ \cD } 
+\left \{ \half \| \grad v (x) \| ^ 2  - 
+         \lambda v (x) \right \} \, d x :  v \in K \} ,
+\]
+where $\lambda>0$ is a parameter, and $\cD$ is a bounded domain.
+The convex set $K$ is defined by
+\[
+K = \left \{ v  : | v(x) | \leq \mbox{dist}(x,\partial D), 
+\ x \in \cD \right \}
+\]
+where $ \mbox{dist} ( \cdot, \partial D)$ is the distance function to
+the boundary of $\cD$.  This formulation and the physical
+interpretation of the torsion problem are discussed, for
+example, in Glowinski \cite{RG84}
+
+The parameter $ \lambda $ influences the difficulty of the
+problem and the number of variables that are active at the
+solution, that is, points $ x \in \cD $ where $ | v(x) | =
+\mbox{dist} (x,\partial D) $.  Figure \ref{fig:ept} shows
+the solution $v$ of the elastic-plastic problem for $
+\lambda = 10 $ on the left side and the active set for $v$
+on the right side.  As $ \lambda $ increases
+the solution approaches the boundary function
+$ x \mapsto \mbox{dist} (x,\partial D) $, and the
+number active variables also increases. In
+general, the problem becomes easier to solve as $\lambda$
+increases because the linear term dominates.
+
+\begin{figure}[tbh]
+\centering
+\ifpdf
+\includegraphics[height=2.0in]{images/ept5050}
+\qquad
+\includegraphics[height=2.0in]{images/ept5050c}
+\else
+\vspace{2.0in}
+\fi
+\caption{Solution $v$ of the elastic-plastic problem 
+on $ \cD = (0,1) \times (0,1) $ for $ \lambda = 10 $ (left)
+and the active set for $v$, that is, points $ x \in \cD $ 
+where $ | v(x) | = \mbox{dist} (x,\partial D) $ (right).}
+\label{fig:ept}
+\end{figure}
+
+\end{comment}
+
+We use an obstacle problem for a minimal surface 
+problem to benchmark \tao. This problem can be formulated in terms of
+finding a function $ v : \cD \mapsto \R $ that solves the
+optimization problem
+\begin{equation}
+  \label{eq:minsurf}
+\min 
+\left \{
+\int_{ \cD } \left ( 1 + \| \grad v (x) \| ^ 2 \right )^{1/2} \, 
+  d x : v \in K 
+\right \} ,
+\end{equation}
+where $ \cD $ is a domain in $ \R^2 $, the constraint set $K$ is defined by
+\[
+K = \left \{ v : v(x) = v_B (x), \ x \in \partial \cD \mathrm{~and~}
+                 v(x) \ge v_L (x) , \ x \in \cD \right \} ,
+\]
+$ v_B : \cD \mapsto \R $ is the boundary data, and $ v_L :
+\cD \mapsto \R $ is the (lower) obstacle.  This is a
+mesh-based optimization problem where
+the function
+\begin{equation}
+  \label{eq:minsurf_f}
+f(v) =
+\int_{ \cD } \left ( 1 + \| \grad v (x) \| ^ 2 \right )^{1/2} \,  d x 
+\end{equation}
+is convex.  There is a unique solution $v$ for any boundary
+data $ v_B $ and obstacle $ v_L $.  The unique solution for
+the domain $ \cD $ of
+the unit square $ (0,1) \times (0,1) $, the boundary data
+\[
+v_B( \xi_1 , \xi_2 ) = 
+\left \{ 
+  \begin{array}{lcl}
+  1 - (2 \xi_1 - 1)^2 & \mathrm{if} &  \xi_2 \in \{ 0, 1 \} \\
+  0 & & \mathrm{otherwise,} \\
+  \end{array}
+\right .
+\]
+and obstacle
+\begin{equation}
+  \label{eq:obstacle}
+v_L(x) = 
+\left \{ 
+  \begin{array}{lcl}
+  1 & \mathrm{if} &  x \in [ \fourth , \threefourths ] \times  [ \fourth , \threefourths ] \\
+  0 & & \mathrm{otherwise} \\
+  \end{array}
+\right .
+\end{equation}
+is shown on the left of Figure \ref{fig:minsurf}.
+The behavior of the solution $v$ at the
+boundary of
+\[
+\cA (v) = \left \{ x \in \cD :  v(x) = v_L(x)  \right \}
+\]
+is of interest. We extend standard optimization terminology
+and refer to $ \cA (v) $ as the active set of $v$.
+For this problem  the solution $ v $ is not
+continuously differentiable at the boundary
+of $ \cA (v) $, and thus $ v \notin C^1 ( \cD ) $.
+This is clear from  Figure \ref{fig:minsurf}.
+For general obstacle problems \cite{Rodr87} we can
+expect only that $ v \in C^1 ( \cD ) $.
+
+\begin{figure}
+\centering
+\includegraphics[height=2.0in]{images/plate5050}
+\qquad
+\includegraphics[height=2.0in]{images/plate5050_g}
+\caption{Solution $v$ of the obstacle problem \Ref{eq:minsurf} 
+on $ \cD = (0,1) \times (0,1) $  for an obstacle of unit height is
+shown on the left. The multiplier function for $v$ is on the right.
+\label{fig:minsurf}
+}
+\end{figure}
+
+The solution $v$ of this obstacle problem
+is degenerate from an optimization
+viewpoint because most of the multipliers are zero at
+the solution. For this problem the multiplier function
+$ \lambda : \cD \mapsto \R $ is plotted on the right of
+Figure \ref{fig:minsurf}. Note that $ \lambda (x) = 0 $ 
+outside the active set. In general, we have $ \lambda (x) \ge 0 $
+on $ \cA (v) $, but in this case we have $ \lambda(x) = 0 $
+on the interior of the active set.
+The discontinuity of $ \lambda $ on the boundary of the
+active set can be troublesome for primal/dual optimization
+algorithms that also seek convergence of the multipliers.
+See the discussion by Rodrigues~\cite{REB01} for details.
+
+
+An approximation to the obstacle problem can
+be obtained by letting $ v_{i,j} $ be the value of $v$ at $
+z_{i,j} $, where $ z_{i,j} \in \R^2 $ are the vertices of a
+partition of $ \cD $ into rectangular elements
+of size $ h_x \times h_y $. 
+The function in the obstacle problem \Ref{eq:minsurf_f}
+can be approximated by a function
+\[
+f(v) =  \sum f_{i,j} (v) ,
+\]
+where the element function $ f_{i,j}  $ are defined by
+\[
+\begin{split}
+f_{i,j}  (v) = 
+h_x h_y
+\Biggl \{ 1 + 
+  & \left ( \frac{ v_{i+1,j} - v_{i,j} } { h _x } \right )^2 + 
+    \left ( \frac{ v_{i,j+1} - v_{i,j} } { h _y } \right )^2 \\
++  & \left ( \frac{ v_{i-1,j} - v_{i,j} } { h _x } \right )^2 + 
+    \left ( \frac{ v_{i,j-1} - v_{i,j} } { h _y } \right )^2
+ \Biggr \} ^ {1/2} . \\
+\end{split}
+\]
+The element function $ f_{i,j} $ is an approximation to the integral
+in \Ref{eq:minsurf_f} over a typical rectangular element.
+Thus, $ f$ is the sum of element functions $ f_{i,j} $ that
+depend only on the four mesh values associated with that element.
+
+\subsection{Distributed Mesh}
+
+In a parallel framework we can assign to each processor a
+subset of the vertices in the mesh for the domain $ \cD $ so
+that each vertex lies on exactly one processor.  Each
+processor computes the functions $ f_{i,j} $ over a subdomain of $ \cD $
+corresponding to the vertices assigned to this subdomain,
+but special consideration must be taken where adjacent
+vertices lie on different processors.  Points that are
+adjacent to the local mesh but lying on a different
+processors are called \textit{ghost points}.  In order to compute the
+function in these regions, ghost points first must be passed
+between processors before the computations can occur.
+
+PETSc \cite{PETSc-manual,petsc-home} provides several
+utilities for managing data associated with
+structured and unstructured meshes.  In particular, the
+Distributed Array (DA) object 
+provides facilities for managing the
+field associated with a single structured mesh.  DA's 
+are intended for use with logically rectangular meshes
+when communication of nonlocal data is needed before local
+computations can occur.  Support includes the
+exchange of data associated with ghost points and more
+generalized gather-scatter operations.
+
+Once the ghost points have been passed, each processor can
+compute the function on its local domain by using techniques
+identical to those used with a single processor.  In
+particular, each processor can sum the functions $ f_{i,j} $
+on each element to generate the local function value.  An MPI routine
+call adds the function values over the subdomains.  The
+function value over the entire mesh is found by adding the
+function over each of the subdomains.
+
+Thus, in parallel, the computation of $f$ can be separated
+into three stages.  The first stage scatters and gathers
+ghost points among the processors with the DA.
+The second stage computes the function in
+parallel, each processor working on its own subdomain.  The
+final stage uses an MPI call to add the local function
+values.
+
+
+\subsection{Derivatives}
+
+Newton's algorithm for the optimization problem
+\Ref{eq:opt} requires the gradient vector $ \grad f $
+and the Hessian matrix $ \grad^2 f $ of the function $f$.
+Writing code that evaluates the function
+$f$ can be difficult and prone to error.
+Developing correct parallel code for computing the 
+derivatives magnifies these difficulties.
+
+Automatic differentiation \cite{AG00,Corliss2001b} is a
+technique for generating code that computes gradients and
+higher-order derivatives directly from code that
+evaluates only the function.  ADIC
+\cite{ADIC,adic-home} is a tool for the automatic
+differentiation of C programs.  Given code that computes a
+function $f$, ADIC generates additional code that computes
+$f$ and $ \grad f $.
+
+% Since ADIC differentiates  algorithms rather that formulas, 
+% it can deal with arbitrary programs 
+% representing these algorithms.
+
+We apply automatic differentiation only to
+the element function $f_{i,j}$.  This function of four
+variables may be written entirely in ANSI C, 
+without calls to other subroutines.  The application of ADIC to this
+function is much easier than applying ADIC to the
+entire function and all of its subroutines.
+This approach, however, still requires the application to
+gather the ghost points from neighboring processors in the
+first stage, loop over all the elements to
+evaluate the gradient of the each function, and then scatter
+the gradient values of the ghostpoint back to the processors
+on which the variables reside.  While the first and third
+stages involve library calls to external libraries, the
+second stage involves a simple function evaluation in ANSI
+C.  Thus, the gradient of our objective can be computed
+parallel using ADIC after separating the computational part
+of the work from the communication part of it.
+
+Since second derivatives are not currently available from ADIC, 
+we use finite differences to approximate the Hessian matrix 
+$\grad^2 f$.  By 
+coloring the the columns of the matrix such that columns of 
+the same color do not share any common rows, we reduce the
+number of gradient evaluations required to approximate the
+Hessian.  The regular structure of the meshes allows us to 
+color the columns using the
+Curtis-Powell-Reed \cite{Curtis1974OtE} scheme.
+By perturbing all columns of the same color simultaneously,
+only nine gradient evaluations are needed to approximate 
+the entire Hessian.  The Hessian is computed in parallel because
+the gradients used in the finite differences are computed in parallel.
+
+This description of the use of automatic
+differentiation tools and finite differences in optimization is brief;
+see the discussion in Abate \cite {AD2K-JA00} 
+and Hovland \cite {PH03} for additional information on
+the generation of first and second order information for
+optimization applications in a parallel environment.
+
+\subsection{Scalable Preconditioners}
+
+The performance of optimization solvers depends heavily on
+the performance of the linear solver used in the algorithm
+and on the performance of the application in evaluating the
+function $f$ and its derivatives.  PETSc
+\cite{PETSc-manual,petsc-home} integrates a hierarchy of
+components that range from low-level parallel data
+structures for vectors and matrices through high-level
+linear solvers.  This approach promotes reuse and
+flexibility, and in many cases, helps to decouple the problems
+of parallelism from algorithmic choices.  PETSc provides
+implementations of basic objects, such as matrices,
+vectors, and linear solvers.  The linear solvers implement Krylov
+methods with a variety of preconditioners, such as
+incomplete LU factorizations, and additive Schwartz methods.
+
+The impact of preconditioner performance on optimization
+algorithms has been examined \cite{SB99} in the
+context of the gradient-projection conjugate gradient
+algorithm in \tao\ for solving bound-constrained convex
+quadratic problems.  We analyzed the performance in terms of
+the number of variables, the number of free variables, and
+the preconditioner. Our results showed that there is a
+complex performance behavior for optimization problems of
+the form \Ref{eq:opt} and that performance results that
+focus only on scalability can be deceiving if the total
+computing time is not taken into account.
+
+In particular, for our benchmark problems we showed that a
+block Jacobi preconditioner with one block per processor,
+where each subproblem is solved with a standard sparse
+ILU(2) factorization, is faster than a variant with ILU(0).
+We also showed that both block Jacobi variants are faster
+than a simple point Jacobi method, although the point Jacobi
+preconditioner exhibits better scalability.
+
+
+\subsection{Mesh Sequencing}
+
+Mesh sequencing is a technique for solving mesh-based
+problems in which an interpolated coarse mesh solution is used
+as the initial starting point for a finer mesh.  This is a
+standard technique for solving systems of nonlinear (partial
+differential) equations, but with few exceptions it does not
+tend to get used for solving mesh-based optimization
+problems.  See Bank, Gill and Marcia \cite{REB01} for a
+recent exception.
+
+For systems of equations the solution $v$ tends to be
+smooth, so the use of mesh sequencing is likely to produce
+highly accurate starting points.  The solution $v$ for
+constrained (mesh-based) optimization problems is not usually twice
+continuously differentiable, however, so the accuracy is likely to be
+lower. Indeed, as noted in Section \ref{sec:tao}, the
+solution to problem \Ref{eq:minsurf} with
+obstacle \Ref{eq:obstacle} is only once continuously
+differentiable.
+
+The lack of smoothness of $v$ raises questions on the order
+of convergence of the solution $ v_h $ with mesh size $h$.
+In the next section we give results showing the
+improvements obtained from mesh sequencing.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "mao"
+%%% End: 

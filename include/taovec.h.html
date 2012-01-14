@@ -1,0 +1,139 @@
+<center><a href="taovec.h">Actual source code: taovec.h</a></center><br>
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.5">
+<meta name="date" content="2011-09-15T15:24:15+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef TAOVECTOR_H</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define TAOVECTOR_H</font></strong>
+
+
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"tao_basictypes.h"</font><font color="#A020F0"></font>
+
+
+<a name="line8">  8: </a><font color="#B22222">/** </font>
+<a name="line9">  9: </a><font color="#B22222">    An abstract class representing the implementation of a TAO Vector. </font>
+<a name="line10"> 10: </a><font color="#B22222">*/</font>
+<a name="line11"> 11: </a>class TaoIndexSet;
+
+<a name="line13"> 13: </a>class TaoVec {
+
+<a name="line15"> 15: </a><strong><font color="#FF0000">protected:</font></strong>
+<a name="line16"> 16: </a>  
+<a name="line17"> 17: </a><strong><font color="#FF0000">public:</font></strong>
+
+<a name="line19"> 19: </a>  virtual ~TaoVec(void){};
+<a name="line20"> 20: </a>  
+<a name="line21"> 21: </a>  virtual int <A href="../docs/manualpages/vector/Clone.html#Clone">Clone</A>(TaoVec**);
+<a name="line22"> 22: </a>  int <A href="../docs/manualpages/vector/CloneVecs.html#CloneVecs">CloneVecs</A>(TaoInt, TaoVec***);
+<a name="line23"> 23: </a>  int <A href="../docs/manualpages/vector/DestroyVecs.html#DestroyVecs">DestroyVecs</A>(TaoInt, TaoVec**);
+
+<a name="line25"> 25: </a>  virtual int <A href="../docs/manualpages/vector/Compatible.html#Compatible">Compatible</A>(TaoVec*, TaoTruth*);
+
+<a name="line27"> 27: </a>  <font color="#B22222">/** Set all elements of this Tao Vector to zero. */</font>
+<a name="line28"> 28: </a>  virtual int <A href="../docs/manualpages/vector/SetToZero.html#SetToZero">SetToZero</A>();
+<a name="line29"> 29: </a>  <font color="#B22222">/** Set all elements of this Tao Vector to the constant value c */</font>
+<a name="line30"> 30: </a>  virtual int <A href="../docs/manualpages/vector/SetToConstant.html#SetToConstant">SetToConstant</A>( double );
+
+<a name="line32"> 32: </a>  <font color="#B22222">/** Copy the elements of one vector to another */</font>
+<a name="line33"> 33: </a>  virtual int <A href="../docs/manualpages/vector/CopyFrom.html#CopyFrom">CopyFrom</A>( TaoVec* );
+
+<a name="line35"> 35: </a>  virtual int <A href="../docs/manualpages/vector/ScaleCopyFrom.html#ScaleCopyFrom">ScaleCopyFrom</A>( double, TaoVec* );
+
+<a name="line37"> 37: </a>  <font color="#B22222">/** Return the norm of this Tao Vector. */</font>
+<a name="line38"> 38: </a>  virtual int <A href="../docs/manualpages/vector/NormInfinity.html#NormInfinity">NormInfinity</A>( double* );
+<a name="line39"> 39: </a>  virtual int <A href="../docs/manualpages/vector/Norm1.html#Norm1">Norm1</A>( double* );
+<a name="line40"> 40: </a>  virtual int <A href="../docs/manualpages/vector/Norm2.html#Norm2">Norm2</A>( double* );
+<a name="line41"> 41: </a>  virtual int <A href="../docs/manualpages/vector/Norm2squared.html#Norm2squared">Norm2squared</A>( double* );
+
+<a name="line43"> 43: </a>  <font color="#B22222">/** <A href="../docs/manualpages/matrix/Multiply.html#Multiply">Multiply</A> the components of this Tao Vector by the components of v. */</font>
+<a name="line44"> 44: </a>  virtual int <A href="../docs/manualpages/vector/PointwiseMultiply.html#PointwiseMultiply">PointwiseMultiply</A>( TaoVec* , TaoVec* );
+
+<a name="line46"> 46: </a>  <font color="#B22222">/** Divide the components of this Tao Vector by the components of v. */</font>
+<a name="line47"> 47: </a>  virtual int <A href="../docs/manualpages/vector/PointwiseDivide.html#PointwiseDivide">PointwiseDivide</A>( TaoVec* , TaoVec* );
+
+<a name="line49"> 49: </a>  <font color="#B22222">/** Set the elements of one vector to the mi of corresponding elements of two compatible vectors */</font>
+<a name="line50"> 50: </a>  virtual int <A href="../docs/manualpages/vector/PointwiseMaximum.html#PointwiseMaximum">PointwiseMaximum</A>( TaoVec* , TaoVec*);
+<a name="line51"> 51: </a>  virtual int <A href="../docs/manualpages/vector/PointwiseMinimum.html#PointwiseMinimum">PointwiseMinimum</A>( TaoVec* , TaoVec*);
+
+<a name="line53"> 53: </a>  virtual int <A href="../docs/manualpages/vector/Median.html#Median">Median</A>( TaoVec* , TaoVec* , TaoVec* );
+
+<a name="line55"> 55: </a>  <font color="#B22222">/** Calculate the Billups composition form of the <A href="../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A> function given</font>
+<a name="line56"> 56: </a><font color="#B22222">      x, f, l, u.  The smoothed version takes the smoothing parameter for each</font>
+<a name="line57"> 57: </a><font color="#B22222">      component as an additional argument.</font>
+<a name="line58"> 58: </a><font color="#B22222">  */</font>
+<a name="line59"> 59: </a>  virtual int  <A href="../docs/manualpages/vector/Fischer.html#Fischer">Fischer</A>(TaoVec *, TaoVec *, TaoVec *, TaoVec *);
+<a name="line60"> 60: </a>  virtual int <A href="../docs/manualpages/vector/SFischer.html#SFischer">SFischer</A>(TaoVec *, TaoVec *, TaoVec *, TaoVec *, double);
+
+<a name="line62"> 62: </a>  <font color="#B22222">/** <A href="../docs/manualpages/vector/Scale.html#Scale">Scale</A> each element of this Tao Vector by the constant alpha */</font>
+<a name="line63"> 63: </a>  virtual int <A href="../docs/manualpages/vector/Scale.html#Scale">Scale</A>( double );
+
+<a name="line65"> 65: </a>  <font color="#B22222">/** this += alpha * x */</font>
+<a name="line66"> 66: </a>  virtual int <A href="../docs/manualpages/vector/Axpy.html#Axpy">Axpy</A>  ( double , TaoVec* );
+
+<a name="line68"> 68: </a>  <font color="#B22222">/** this = alpha * this + x */</font>
+<a name="line69"> 69: </a>  virtual int <A href="../docs/manualpages/vector/Aypx.html#Aypx">Aypx</A>  ( double , TaoVec* );
+
+<a name="line71"> 71: </a>  virtual int <A href="../docs/manualpages/vector/Axpby.html#Axpby">Axpby</A>  ( double , TaoVec*, double  );
+
+<a name="line73"> 73: </a>  <font color="#B22222">/** this = alpha * x + beta *y */</font>
+<a name="line74"> 74: </a>  virtual int <A href="../docs/manualpages/vector/Waxpby.html#Waxpby">Waxpby</A>( double , TaoVec*, double , TaoVec* );
+
+<a name="line76"> 76: </a>  <font color="#B22222">/** Take the absolute value of the elements */</font>
+<a name="line77"> 77: </a>  virtual int <A href="../docs/manualpages/vector/AbsoluteValue.html#AbsoluteValue">AbsoluteValue</A>( );
+
+<a name="line79"> 79: </a>  <font color="#B22222">/** Take the minimum of the absolute value of the elements */</font>
+<a name="line80"> 80: </a>  virtual int <A href="../docs/manualpages/vector/MinElement.html#MinElement">MinElement</A>(double *);
+
+<a name="line82"> 82: </a>  <font color="#B22222">/** Add c to the elements of this Tao Vector */</font>
+<a name="line83"> 83: </a>  virtual int <A href="../docs/manualpages/vector/AddConstant.html#AddConstant">AddConstant</A>( double );
+
+<a name="line85"> 85: </a>  <font color="#B22222">/** Return the dot product of this Tao Vector with v */</font>
+<a name="line86"> 86: </a>  virtual int <A href="../docs/manualpages/vector/Dot.html#Dot">Dot</A>( TaoVec* , double *);
+
+<a name="line88"> 88: </a>  <font color="#B22222">/** <A href="../docs/manualpages/vector/Negate.html#Negate">Negate</A> all the elements of this Tao Vector. */</font>
+<a name="line89"> 89: </a>  virtual int <A href="../docs/manualpages/vector/Negate.html#Negate">Negate</A>();
+
+<a name="line91"> 91: </a>  <font color="#B22222">/** Invert (1/x) the elements of this Tao Vector. */</font>
+<a name="line92"> 92: </a>  virtual int <A href="../docs/manualpages/vector/Reciprocal.html#Reciprocal">Reciprocal</A>();
+
+<a name="line94"> 94: </a>  <font color="#B22222">/** Take square root of the elements of this Tao Vector. */</font>
+<a name="line95"> 95: </a>  virtual int <A href="../docs/manualpages/vector/Sqrt.html#Sqrt">Sqrt</A>();
+<a name="line96"> 96: </a>  virtual int <A href="../docs/manualpages/vector/Pow.html#Pow">Pow</A>( double );
+
+<a name="line98"> 98: </a>  <font color="#B22222">/* Replace each element with a -1, 0, or 1, depending on its sign.  */</font>
+<a name="line99"> 99: </a>  virtual int <A href="../docs/manualpages/vector/Sign.html#Sign">Sign</A>();
+
+<a name="line101">101: </a>  <font color="#B22222">/** Get the dimension of the vector space */</font>
+<a name="line102">102: </a>  virtual int <A href="../docs/manualpages/vector/GetDimension.html#GetDimension">GetDimension</A>( TaoInt* );
+
+<a name="line104">104: </a>  <font color="#B22222">/* <A href="../docs/manualpages/lsolver/View.html#View">View</A> */</font>
+<a name="line105">105: </a>  virtual int <A href="../docs/manualpages/lsolver/View.html#View">View</A>();
+
+<a name="line107">107: </a>  <font color="#B22222">/* stepMax */</font>
+<a name="line108">108: </a>  virtual int <A href="../docs/manualpages/vector/StepMax.html#StepMax">StepMax</A>( TaoVec* , double* );
+<a name="line109">109: </a>  virtual int <A href="../docs/manualpages/vector/StepBoundInfo.html#StepBoundInfo">StepBoundInfo</A>(TaoVec* ,TaoVec*,TaoVec*,double*,double*,double*);
+<a name="line110">110: </a>  virtual int <A href="../docs/manualpages/vector/BoundGradientProjection.html#BoundGradientProjection">BoundGradientProjection</A>(TaoVec*,TaoVec*,TaoVec*, TaoVec*);
+
+<a name="line112">112: </a>  <font color="#B22222">/* Functionality for working in a reduced space */</font>
+<a name="line113">113: </a>  virtual int <A href="../docs/manualpages/vector/SetReducedVec.html#SetReducedVec">SetReducedVec</A>(TaoVec*, TaoIndexSet*);
+
+<a name="line115">115: </a>  virtual int <A href="../docs/manualpages/vector/ReducedCopyFromFull.html#ReducedCopyFromFull">ReducedCopyFromFull</A>(TaoVec*, TaoIndexSet*);
+<a name="line116">116: </a>  virtual int <A href="../docs/manualpages/vector/ReducedXPY.html#ReducedXPY">ReducedXPY</A>(TaoVec *, TaoIndexSet*);
+
+<a name="line118">118: </a>  virtual int <A href="../docs/manualpages/vector/CreateIndexSet.html#CreateIndexSet">CreateIndexSet</A>(TaoIndexSet**);
+
+<a name="line120">120: </a>  virtual int <A href="../docs/manualpages/vector/GetArray.html#GetArray">GetArray</A>(TaoScalar **, TaoInt*);
+<a name="line121">121: </a>  virtual int <A href="../docs/manualpages/vector/RestoreArray.html#RestoreArray">RestoreArray</A>(TaoScalar **, TaoInt*);
+<a name="line122">122: </a>};
+
+<a name="line124">124: </a><font color="#A020F0">#endif</font>
+
+</pre>
+</body>
+
+</html>
