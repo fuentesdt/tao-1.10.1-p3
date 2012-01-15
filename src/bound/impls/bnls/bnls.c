@@ -1,8 +1,31 @@
 /*$Id: s.bnls.c 1.128 02/08/16 18:01:18-05:00 benson@rockies.mcs.anl.gov $*/
 
 #include "bnls.h"       /*I "tao_solver.h" I*/
+#include "petscksp.h"
+#include "petscpc.h"
+#include "src/petsctao/linearsolver/taolinearsolver_petsc.h"
+#include "src/petsctao/vector/taovec_petsc.h"
 
+#include "private/kspimpl.h"
+#include "private/pcimpl.h"
 
+// Routine for BFGS preconditioner
+
+#undef __FUNCT__
+#define __FUNCT__ "bfgs_apply"
+static PetscErrorCode bfgs_apply(PC pc, Vec xin, Vec xout)
+{
+  TaoLMVMMat *M ;
+  TaoVecPetsc Xin(xin);
+  TaoVecPetsc Xout(xout);
+  TaoTruth info2;
+  int info;
+
+  PetscFunctionBegin;
+  info = PCShellGetContext(pc,(void**)&M); CHKERRQ(info);
+  info = M->Solve(&Xin, &Xout, &info2); CHKERRQ(info);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolve_BNLS"
@@ -32,14 +55,61 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   /*   Project the current point onto the feasible set */
   info = X->Median(XL,X,XU); CHKERRQ(info);
   
+  TaoLinearSolver *tls;
+  // Modify the linear solver to a conjugate gradient method
+  info = TaoGetLinearSolver(tao, &tls); CHKERRQ(info);
+  TaoLinearSolverPetsc *pls;
+  pls  = dynamic_cast <TaoLinearSolverPetsc *> (tls);
+
+  if(!bnls->M) bnls->M = new TaoLMVMMat(X);
+  TaoLMVMMat *M = bnls->M;
+  KSP pksp = pls->GetKSP();
+  PC ppc;
+  // Modify the preconditioner to use the bfgs approximation
+  info = KSPGetPC(pksp, &ppc); CHKERRQ(info);
+  PetscTruth  NoPreconditioner=PETSC_FALSE;// debug flag
+  info = PetscOptionsGetTruth(PETSC_NULL,"-bnls_pc_none",
+                              &NoPreconditioner,PETSC_NULL); CHKERRQ(info);
+  if( NoPreconditioner ) 
+    {
+     info=PetscInfo(tao,"TaoSolve_BNLS:  using no preconditioner\n");
+     info = PCSetType(ppc, PCNONE); CHKERRQ(info);
+    }
+  else
+    { // default to bfgs
+     info=PetscInfo(tao,"TaoSolve_BNLS:  using bfgs preconditioner\n");
+     info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
+     info = PCShellSetName(ppc, "bfgs"); CHKERRQ(info);
+     info = PCShellSetContext(ppc, M); CHKERRQ(info);
+     info = PCShellSetApply(ppc, bfgs_apply); CHKERRQ(info);
+    }
+
   info = TaoComputeMeritFunctionGradient(tao,X,&f,G);CHKERRQ(info);
+  info = PG->BoundGradientProjection(G,XL,X,XU);CHKERRQ(info);
+  info = PG->Norm2(&gnorm); CHKERRQ(info);
   
+  // Set initial scaling for the function
+  if (f != 0.0) {
+    info = M->SetDelta(2.0 * TaoAbsDouble(f) / (gnorm*gnorm)); CHKERRQ(info);
+  }
+  else {
+    info = M->SetDelta(2.0 / (gnorm*gnorm)); CHKERRQ(info);
+  }
+ 
   while (reason==TAO_CONTINUE_ITERATING){
     
     /* Project the gradient and calculate the norm */
     info = PG->BoundGradientProjection(G,XL,X,XU);CHKERRQ(info);
     info = PG->Norm2(&gnorm); CHKERRQ(info);
     
+    info = M->Update(X, PG); CHKERRQ(info);
+
+    PetscScalar ewAtol  = PetscMin(0.5,gnorm)*gnorm;
+    info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
+                            PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
+    info=PetscInfo1(tao,"TaoSolve_BNLS: gnorm =%g\n",gnorm);
+    info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
+
     info = TaoMonitor(tao,iter++,f,gnorm,0.0,stepsize,&reason);
     CHKERRQ(info);
     if (reason!=TAO_CONTINUE_ITERATING) break;
@@ -82,6 +152,14 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
 	     bnls->gamma_factor,PetscReal(bnls->gamma));CHKERRQ(info);
 #endif
         info = Hsub->ShiftDiagonal(bnls->gamma);CHKERRQ(info);
+        if (f != 0.0) {
+          info = M->SetDelta(2.0 * TaoAbsDouble(f) / (gnorm*gnorm)); CHKERRQ(info);
+        }
+        else {
+          info = M->SetDelta(2.0 / (gnorm*gnorm)); CHKERRQ(info);
+        }
+        info = M->Reset(); CHKERRQ(info);
+        info = M->Update(X, G); CHKERRQ(info);
 	success = TAO_FALSE;
 	
       } else {
@@ -120,6 +198,7 @@ static int TaoSetDown_BNLS(TAO_SOLVER tao, void*solver)
   info = TaoVecDestroy(bnls->PG);CHKERRQ(info);
   info = TaoVecDestroy(bnls->XL);CHKERRQ(info);
   info = TaoVecDestroy(bnls->XU);CHKERRQ(info);
+  info = TaoMatDestroy(bnls->M); CHKERRQ(info);
   
   info = TaoIndexSetDestroy(bnls->FreeVariables);CHKERRQ(info);
   info = TaoMatDestroy(bnls->Hsub);CHKERRQ(info);
@@ -258,6 +337,7 @@ int TaoCreate_BNLS(TAO_SOLVER tao)
   bnls->Work=0;
   bnls->FreeVariables=0;
   bnls->Hsub=0;
+  bnls->M=0;
 
   info = TaoCreateMoreThuenteBoundLineSearch(tao,0,0.9); CHKERRQ(info);
 

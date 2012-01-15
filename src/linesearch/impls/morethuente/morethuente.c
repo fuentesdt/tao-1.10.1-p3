@@ -801,6 +801,8 @@ static int TaoApply_BoundLineSearch(TAO_SOLVER tao,TaoVec* X,TaoVec* G,TaoVec* S
     ftest1 = finit + (*step) * dgtest;
     ftest2 = finit + (*step) * dgtest * neP->ftol;	// Armijo
 
+    info = PetscInfo7(tao, "TaoApply_BoundLineSearch:monitor: function %22.15e ftest1 %22.15e ftest2 %22.15e step  %22.15e dg %22.15e gtol*dginit %22.15e bstepmin2 %22.15e \n",*f,ftest1,ftest2,*step,TaoAbsDouble(dg),neP->gtol*(-dginit),bstepmin2); CHKERRQ(info);
+
     /* Convergence testing */
     if ((*f <= ftest1) && (TaoAbsDouble(dg) <= neP->gtol*(-dginit))) {
       info = PetscInfo(tao, "TaoApply_BoundLineSearch:Line search success: Sufficient decrease and directional deriv conditions hold\n"); CHKERRQ(info);

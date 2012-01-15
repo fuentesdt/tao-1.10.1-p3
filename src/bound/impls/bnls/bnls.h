@@ -3,6 +3,7 @@
 #ifndef __TAO_BNLS_H
 #define __TAO_BNLS_H
 #include "tao_solver.h"
+#include "src/matrix/lmvmmat.h"
 
 typedef struct{
 
@@ -24,6 +25,7 @@ typedef struct{
   
   TaoMat* Hsub;
   TaoMat* H;
+  TaoLMVMMat *M;
 
   TaoIndexSet *FreeVariables;  /* Indices of local variables equal to lower bound */
 

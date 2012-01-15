@@ -999,6 +999,7 @@ int ISCreateComplement(IS S, Vec V, IS *T){
 
   for (i=low; i<high; i++){ tt[i-low]=i; }
 
+  if(tt)
   for (i=0; i<nis; i++){ tt[s[i]-low] = -2; }
   
   for (i=0; i<nloc; i++){
