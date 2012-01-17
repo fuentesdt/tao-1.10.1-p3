@@ -95,7 +95,7 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   else {
     info = M->SetDelta(2.0 / (gnorm*gnorm)); CHKERRQ(info);
   }
- 
+  
   while (reason==TAO_CONTINUE_ITERATING){
     
     /* Project the gradient and calculate the norm */
@@ -108,7 +108,9 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
     info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
                             PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
     info=PetscInfo1(tao,"TaoSolve_BNLS: gnorm =%g\n",gnorm);
+    pksp->printreason = PETSC_TRUE;
     info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
+    M->View();
 
     info = TaoMonitor(tao,iter++,f,gnorm,0.0,stepsize,&reason);
     CHKERRQ(info);

@@ -2,6 +2,7 @@
 #include "tao_general.h"
 #include "tao_solver.h"
 #include "taovec.h"
+#include "petsc.h"
 
 #define Scale_None		0
 #define Scale_Scalar		1
@@ -783,6 +784,9 @@ int TaoLMVMMat::Update(TaoVec *x, TaoVec *g)
 int TaoLMVMMat::View()
 {
   TaoFunctionBegin;
+  PetscErrorCode info;
+  info=PetscPrintf(PETSC_COMM_WORLD,"TaoLMVMMat: lm %d, lmnow %d, iter %d, updates %d, rejects %d\n",lm, lmnow, iter, updates, rejects);
+  std::cout << std::flush ;
   TaoFunctionReturn(0);
 }
 
