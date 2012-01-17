@@ -1,3 +1,4 @@
+#include <iostream>
 #include "lmvmmat.h"
 #include "tao_general.h"
 #include "tao_solver.h"
