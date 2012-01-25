@@ -704,7 +704,7 @@ static int TaoApply_BoundLineSearch(TAO_SOLVER tao,TaoVec* X,TaoVec* G,TaoVec* S
   info = X->StepBoundInfo(XL,XU,S,&bstepmin1,&bstepmin2,&bstepmax); CHKERRQ(info);
   neP->stepmax=TaoMin(bstepmax,1.0e+15);
 
-  info = PetscInfo2(tao,"TaoApply_BoundLineSearch:monitor: UnBoundNorm %22.12e, BoundNorm %22.12e \n",boundStepNorm,unBoundStepNorm); CHKERRQ(info);
+  info = PetscInfo2(tao,"TaoApply_BoundLineSearch:monitor: UnBoundNorm %22.12e, BoundNorm %22.12e \n",unBoundStepNorm,boundStepNorm); CHKERRQ(info);
   /* Check that search direction is a descent direction */
 
 #if defined(PETSC_USE_COMPLEX)
