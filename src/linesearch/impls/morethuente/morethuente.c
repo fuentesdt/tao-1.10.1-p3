@@ -694,13 +694,17 @@ static int TaoApply_BoundLineSearch(TAO_SOLVER tao,TaoVec* X,TaoVec* G,TaoVec* S
   /* Compute step length needed to make all variables equal a bound */ 
   /* Compute the smallest steplength that will make one nonbinding  */
   /* variable equal the bound */ 
+  double unBoundStepNorm, boundStepNorm;
   info = TaoGetVariableBounds(tao,&XL,&XU); CHKERRQ(info);
+  info = S->Norm2(&unBoundStepNorm); CHKERRQ(info);
   info = S->Negate(); CHKERRQ(info);
   info = S->BoundGradientProjection(S,XL,X,XU); CHKERRQ(info);
   info = S->Negate(); CHKERRQ(info);
+  info = S->Norm2(&boundStepNorm); CHKERRQ(info);
   info = X->StepBoundInfo(XL,XU,S,&bstepmin1,&bstepmin2,&bstepmax); CHKERRQ(info);
   neP->stepmax=TaoMin(bstepmax,1.0e+15);
 
+  info = PetscInfo2(tao,"TaoApply_BoundLineSearch:monitor: UnBoundNorm %22.12e, BoundNorm %22.12e \n",boundStepNorm,unBoundStepNorm); CHKERRQ(info);
   /* Check that search direction is a descent direction */
 
 #if defined(PETSC_USE_COMPLEX)
