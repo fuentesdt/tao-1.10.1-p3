@@ -72,8 +72,23 @@ static PetscErrorCode bfgs_apply(PC pc, Vec xin, Vec xout)
   int info;
 
   PetscFunctionBegin;
+
+  PetscTruth VerbosePrint = PETSC_FALSE; 
+  PetscOptionsGetTruth(PETSC_NULL,"-verboseapp",&VerbosePrint,PETSC_NULL);
+
   info = PCShellGetContext(pc,(void**)&M); CHKERRQ(info);
+
+  PetscScalar solnNorm,solnDot;
+  info = VecNorm(xin,NORM_2,&solnNorm); CHKERRQ(info)
+  info=PetscPrintf(PETSC_COMM_WORLD,"bfgs_apply: ||Xin||_2 = %22.15e\n",solnNorm);
+  if(VerbosePrint) VecView(xin,0);
+
   info = M->Solve(&Xin, &Xout, &info2); CHKERRQ(info);
+
+  info = VecNorm(xout,NORM_2,&solnNorm); CHKERRQ(info)
+  info = VecDot(xin,xout,&solnDot); CHKERRQ(info)
+  info=PetscPrintf(PETSC_COMM_WORLD,"bfgs_apply: ||Xout||_2 = %22.15e, Xin^T Xout= %22.15e\n",solnNorm,solnDot);
+  if(VerbosePrint) VecView(xout,0);
   PetscFunctionReturn(0);
 }
 
@@ -163,6 +178,12 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
   info = TaoGetSolution(tao, &X); CHKERRQ(info);
   info = TaoGetHessian(tao, &H); CHKERRQ(info);
 
+  /*   Project the current point onto the feasible set */
+  TaoVec *XU, *XL;
+  info = TaoGetVariableBounds(tao,&XL,&XU);CHKERRQ(info);
+  info = TaoEvaluateVariableBounds(tao,XL,XU); CHKERRQ(info);
+  info = X->Median(XL,X,XU); CHKERRQ(info);
+  
   if (NLS_PC_BFGS == ls->pc_type && !M) {
     ls->M = new TaoLMVMMat(X);
     M = ls->M;
@@ -419,6 +440,7 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
       delta = 2.0 / (gnorm*gnorm);
     }
     info = M->SetDelta(delta); CHKERRQ(info);
+    info = M->Reset(); CHKERRQ(info);
   }
 
   // Set counter for gradient/reset steps
@@ -444,9 +466,11 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
       info = Diag->AbsoluteValue(); CHKERRQ(info);
       info = Diag->Reciprocal(); CHKERRQ(info);
       info = M->SetScale(Diag); CHKERRQ(info);
+      M->View();
     }
  
     // Shift the Hessian matrix
+    info=PetscInfo1(tao,"TaoSolve_NLS: pert %22.15e \n",pert);
     if (pert > 0) {
       info = H->ShiftDiagonal(pert); CHKERRQ(info);
     }
@@ -462,8 +486,19 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
 
       // Update the limited memory preconditioner
       info = M->Update(X, G); CHKERRQ(info);
+      M->View();
       ++bfgsUpdates;
     }
+
+    PetscScalar ewAtol  = PetscMin(0.5,gnorm)*gnorm;
+    info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
+                            PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
+    info=PetscInfo1(tao,"TaoSolve_NLS: gnorm =%g\n",gnorm);
+    pksp->printreason = PETSC_TRUE;
+    info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
+
+    // use gradient as initial guess
+    info = D->CopyFrom(G); CHKERRQ(info);
 
     // Solve the Newton system of equations
     info = TaoPreLinearSolve(tao, H); CHKERRQ(info);
@@ -509,6 +544,7 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
       // Preconditioner is numerically indefinite; reset the
       // approximate if using BFGS preconditioning.
 
+      info=PetscInfo(tao,"TaoSolve_NLS: Indefinite_PC reset BFGS\n");
       if (f != 0.0) {
         delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
       }
@@ -548,6 +584,7 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
     if ((gdx >= 0.0) || TaoInfOrNaN(gdx)) {
       // Newton step is not descent or direction produced Inf or NaN
       // Update the perturbation for next time
+      info=PetscInfo2(tao,"TaoSolve_NLS: Newton step is not descent or direction produced Inf or NaN,pert %22.12e, gdx %22.12e \n", pert,gdx);
       if (pert <= 0.0) {
 	// Initialize the perturbation
 	pert = TaoMin(ls->imax, TaoMax(ls->imin, ls->imfac * gnorm));
@@ -572,6 +609,7 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
       }
       else {
         // Attempt to use the BFGS direction
+        info=PetscInfo(tao,"TaoSolve_NLS: trying BFGS Direction\n");
         info = M->Solve(G, D, &success); CHKERRQ(info);
         info = D->Negate(); CHKERRQ(info);
 
@@ -584,6 +622,7 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
           // which is guaranteed to be descent
 	  //
           // Use steepest descent direction (scaled)
+          info=PetscInfo(tao,"TaoSolve_NLS: BFGS Direction fail\n");
 
           if (f != 0.0) {
             delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
@@ -616,6 +655,7 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
     }
     else {
       // Computed Newton step is descent
+      info=PetscInfo(tao,"TaoSolve_NLS: Newton step is descent\n");
       switch (ksp_reason) {
       case KSP_DIVERGED_NAN:
       case KSP_DIVERGED_BREAKDOWN:
@@ -657,6 +697,7 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
 
     step = 1.0;
     info = TaoLineSearchApply(tao, X, G, D, W, &f, &f_full, &step, &status); CHKERRQ(info);
+    info=PetscInfo1(tao,"TaoSolve_NLS: stepType %d \n",stepType);
 
     while (status && stepType != NLS_GRADIENT) {
       // Linesearch failed
@@ -1007,6 +1048,8 @@ static int TaoSetUp_NLS(TAO_SOLVER tao, void *solver)
   info = X->Clone(&ls->G); CHKERRQ(info);
   info = X->Clone(&ls->D); CHKERRQ(info);
   info = X->Clone(&ls->W); CHKERRQ(info);
+  info = X->Clone(&ls->XL); CHKERRQ(info);
+  info = X->Clone(&ls->XU); CHKERRQ(info);
 
   info = X->Clone(&ls->Xold); CHKERRQ(info);
   info = X->Clone(&ls->Gold); CHKERRQ(info);
@@ -1016,6 +1059,7 @@ static int TaoSetUp_NLS(TAO_SOLVER tao, void *solver)
 
   info = TaoSetLagrangianGradientVector(tao, ls->G); CHKERRQ(info);
   info = TaoSetStepDirectionVector(tao, ls->D); CHKERRQ(info);
+  info = TaoSetVariableBounds(tao,ls->XL,ls->XU);CHKERRQ(info);
 
   // Set linear solver to default for symmetric matrices
   info = TaoGetHessian(tao, &H); CHKERRQ(info);
@@ -1038,6 +1082,8 @@ static int TaoDestroy_NLS(TAO_SOLVER tao, void *solver)
   info = TaoVecDestroy(ls->G); CHKERRQ(info);
   info = TaoVecDestroy(ls->D); CHKERRQ(info);
   info = TaoVecDestroy(ls->W); CHKERRQ(info);
+  info = TaoVecDestroy(ls->XL); CHKERRQ(info);
+  info = TaoVecDestroy(ls->XU); CHKERRQ(info);
 
   info = TaoVecDestroy(ls->Xold); CHKERRQ(info);
   info = TaoVecDestroy(ls->Gold); CHKERRQ(info);
@@ -1239,13 +1285,14 @@ int TaoCreate_NLS(TAO_SOLVER tao)
   ls->max_radius = 1.0e10;
   ls->epsilon = 1.0e-6;
 
-  ls->ksp_type        = NLS_KSP_STCG;
+  ls->ksp_type        = NLS_KSP_CG;
   ls->pc_type         = NLS_PC_BFGS;
   ls->bfgs_scale_type = BFGS_SCALE_PHESS;
   ls->init_type       = NLS_INIT_INTERPOLATION;
   ls->update_type     = NLS_UPDATE_STEP;
 
-  info = TaoCreateMoreThuenteLineSearch(tao, 0, 0); CHKERRQ(info);
+  //info = TaoCreateMoreThuenteLineSearch(tao, 0, 0); CHKERRQ(info);
+  info = TaoCreateMoreThuenteBoundLineSearch(tao,0,0.9); CHKERRQ(info);
   TaoFunctionReturn(0);
 }
 EXTERN_C_END

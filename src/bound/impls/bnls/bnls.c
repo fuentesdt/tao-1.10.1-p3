@@ -22,8 +22,24 @@ static PetscErrorCode bfgs_apply(PC pc, Vec xin, Vec xout)
   int info;
 
   PetscFunctionBegin;
+
+  PetscTruth VerbosePrint = PETSC_FALSE; 
+  PetscOptionsGetTruth(PETSC_NULL,"-verboseapp",&VerbosePrint,PETSC_NULL);
+
   info = PCShellGetContext(pc,(void**)&M); CHKERRQ(info);
+
+  PetscScalar solnNorm,solnDot;
+  info = VecNorm(xin,NORM_2,&solnNorm); CHKERRQ(info)
+  info=PetscPrintf(PETSC_COMM_WORLD,"bfgs_apply: ||Xin||_2 = %22.15e\n",solnNorm);
+  if(VerbosePrint) VecView(xin,0);
+
   info = M->Solve(&Xin, &Xout, &info2); CHKERRQ(info);
+
+  info = VecNorm(xout,NORM_2,&solnNorm); CHKERRQ(info)
+  info = VecDot(xin,xout,&solnDot); CHKERRQ(info)
+  info=PetscPrintf(PETSC_COMM_WORLD,"bfgs_apply: ||Xout||_2 = %22.15e, Xin^T Xout= %22.15e\n",solnNorm,solnDot);
+  if(VerbosePrint) VecView(xout,0);
+
   PetscFunctionReturn(0);
 }
 
@@ -125,8 +141,9 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
     info = R->SetReducedVec(G,FreeVariables);CHKERRQ(info);
     info = R->Negate();CHKERRQ(info);
 
-    info = DXFree->SetReducedVec(DX,FreeVariables);CHKERRQ(info);
-    info = DXFree->SetToZero(); CHKERRQ(info);
+    /* Use gradient as initial guess */
+    info = DXFree->SetReducedVec(G,FreeVariables);CHKERRQ(info);
+    info = DXFree->Negate(); CHKERRQ(info);
     
     info = Hsub->SetReducedMatrix(H,FreeVariables,FreeVariables);CHKERRQ(info);
 
@@ -150,8 +167,8 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
         info=PetscInfo2(tao,"TaoSolve_NLS:  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",bnls->gamma_factor,bnls->gamma);
 	CHKERRQ(info);
 #else
-        info=PetscInfo3(tao,"TaoSolve_NLS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
-	     bnls->gamma_factor,PetscReal(bnls->gamma));CHKERRQ(info);
+        info=PetscInfo3(tao,"TaoSolve_NLS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g, gdx %22.12e \n",
+	     bnls->gamma_factor,PetscReal(bnls->gamma),gdx);CHKERRQ(info);
 #endif
         info = Hsub->ShiftDiagonal(bnls->gamma);CHKERRQ(info);
         if (f != 0.0) {
