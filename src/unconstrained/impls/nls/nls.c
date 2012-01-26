@@ -114,7 +114,7 @@ static PetscErrorCode bfgs_apply(PC pc, Vec xin, Vec xout)
 static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
 {
   TAO_NLS *ls = (TAO_NLS *)solver;
-  TaoVec *X, *G = ls->G, *D = ls->D, *W = ls->W;
+  TaoVec *X, *G = ls->G, *D = ls->D, *W = ls->W, *PG=ls->PG;
   TaoVec *Xold = ls->Xold, *Gold = ls->Gold, *Diag = ls->Diag;
   TaoMat *H;
   TaoLMVMMat *M = ls->M;
@@ -513,10 +513,15 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
       InitGuessLMVM->View();
     }
 
-    PetscScalar ewAtol  = PetscMin(0.5,gnorm)*gnorm;
+    // use constrained norm for tolerance
+    PetscScalar boundNorm;
+    info = PG->BoundGradientProjection(G,XL,X,XU);CHKERRQ(info);
+    info = PG->Norm2(&boundNorm); CHKERRQ(info);
+    
+    PetscScalar ewAtol  = PetscMin(0.5,boundNorm)*boundNorm;
     info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
                             PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
-    info=PetscInfo1(tao,"TaoSolve_NLS: gnorm =%g\n",gnorm);
+    info=PetscInfo2(tao,"TaoSolve_NLS: gnorm=%22.12e, boundNorm=%22.12e\n",gnorm,boundNorm);
     pksp->printreason = PETSC_TRUE;
     info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
 
@@ -1098,6 +1103,7 @@ static int TaoSetUp_NLS(TAO_SOLVER tao, void *solver)
   info = X->Clone(&ls->W); CHKERRQ(info);
   info = X->Clone(&ls->XL); CHKERRQ(info);
   info = X->Clone(&ls->XU); CHKERRQ(info);
+  info = X->Clone(&ls->PG); CHKERRQ(info);
 
   info = X->Clone(&ls->Xold); CHKERRQ(info);
   info = X->Clone(&ls->Gold); CHKERRQ(info);
@@ -1132,6 +1138,7 @@ static int TaoDestroy_NLS(TAO_SOLVER tao, void *solver)
   info = TaoVecDestroy(ls->W); CHKERRQ(info);
   info = TaoVecDestroy(ls->XL); CHKERRQ(info);
   info = TaoVecDestroy(ls->XU); CHKERRQ(info);
+  info = TaoVecDestroy(ls->PG); CHKERRQ(info);
 
   info = TaoVecDestroy(ls->Xold); CHKERRQ(info);
   info = TaoVecDestroy(ls->Gold); CHKERRQ(info);

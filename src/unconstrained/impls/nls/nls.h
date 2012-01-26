@@ -13,8 +13,9 @@ typedef struct {
   TaoVec *G;
   TaoVec *D;
   TaoVec *W;
-  TaoVec* XU;
-  TaoVec* XL;
+  TaoVec *XU;
+  TaoVec *XL;
+  TaoVec *PG;
 
   TaoVec *Xold;
   TaoVec *Gold;
