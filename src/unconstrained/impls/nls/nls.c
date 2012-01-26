@@ -189,6 +189,12 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
     M = ls->M;
   }
 
+  // possibly use BFGS as initial guess
+  PetscTruth GradientInitialGuess = PETSC_FALSE;
+  PetscOptionsGetTruth(PETSC_NULL,"-tao_nls_gradient_initial_guess",&GradientInitialGuess,PETSC_NULL);
+  TaoLMVMMat *InitGuessLMVM  = 0;
+  if(!GradientInitialGuess) InitGuessLMVM = new TaoLMVMMat(X);
+
   // Check convergence criteria
   info = TaoComputeFunctionGradient(tao, X, &f, G); CHKERRQ(info);
   info = G->Norm2(&gnorm); CHKERRQ(info);
@@ -443,6 +449,17 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
     info = M->Reset(); CHKERRQ(info);
   }
 
+  if(InitGuessLMVM) {
+    if (f != 0.0) {
+      delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+    }
+    else {
+      delta = 2.0 / (gnorm*gnorm);
+    }
+    info = InitGuessLMVM->SetDelta(delta); CHKERRQ(info);
+    info = InitGuessLMVM->Reset(); CHKERRQ(info);
+  }
+
   // Set counter for gradient/reset steps
   ls->newt = 0;
   ls->bfgs = 0;
@@ -490,6 +507,12 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
       ++bfgsUpdates;
     }
 
+    if(InitGuessLMVM) {
+      // Update the limited memory initial guess
+      info = InitGuessLMVM->Update(X, G); CHKERRQ(info);
+      InitGuessLMVM->View();
+    }
+
     PetscScalar ewAtol  = PetscMin(0.5,gnorm)*gnorm;
     info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
                             PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
@@ -498,7 +521,15 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
     info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
 
     // use gradient as initial guess
-    info = D->CopyFrom(G); CHKERRQ(info);
+    // use bfgs as initial guess
+    if( InitGuessLMVM ) 
+     {
+      info=PetscInfo(tao,"TaoSolve_NLS: use bfgs init guess \n");
+      info = InitGuessLMVM->Solve(G, D, &success);
+     }
+    else
+      info = D->CopyFrom(G); 
+    CHKERRQ(info);
 
     // Solve the Newton system of equations
     info = TaoPreLinearSolve(tao, H); CHKERRQ(info);
@@ -598,9 +629,22 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
 	pert = TaoMin(ls->pmax, TaoMax(ls->pgfac * pert, ls->pmgfac * gnorm));
       }
 
+      if(InitGuessLMVM) {
+        info=PetscInfo(tao,"TaoSolve_NLS: reset init guess \n");
+        if (f != 0.0) {
+          delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
+        }
+        else {
+          delta = 2.0 / (gnorm*gnorm);
+        }
+        info = InitGuessLMVM->SetDelta(delta); CHKERRQ(info);
+        info = InitGuessLMVM->Reset(); CHKERRQ(info);
+      }
+
       if (NLS_PC_BFGS != ls->pc_type) {
 	// We don't have the bfgs matrix around and updated
         // Must use gradient direction in this case
+        info=PetscInfo(tao,"TaoSolve_NLS: using steepest descent \n");
         info = D->CopyFrom(G); CHKERRQ(info);
         info = D->Negate(); CHKERRQ(info);
 
@@ -1029,6 +1073,10 @@ static int TaoSolve_NLS(TAO_SOLVER tao, void *solver)
 
     info = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(info);
   }
+
+  // clean up
+  if(InitGuessLMVM){info=TaoMatDestroy(InitGuessLMVM);CHKERRQ(info);}
+
   TaoFunctionReturn(0);
 }
 
@@ -1286,7 +1334,8 @@ int TaoCreate_NLS(TAO_SOLVER tao)
   ls->epsilon = 1.0e-6;
 
   ls->ksp_type        = NLS_KSP_CG;
-  ls->pc_type         = NLS_PC_BFGS;
+  //ls->pc_type         = NLS_PC_BFGS;
+  ls->pc_type         = NLS_PC_NONE;
   ls->bfgs_scale_type = BFGS_SCALE_PHESS;
   ls->init_type       = NLS_INIT_INTERPOLATION;
   ls->update_type     = NLS_UPDATE_STEP;
