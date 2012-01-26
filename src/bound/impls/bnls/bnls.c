@@ -83,21 +83,21 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   PC ppc;
   // Modify the preconditioner to use the bfgs approximation
   info = KSPGetPC(pksp, &ppc); CHKERRQ(info);
-  PetscTruth  NoPreconditioner=PETSC_FALSE;// debug flag
-  info = PetscOptionsGetTruth(PETSC_NULL,"-bnls_pc_none",
-                              &NoPreconditioner,PETSC_NULL); CHKERRQ(info);
-  if( NoPreconditioner ) 
-    {
-     info=PetscInfo(tao,"TaoSolve_BNLS:  using no preconditioner\n");
-     info = PCSetType(ppc, PCNONE); CHKERRQ(info);
-    }
-  else
+  PetscTruth  BFGSPreconditioner=PETSC_FALSE;// debug flag
+  info = PetscOptionsGetTruth(PETSC_NULL,"-bnls_pc_bfgs",
+                              &BFGSPreconditioner,PETSC_NULL); CHKERRQ(info);
+  if( BFGSPreconditioner) 
     { // default to bfgs
      info=PetscInfo(tao,"TaoSolve_BNLS:  using bfgs preconditioner\n");
      info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
      info = PCShellSetName(ppc, "bfgs"); CHKERRQ(info);
      info = PCShellSetContext(ppc, M); CHKERRQ(info);
      info = PCShellSetApply(ppc, bfgs_apply); CHKERRQ(info);
+    }
+  else
+    {
+     info=PetscInfo(tao,"TaoSolve_BNLS:  using no preconditioner\n");
+     info = PCSetType(ppc, PCNONE); CHKERRQ(info);
     }
 
   info = TaoComputeMeritFunctionGradient(tao,X,&f,G);CHKERRQ(info);
@@ -142,7 +142,15 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
     info = R->Negate();CHKERRQ(info);
 
     /* Use gradient as initial guess */
-    info = DXFree->SetReducedVec(G,FreeVariables);CHKERRQ(info);
+    PetscTruth  UseGradientIG=PETSC_FALSE;// debug flag
+    info = PetscOptionsGetTruth(PETSC_NULL,"-bnls_use_gradient_ig",
+                                &UseGradientIG,PETSC_NULL); CHKERRQ(info);
+    if(UseGradientIG)
+      info = DX->CopyFrom(G);
+    else
+      info = M->Solve(G, DX, &success);
+    CHKERRQ(info);
+    info = DXFree->SetReducedVec(DX,FreeVariables);CHKERRQ(info);
     info = DXFree->Negate(); CHKERRQ(info);
     
     info = Hsub->SetReducedMatrix(H,FreeVariables,FreeVariables);CHKERRQ(info);
