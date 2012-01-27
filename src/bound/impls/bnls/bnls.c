@@ -148,7 +148,10 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
     if(UseGradientIG)
       info = DX->CopyFrom(G);
     else
+     {
+      info=PetscInfo(tao,"TaoSolve_BNLS: use bfgs init guess \n");
       info = M->Solve(G, DX, &success);
+     }
     CHKERRQ(info);
     info = DXFree->SetReducedVec(DX,FreeVariables);CHKERRQ(info);
     info = DXFree->Negate(); CHKERRQ(info);
