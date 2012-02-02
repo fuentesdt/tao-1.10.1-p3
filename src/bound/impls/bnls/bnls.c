@@ -87,7 +87,7 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   info = PetscOptionsGetTruth(PETSC_NULL,"-bnls_pc_bfgs",
                               &BFGSPreconditioner,PETSC_NULL); CHKERRQ(info);
   if( BFGSPreconditioner) 
-    { // default to bfgs
+    { 
      info=PetscInfo(tao,"TaoSolve_BNLS:  using bfgs preconditioner\n");
      info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
      info = PCShellSetName(ppc, "bfgs"); CHKERRQ(info);
@@ -95,7 +95,7 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
      info = PCShellSetApply(ppc, bfgs_apply); CHKERRQ(info);
     }
   else
-    {
+    {// default to none
      info=PetscInfo(tao,"TaoSolve_BNLS:  using no preconditioner\n");
      info = PCSetType(ppc, PCNONE); CHKERRQ(info);
     }
