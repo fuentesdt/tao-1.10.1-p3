@@ -63,6 +63,7 @@ static int TaoSolve_BLMVM(TAO_SOLVER tao, void *solver)
     
     // Compute direction
     info = M->Update(X, GP); CHKERRQ(info);
+    M->View();
     info = M->Solve(G, D, &success); CHKERRQ(info);
     info = GP->BoundGradientProjection(D, XL, X, XU); CHKERRQ(info);
 
@@ -71,6 +72,7 @@ static int TaoSolve_BLMVM(TAO_SOLVER tao, void *solver)
     if (gdx <= 0) {
       // Step is not descent or solve was not successful
       // Use steepest descent direction (scaled)
+      info=PetscInfo1(tao,"TaoSolve_BLMVM: LMVM Solve Fail use steepest descent, gdx %22.12e \n",gdx);
       ++blm->grad;
 
       if (f != 0.0) {
@@ -81,7 +83,8 @@ static int TaoSolve_BLMVM(TAO_SOLVER tao, void *solver)
       }
       info = M->Reset(); CHKERRQ(info);
       info = M->Update(X, G); CHKERRQ(info);
-      info = M->Solve(G, D, &success); CHKERRQ(info);
+      //info = M->Solve(G, D, &success); CHKERRQ(info);
+      info = D->CopyFrom(G);
     } 
     info = D->Negate(); CHKERRQ(info);
 
@@ -95,6 +98,7 @@ static int TaoSolve_BLMVM(TAO_SOLVER tao, void *solver)
 
     if (status) {
       // Linesearch failed
+      info=PetscInfo(tao,"TaoSolve_BLMVM: LineSearch fail use steepest descent\n");
       // Reset factors and use scaled (projected) gradient step
       ++blm->reset;
 
@@ -110,7 +114,8 @@ static int TaoSolve_BLMVM(TAO_SOLVER tao, void *solver)
       }
       info = M->Reset(); CHKERRQ(info);
       info = M->Update(X, G); CHKERRQ(info);
-      info = M->Solve(G, D, &success); CHKERRQ(info);
+      //info = M->Solve(G, D, &success); CHKERRQ(info);
+      info = D->CopyFrom(G);
       info = D->Negate(); CHKERRQ(info);
 
       // This may be incorrect; linesearch has values fo stepmax and stepmin

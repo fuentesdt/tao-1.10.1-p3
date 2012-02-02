@@ -300,15 +300,24 @@ int TaoLMVMMat::Solve(TaoVec *tb, TaoVec *dx, TaoTruth *tt)
 
   scaled = TAO_FALSE;
   if (!scaled && H0) {
-    info = H0->Solve(dx, U, tt); CHKERRQ(info);
+    // use gradient as initial guess
+    TaoVec *ApproxSoln; 
+    info = tb->Clone(&ApproxSoln); CHKERRQ(info);
+    info = ApproxSoln->CopyFrom(tb); CHKERRQ(info);
+    info = H0->Solve(dx, ApproxSoln, tt); CHKERRQ(info);
     if (*tt) {
-      info = dx->Dot(U, &dd); CHKERRQ(info);
+      info = dx->Dot(ApproxSoln, &dd); CHKERRQ(info);
       if ((dd > 0.0) && !TaoInfOrNaN(dd)) {
 	// Accept Hessian solve
-	info = dx->CopyFrom(U); CHKERRQ(info);
+        PetscPrintf(PETSC_COMM_WORLD,"TaoLMVMMat: Accept Hessian Solve...\n");
+	info = dx->CopyFrom(ApproxSoln); CHKERRQ(info);
 	scaled = TAO_TRUE;
       }
+      else{
+        PetscPrintf(PETSC_COMM_WORLD,"TaoLMVMMat: Reject Hessian Solve, dd %22.12e \n\n", dd );
+      }
     }
+    info = TaoVecDestroy(ApproxSoln); CHKERRQ(info);
   }
 
   if (!scaled && scale) {

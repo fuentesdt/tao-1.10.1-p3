@@ -714,7 +714,7 @@ static int TaoApply_BoundLineSearch(TAO_SOLVER tao,TaoVec* X,TaoVec* G,TaoVec* S
 #endif
 
   if (dginit >= 0.0) {
-    info = PetscInfo(tao,"TaoApply_BoundLineSearch:Search direction not a descent direction\n"); CHKERRQ(info);
+    info = PetscInfo1(tao,"TaoApply_BoundLineSearch:Search direction not a descent direction, dginit %22.12e \n",dginit); CHKERRQ(info);
     *info2 = 7; TaoFunctionReturn(0);
   }
 
