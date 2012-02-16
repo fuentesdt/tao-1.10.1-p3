@@ -1,6 +1,12 @@
 /*$Id$*/
 
 #include "tron.h"       /*I "tao_solver.h" I*/
+#include "petscksp.h"
+#include "petscpc.h"
+#include "src/petsctao/linearsolver/taolinearsolver_petsc.h"
+#include "src/petsctao/vector/taovec_petsc.h"
+#include "private/kspimpl.h"
+#include "private/pcimpl.h"
 
 /* TRON Routines */
 static int TaoGradProjections(TAO_SOLVER,TAO_TRON *);
@@ -197,6 +203,8 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 
   tron->stepsize=tron->delta;
 
+  info=PetscInfo1(tao,"delta =%22.12e\n",tron->delta);
+
   info = TaoMonitor(tao,iter++,tron->f,tron->gnorm,0.0,tron->delta,&reason);
   CHKERRQ(info);
 
@@ -207,9 +215,24 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
     info = Free_Local->WhichBetween(XL,X,XU); CHKERRQ(info);
     info = Free_Local->GetSize(&tron->n_free); CHKERRQ(info);
     f=tron->f; delta=tron->delta; gnorm=tron->gnorm; 
+    info=PetscInfo4(tao,"n_free=%d,f =%22.12e , delta =%22.12e , gnorm =%22.12e\n",tron->n_free,f,delta,gnorm);
+    
 
     if (tron->n_free > 0){
       
+      /* view and Modify the linear solver */
+      TaoLinearSolver *tls;
+      info = TaoGetLinearSolver(tao, &tls); CHKERRQ(info);
+      TaoLinearSolverPetsc *pls;
+      pls  = dynamic_cast <TaoLinearSolverPetsc *> (tls);
+      KSP pksp = pls->GetKSP();
+      PetscScalar ewAtol  = PetscMin(0.5,gnorm)*gnorm;
+      info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
+                      PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
+      pksp->printreason = PETSC_TRUE;
+      info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
+
+      /* Compute the Hessian */
       info = TaoComputeHessian(tao,X,H);CHKERRQ(info);
 
       /* Create a reduced linear system */
@@ -264,6 +287,7 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 	  } else if (rhok > tron->eta3 ){
 	    delta=TaoMin(xdiff,delta)*tron->sigma2;
 	  }
+	  info = PetscInfo1(tao,"delta : %14.12e\n",delta); CHKERRQ(info);
 
 	  info =  PG->BoundGradientProjection(G_New,XL,X_New,XU);
 	  CHKERRQ(info);
@@ -294,6 +318,7 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
       info =  Work->BoundGradientProjection(G,XL,X,XU);
       CHKERRQ(info);
       info = Work->Norm2(&gnorm);  CHKERRQ(info);
+      info = PetscInfo1(tao,"no free variables gnorm: %14.12e\n",gnorm); CHKERRQ(info);
       /* if there were no free variables, no cg method */
 
     }
@@ -338,6 +363,7 @@ static int TaoGradProjections(TAO_SOLVER tao,TAO_TRON *tron)
 
   for (i=0;i<tron->maxgpits;i++){
 
+    info = PetscInfo1(tao,"GradProjection %d \n",i); CHKERRQ(info);
     if ( -actred <= (tron->pg_ftol)*actred_max) break;
   
     tron->gp_iterates++; tron->total_gp_its++;      
