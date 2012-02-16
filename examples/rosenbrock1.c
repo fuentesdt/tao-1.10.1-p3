@@ -112,6 +112,46 @@ int main(int argc,char **argv)
   info = TaoGetTerminationReason(tao,&reason); CHKERRQ(info);
   if (reason <= 0)
     PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
+  switch(reason){
+   case 2:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_CONVERGED_ATOL\n"); break;
+   case 3:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_CONVERGED_RTOL\n"); break;
+   case 4:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_TRTOL\n"); break;
+   case 5:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_MINF\n"); break;
+   case 6:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_CONVERGED_USER\n"); break;
+   case -2:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_DIVERGED_MAXITS\n"); break;
+   case -4:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_DIVERGED_NAN\n"); break;
+   case -5:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_DIVERGED_MAXFCN\n"); break;
+   case -6:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated : TAO_DIVERGED_LS_FAILURE\n"); break;
+      /* if line search fails, i think that the wrong paramters values are
+         stored in the hp3d data structures. The parameters of the last
+         fcn evaluation that caused the line search to fail will be 
+         in the hp3d data structures. restore the original parameter values
+         of to the hp3d the data structures */
+   case -7:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_DIVERGED_TR_REDUCTION\n");break;
+   case -8:
+      PetscPrintf(PETSC_COMM_WORLD,
+      "Reason TAO terminated: TAO_DIVERGED_USER\n"); break;
+  }
 
 
   /* Free TAO data structures */

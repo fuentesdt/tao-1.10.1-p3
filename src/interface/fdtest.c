@@ -5,6 +5,7 @@
 typedef struct {
   PetscTruth check_gradient;
   PetscTruth check_hessian;
+  PetscTruth check_hessianproduct;
   PetscTruth complete_print;
 } TAO_FD;
 
@@ -14,7 +15,7 @@ static int TaoSolve_FD(TAO_SOLVER tao, void *solver)
 {
   Mat A,Apre,B;
   MatStructure flg;
-  Vec            x,g1,g2;
+  Vec            x,g1,g2,g3,g4,g5;
   PetscInt       i;
   PetscReal      hcnorm,diffnorm;
   int info;
@@ -68,6 +69,74 @@ static int TaoSolve_FD(TAO_SOLVER tao, void *solver)
       info = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n",diffnorm/hcnorm,diffnorm);CHKERRQ(info);
       info = PetscPrintf(comm,"\n");CHKERRQ(info);
     }
+    info = VecDestroy(g1); CHKERRQ(info);
+    info = VecDestroy(g2); CHKERRQ(info);
+  }
+  if (fd->check_hessianproduct) {
+    PetscReal      epsilon = PETSC_SQRT_MACHINE_EPSILON;
+    info = TaoAppGetHessianMat(app,&A, &Apre); CHKERRQ(info);
+    if (A != Apre) {
+      SETERRQ(1,"Cannot test with alternative preconditioner");
+    }
+    info = PetscPrintf(comm,"Testing hand-coded hessian vector product, if the ratio ||fd - hc|| / ||hc|| is\n"); CHKERRQ(info);
+    info = PetscPrintf(comm,"0 (1.e-8), the hand-coded gradient is probably correct.\n"); CHKERRQ(info);
+
+    if (!fd->complete_print) {
+      info = PetscPrintf(comm,"Run with -tao_test_display to show difference\n");CHKERRQ(info);
+      info = PetscPrintf(comm,"between hand-coded and finite difference hessian vector product.\n");CHKERRQ(info);
+    }
+    
+    info = VecDuplicate(x,&g1); CHKERRQ(info);
+    info = VecDuplicate(x,&g2); CHKERRQ(info);
+    info = VecDuplicate(x,&g3); CHKERRQ(info);
+    info = VecDuplicate(x,&g4); CHKERRQ(info);
+    info = VecDuplicate(x,&g5); CHKERRQ(info);
+    for (i=0; i<1; i++) {  
+      if (i == 1) {info = VecSet(x,-1.0);CHKERRQ(info);}
+      else if (i == 2) {info = VecSet(x,1.0);CHKERRQ(info);}
+ 
+      /* compute both versions of hessian product */
+      info = TaoAppComputeGradient(app,x,g1); CHKERRQ(info);
+      info = VecCopy(g1,g5); CHKERRQ(info);
+      info = TaoAppComputeHessian(app,x,&A,&A,&flg); CHKERRQ(info);
+      PetscInt nMult=0, nMultMax  = 2;
+      info = PetscOptionsGetInt(PETSC_NULL,"-tao_test_maxprod",&nMultMax,PETSC_NULL); CHKERRQ(info);
+      while ( nMult < nMultMax )
+       {
+        info = PetscPrintf(comm,"mat vec mult %d... \n",nMult);CHKERRQ(info);
+        info = VecCopy(g1,g3); CHKERRQ(info);
+        info = MatMult(A,g3,g1); CHKERRQ(info);
+        nMult++;
+       }
+
+      info = VecWAXPY(g4,epsilon,g3,x); CHKERRQ(info);
+      info = PetscPrintf(comm,"fd gradient ... \n");CHKERRQ(info);
+      info = TaoAppComputeGradient(app,g4,g2); CHKERRQ(info);
+      info = VecAXPY(g2,-1.0,g5); CHKERRQ(info);
+      info = VecScale(g2,1.0/epsilon); CHKERRQ(info);
+
+      if (fd->complete_print) {
+	info = PetscPrintf(comm,"Finite difference hessian product\n"); CHKERRQ(info);
+	info = PetscObjectGetComm((PetscObject)g2,&gcomm); CHKERRQ(info);
+	info = VecView(g2,PETSC_VIEWER_STDOUT_(gcomm)); CHKERRQ(info);
+	info = PetscPrintf(comm,"Hand-coded hessian product\n");CHKERRQ(info);
+	info = PetscObjectGetComm((PetscObject)g1,&gcomm);CHKERRQ(info);
+	info = VecView(g1,PETSC_VIEWER_STDOUT_(gcomm));CHKERRQ(info);
+	info = PetscPrintf(comm,"\n");CHKERRQ(info);
+      }
+      
+      info = VecAXPY(g2,-1.0,g1); CHKERRQ(info); // g2 := g2-g1
+      info = VecNorm(g1,NORM_2,&hcnorm); CHKERRQ(info);
+      info = VecNorm(g2,NORM_2,&diffnorm); CHKERRQ(info);
+
+      info = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n",diffnorm/hcnorm,diffnorm);CHKERRQ(info);
+      info = PetscPrintf(comm,"\n");CHKERRQ(info);
+    }
+    info = VecDestroy(g1); CHKERRQ(info);
+    info = VecDestroy(g2); CHKERRQ(info);
+    info = VecDestroy(g3); CHKERRQ(info);
+    info = VecDestroy(g4); CHKERRQ(info);
+    info = VecDestroy(g5); CHKERRQ(info);
   }
   if (fd->check_hessian) {
     info = TaoAppGetHessianMat(app,&A, &Apre); CHKERRQ(info);
@@ -150,7 +219,8 @@ static int TaoSetOptions_FD(TAO_SOLVER tao, void *solver)
   info = PetscOptionsName("-tao_test_display","Display difference between approximate and handcoded hessian","None",&fd->complete_print);CHKERRQ(info);
   info = PetscOptionsName("-tao_test_gradient","Test Hand-coded gradient against finite difference gradient","None",&fd->check_gradient);CHKERRQ(info);
   info = PetscOptionsName("-tao_test_hessian","Test Hand-coded hessian against finite difference hessian","None",&fd->check_hessian);CHKERRQ(info);
-  if (fd->check_gradient == PETSC_FALSE && fd->check_hessian == PETSC_FALSE) {
+  info = PetscOptionsName("-tao_test_hessianproduct","Test Hand-coded hessian against finite difference hessian","None",&fd->check_hessianproduct);CHKERRQ(info);
+  if (fd->check_gradient == PETSC_FALSE && fd->check_hessian == PETSC_FALSE && fd->check_hessianproduct == PETSC_FALSE) {
     fd->check_gradient = PETSC_TRUE;
   }
     
@@ -172,8 +242,9 @@ int TaoCreate_FD(TAO_SOLVER tao)
   info = TaoSetTaoSetUpDownRoutines(tao,TaoSetUp_FD, TaoDestroy_FD); CHKERRQ(info);
   info = TaoSetTaoOptionsRoutine(tao, TaoSetOptions_FD); CHKERRQ(info);
   //  info = TaoSetTaoViewRoutine(tao,TaoView_FD); CHKERRQ(info);
-  fd->check_gradient=PETSC_TRUE;
+  fd->check_gradient=PETSC_FALSE;
   fd->check_hessian=PETSC_FALSE;
+  fd->check_hessianproduct=PETSC_FALSE;
   fd->complete_print=PETSC_FALSE;
   TaoFunctionReturn(0);
 }
