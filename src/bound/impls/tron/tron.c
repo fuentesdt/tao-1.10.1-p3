@@ -287,7 +287,6 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 	  } else if (rhok > tron->eta3 ){
 	    delta=TaoMin(xdiff,delta)*tron->sigma2;
 	  }
-	  info = PetscInfo1(tao,"delta : %14.12e\n",delta); CHKERRQ(info);
 
 	  info =  PG->BoundGradientProjection(G_New,XL,X_New,XU);
 	  CHKERRQ(info);
@@ -310,6 +309,7 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
         else {
 	  delta /= 4.0;
 	}
+	info = PetscInfo2(tao,"rhok=%14.12e delta=%14.12e\n",rhok,delta); CHKERRQ(info);
       } /* end linear solve loop */
       
     } else {
@@ -363,7 +363,8 @@ static int TaoGradProjections(TAO_SOLVER tao,TAO_TRON *tron)
 
   for (i=0;i<tron->maxgpits;i++){
 
-    info = PetscInfo1(tao,"GradProjection %d \n",i); CHKERRQ(info);
+    info = PetscInfo4(tao,"GradProjection %d, actred=%22.12e,  pg_ftol=%22.12e, actred_max=%22.12e \n",
+                                           i,actred,tron->pg_ftol,actred_max); CHKERRQ(info);
     if ( -actred <= (tron->pg_ftol)*actred_max) break;
   
     tron->gp_iterates++; tron->total_gp_its++;      
