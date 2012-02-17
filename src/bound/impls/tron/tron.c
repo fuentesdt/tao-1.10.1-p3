@@ -273,6 +273,7 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 	else rhok=0.0;
 
 	/* Compare actual improvement to the quadratic model */
+	info = PetscInfo2(tao,"rhok=%14.12e delta=%14.12e\n",rhok,delta); CHKERRQ(info);
 	if (rhok > tron->eta1) { /* Accept the point */
 
 	  info = DX->Waxpby(1.0,X_New,-1.0, X); CHKERRQ(info);
@@ -287,6 +288,7 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 	  } else if (rhok > tron->eta3 ){
 	    delta=TaoMin(xdiff,delta)*tron->sigma2;
 	  }
+	  info = PetscInfo1(tao,"update delta=%14.12e\n",delta); CHKERRQ(info);
 
 	  info =  PG->BoundGradientProjection(G_New,XL,X_New,XU);
 	  CHKERRQ(info);
@@ -309,7 +311,6 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
         else {
 	  delta /= 4.0;
 	}
-	info = PetscInfo2(tao,"rhok=%14.12e delta=%14.12e\n",rhok,delta); CHKERRQ(info);
       } /* end linear solve loop */
       
     } else {
