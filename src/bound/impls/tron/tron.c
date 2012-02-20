@@ -13,6 +13,40 @@ static int TaoGradProjections(TAO_SOLVER,TAO_TRON *);
 static int TronCheckOptimalFace(TaoVec*, TaoVec*, TaoVec*, TaoVec*, TaoVec*, 
 				TaoIndexSet*, TaoIndexSet*, TaoTruth *optimal);
 
+// Routine for BFGS preconditioner
+
+#undef __FUNCT__
+#define __FUNCT__ "bfgs_apply"
+static PetscErrorCode bfgs_apply(PC pc, Vec xin, Vec xout)
+{
+  TaoLMVMMat *M ;
+  TaoVecPetsc Xin(xin);
+  TaoVecPetsc Xout(xout);
+  TaoTruth info2;
+  int info;
+
+  PetscFunctionBegin;
+
+  PetscTruth VerbosePrint = PETSC_FALSE; 
+  PetscOptionsGetTruth(PETSC_NULL,"-verboseapp",&VerbosePrint,PETSC_NULL);
+
+  info = PCShellGetContext(pc,(void**)&M); CHKERRQ(info);
+
+  PetscScalar solnNorm,solnDot;
+  info = VecNorm(xin,NORM_2,&solnNorm); CHKERRQ(info)
+  info=PetscPrintf(PETSC_COMM_WORLD,"bfgs_apply: ||Xin||_2 = %22.15e\n",solnNorm);
+  if(VerbosePrint) VecView(xin,0);
+
+  info = M->Solve(&Xin, &Xout, &info2); CHKERRQ(info);
+
+  info = VecNorm(xout,NORM_2,&solnNorm); CHKERRQ(info)
+  info = VecDot(xin,xout,&solnDot); CHKERRQ(info)
+  info=PetscPrintf(PETSC_COMM_WORLD,"bfgs_apply: ||Xout||_2 = %22.15e, Xin^T Xout= %22.15e\n",solnNorm,solnDot);
+  if(VerbosePrint) VecView(xout,0);
+
+  PetscFunctionReturn(0);
+}
+
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSetDown_TRON"
@@ -188,6 +222,36 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
   /*   Project the current point onto the feasible set */
   info = X->Median(XL,X,XU); CHKERRQ(info);
   
+  TaoLinearSolver *tls;
+  // Modify the linear solver to a conjugate gradient method
+  info = TaoGetLinearSolver(tao, &tls); CHKERRQ(info);
+  TaoLinearSolverPetsc *pls;
+  pls  = dynamic_cast <TaoLinearSolverPetsc *> (tls);
+
+  if(!tron->M) tron->M = new TaoLMVMMat(X);
+  TaoLMVMMat *M = tron->M;
+  KSP pksp = pls->GetKSP();
+  PC ppc;
+  // Modify the preconditioner to use the bfgs approximation
+  info = KSPGetPC(pksp, &ppc); CHKERRQ(info);
+  PetscTruth  BFGSPreconditioner=PETSC_FALSE;// debug flag
+  info = PetscOptionsGetTruth(PETSC_NULL,"-tron_pc_bfgs",
+                              &BFGSPreconditioner,PETSC_NULL); CHKERRQ(info);
+  if( BFGSPreconditioner) 
+    { 
+     info=PetscInfo(tao,"TaoSolve_TRON:  using bfgs preconditioner\n");
+     info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
+     info = PCShellSetName(ppc, "bfgs"); CHKERRQ(info);
+     info = PCShellSetContext(ppc, M); CHKERRQ(info);
+     info = PCShellSetApply(ppc, bfgs_apply); CHKERRQ(info);
+    }
+  else
+    {// default to none
+     info=PetscInfo(tao,"TaoSolve_TRON:  using no preconditioner\n");
+     info = PCSetType(ppc, PCNONE); CHKERRQ(info);
+    }
+
+
   info = TaoComputeMeritFunctionGradient(tao,X,&tron->f,G);CHKERRQ(info);
   info = Free_Local->WhichBetween(XL,X,XU); CHKERRQ(info);
   
@@ -208,6 +272,14 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
   info = TaoMonitor(tao,iter++,tron->f,tron->gnorm,0.0,tron->delta,&reason);
   CHKERRQ(info);
 
+  // Set initial scaling for the function
+  if (tron->f != 0.0) {
+    info = M->SetDelta(2.0 * TaoAbsDouble(tron->f) / (tron->gnorm*tron->gnorm)); CHKERRQ(info);
+  }
+  else {
+    info = M->SetDelta(2.0 / (tron->gnorm*tron->gnorm)); CHKERRQ(info);
+  }
+
   while (reason==TAO_CONTINUE_ITERATING){
     
     info = TaoGradProjections(tao,tron); CHKERRQ(info);
@@ -221,16 +293,12 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
     if (tron->n_free > 0){
       
       /* view and Modify the linear solver */
-      TaoLinearSolver *tls;
-      info = TaoGetLinearSolver(tao, &tls); CHKERRQ(info);
-      TaoLinearSolverPetsc *pls;
-      pls  = dynamic_cast <TaoLinearSolverPetsc *> (tls);
-      KSP pksp = pls->GetKSP();
       PetscScalar ewAtol  = PetscMin(0.5,gnorm)*gnorm;
       info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
                       PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
       pksp->printreason = PETSC_TRUE;
       info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
+      M->View();
 
       /* Compute the Hessian */
       info = TaoComputeHessian(tao,X,H);CHKERRQ(info);
@@ -299,6 +367,8 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
             f=f_new;
             info = X->CopyFrom(X_New); CHKERRQ(info);
             info = G->CopyFrom(G_New); CHKERRQ(info);
+            // update preconditioner with uncontrained gradient
+            info = M->Update(X, G); CHKERRQ(info);
             break;
           }
 	  if (delta<=1e-30){
@@ -306,10 +376,12 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 	  }
 	} 
 	else if (delta <= 1e-30) {
+	  info = PetscInfo1(tao,"delta = %14.12e <= 1e-30\n",delta); CHKERRQ(info);
 	  break;
 	}
         else {
 	  delta /= 4.0;
+	  info = PetscInfo1(tao,"reduce delta and resolve, delta = %14.12e \n",delta); CHKERRQ(info);
 	}
       } /* end linear solve loop */
       
@@ -330,6 +402,9 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
     iter++;
     
   }  /* END MAIN LOOP  */
+
+  //clean up
+  info = TaoMatDestroy(tron->M); CHKERRQ(info);
 
   TaoFunctionReturn(0);
 }
@@ -376,6 +451,9 @@ static int TaoGradProjections(TAO_SOLVER tao,TAO_TRON *tron)
     info = TaoLineSearchApply(tao,X,G,DX,Work,
 			      &f_new,&f_full,&tron->pgstepsize,&lsflag);
     CHKERRQ(info);
+
+    // update preconditioner with uncontrained gradient
+    info = tron->M->Update(X, G); CHKERRQ(info);
 
     /* Update the iterate */
     actred = f_new - tron->f;
@@ -571,6 +649,7 @@ int TaoCreate_TRON(TAO_SOLVER tao)
   tron->Free_Local=0;
   tron->TT=0;
   tron->Hsub=0;
+  tron->M=0;
 
   info = TaoCreateMoreThuenteBoundLineSearch(tao, 0 , 0); CHKERRQ(info);
   TaoFunctionReturn(0);

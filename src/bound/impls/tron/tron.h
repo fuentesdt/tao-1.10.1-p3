@@ -4,6 +4,7 @@
 #define __TAO_TRON_H
 
 #include "tao_solver.h"
+#include "src/matrix/lmvmmat.h"
 
 typedef struct {
 
@@ -50,6 +51,7 @@ typedef struct {
   
   TaoMat* Hsub;
   TaoMat* H;
+  TaoLMVMMat *M;
 
   TaoIndexSet *TT;
   TaoIndexSet *Free_Local;  /* Indices of local variables equal to lower bound */
