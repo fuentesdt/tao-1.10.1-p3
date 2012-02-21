@@ -240,6 +240,7 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
   if( BFGSPreconditioner) 
     { 
      info=PetscInfo(tao,"TaoSolve_TRON:  using bfgs preconditioner\n");
+     info = KSPSetNormType(pksp, KSP_NORM_PRECONDITIONED); CHKERRQ(info);
      info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
      info = PCShellSetName(ppc, "bfgs"); CHKERRQ(info);
      info = PCShellSetContext(ppc, M); CHKERRQ(info);
