@@ -220,6 +220,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
     break;
 
   case NTL_PC_BFGS:
+    info = KSPSetNormType(pksp, KSP_NORM_PRECONDITIONED); CHKERRQ(info);
     info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
     if (ppc->ops->setfromoptions) {
       (*ppc->ops->setfromoptions)(ppc);
