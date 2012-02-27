@@ -725,7 +725,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       info = TaoLineSearchApply(tao, X, G, D, W, &f, &f_full, &step, &status); CHKERRQ(info);
 
       while (status && stepType != NTL_GRADIENT) {
-        info=PetscInfo1(tao,"line search fail , %d\n",status);
+        info=PetscInfo2(tao,"line search fail status=%d stepType=%d\n",status,stepType);
 	// Linesearch failed
 	f = fold;
 	info = X->CopyFrom(Xold); CHKERRQ(info);
@@ -745,6 +745,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	  }
 	  else {
 	    // Attempt to use the BFGS direction
+            info=PetscInfo(tao,"Attempt to use the BFGS direction \n");
 	    info = M->Solve(G, D, &success); CHKERRQ(info);
 	    
 	    // Check for success (descent direction)
@@ -754,6 +755,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	      // not a number.  We can assert bfgsUpdates > 1 in this case
 	      // Use steepest descent direction (scaled)
     
+              info=PetscInfo(tao,"BFGS not descent direction use steepest descent\n");
 	      if (f != 0.0) {
 		delta = 2.0 * TaoAbsDouble(f) / (gnorm*gnorm);
 	      }

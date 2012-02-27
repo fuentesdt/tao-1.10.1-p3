@@ -140,6 +140,7 @@ int TaoLinearSolveTrustRegion(TAO_SOLVER tao, TaoMat *Q, TaoVec *b, TaoVec *x,
   int lits,info;
   TaoFunctionBegin;
   TaoValidHeaderSpecific(tao,TAO_COOKIE,1);
+  info=PetscInfo1(tao,"solving with trust radius=%22.12e\n",r);
   info = tao->ksp->SolveTrustRegion(b, x, r, success); CHKERRQ(info);
   info = tao->ksp->GetNumberIterations(&lits);CHKERRQ(info);
   tao->linear_its += lits;
