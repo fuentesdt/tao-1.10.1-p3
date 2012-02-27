@@ -343,6 +343,7 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 
 	/* Compare actual improvement to the quadratic model */
 	info = PetscInfo2(tao,"rhok=%14.12e delta=%14.12e\n",rhok,delta); CHKERRQ(info);
+	info = PetscInfo4(tao,"eta1=%14.12e eta2=%14.12e eta3=%14.12e eta4=%14.12e\n",tron->eta1,tron->eta2,tron->eta3,tron->eta4); CHKERRQ(info);
 	if (rhok > tron->eta1) { /* Accept the point */
 
 	  info = DX->Waxpby(1.0,X_New,-1.0, X); CHKERRQ(info);
@@ -357,14 +358,14 @@ static int TaoSolve_TRON(TAO_SOLVER tao, void*solver){
 	  } else if (rhok > tron->eta3 ){
 	    delta=TaoMin(xdiff,delta)*tron->sigma2;
 	  }
-	  info = PetscInfo1(tao,"update delta=%14.12e\n",delta); CHKERRQ(info);
+	  info = PetscInfo2(tao,"update delta=%14.12e stepsize=%14.12e\n",delta,stepsize); CHKERRQ(info);
 
 	  info =  PG->BoundGradientProjection(G_New,XL,X_New,XU);
 	  CHKERRQ(info);
 	  info = PG->Norm2(&gnorm);  CHKERRQ(info);
 	  info = TronCheckOptimalFace(X_New,XL,XU,G_New,PG, Free_Local, TIS,
 				      &optimal_face); CHKERRQ(info);	  
-          if (stepsize < 1 || optimal_face==TAO_FALSE || reason!=TAO_CONTINUE_ITERATING ){
+          if (stepsize < 1.25 || optimal_face==TAO_FALSE || reason!=TAO_CONTINUE_ITERATING ){
             f=f_new;
             info = X->CopyFrom(X_New); CHKERRQ(info);
             info = G->CopyFrom(G_New); CHKERRQ(info);
@@ -621,7 +622,7 @@ int TaoCreate_TRON(TAO_SOLVER tao)
   tron->maxgpits     = 3;
   tron->pg_ftol      = 0.001;
 
-  tron->eta1         = 1.0e-4;
+  tron->eta1         = 1.0e-1;
   tron->eta2         = 0.25;
   tron->eta3         = 0.50;
   tron->eta4         = 0.90;
