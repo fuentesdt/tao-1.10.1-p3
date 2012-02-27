@@ -519,7 +519,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	  else {
 	    kappa = actred / prered;
 	  }
-          info=PetscInfo2(tao,"Checking TR model kappa %22.15e eta1 %22.15e\n",kappa,tl->eta1);
+          info=PetscInfo5(tao,"Checking TR model kappa %22.15e eta1 %22.15e eta2 %22.15e eta3 %22.15e eta4 %22.15e\n",kappa,tl->eta1,tl->eta2,tl->eta3,tl->eta4);
 
 	  // Accept of reject the step and update radius
 	  if (kappa < tl->eta1) {
