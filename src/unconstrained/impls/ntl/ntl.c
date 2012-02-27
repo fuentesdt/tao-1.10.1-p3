@@ -502,6 +502,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       else {
 	// Compute trial step and function value
 	info = W->Waxpby(1.0, X, 1.0, D); CHKERRQ(info);
+        info = W->Median(XL,W,XU); CHKERRQ(info);
 	info = TaoComputeFunction(tao, W, &ftrial); CHKERRQ(info);
 	if (TaoInfOrNaN(ftrial)) {
 	  radius = tl->alpha1 * TaoMin(radius, norm_d);
@@ -518,7 +519,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	  else {
 	    kappa = actred / prered;
 	  }
-          info=PetscInfo1(tao,"Checking TR model kappa %22.15e \n",kappa );
+          info=PetscInfo2(tao,"Checking TR model kappa %22.15e eta1 %22.15e\n",kappa,tl->eta1);
 
 	  // Accept of reject the step and update radius
 	  if (kappa < tl->eta1) {
@@ -529,6 +530,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	  }
 	  else {
 	    // Accept the step
+            info=PetscInfo(tao,"Accept TR step... \n");
 	    if (kappa < tl->eta2) {
 	      // Marginal bad step
 	      radius = tl->alpha2 * TaoMin(radius, norm_d);
@@ -566,6 +568,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       }
       else {
 	info = W->Waxpby(1.0, X, 1.0, D); CHKERRQ(info);
+        info = W->Median(XL,W,XU); CHKERRQ(info);
 	info = TaoComputeFunction(tao, W, &ftrial); CHKERRQ(info);
 	if (TaoInfOrNaN(ftrial)) {
 	  radius = tl->gamma1 * TaoMin(radius, norm_d);
@@ -1082,7 +1085,8 @@ int TaoCreate_NTL(TAO_SOLVER tao)
   tl->omega5 = 4.00;
 
   // Default values for trust-region radius update based on reduction
-  tl->eta1 = 1.0e-4;
+  //tl->eta1 = 1.0e-4;
+  tl->eta1 = 1.0e-1;
   tl->eta2 = 0.25;
   tl->eta3 = 0.50;
   tl->eta4 = 0.90;
