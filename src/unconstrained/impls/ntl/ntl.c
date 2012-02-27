@@ -258,6 +258,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
   
       for (i = 0; i < i_max; ++i) {
         info = W->Waxpby(1.0, X, -radius / gnorm, G); CHKERRQ(info);
+        info = W->Median(XL,W,XU); CHKERRQ(info);
 
         info = TaoComputeFunction(tao, W, &ftrial); CHKERRQ(info);
         if (TaoInfOrNaN(ftrial)) {
@@ -351,6 +352,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       if (fmin < f) {
 	f = fmin;
 	info = X->Axpy(sigma, G); CHKERRQ(info);
+        info = X->Median(XL,X,XU); CHKERRQ(info);
 	info = TaoComputeGradient(tao, X, G); CHKERRQ(info);
   
 	info = G->Norm2(&gnorm); CHKERRQ(info);
