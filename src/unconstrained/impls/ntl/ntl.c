@@ -89,7 +89,7 @@ static PetscErrorCode bfgs_apply(PC pc, Vec xin, Vec xout)
 static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 {
   TAO_NTL *tl = (TAO_NTL *)solver;
-  TaoVec *X, *G = tl->G, *D = tl->D, *W = tl->W;
+  TaoVec *X, *G = tl->G, *D = tl->D, *W = tl->W, *PG=tl->PG;
   TaoVec *Xold = tl->Xold, *Gold = tl->Gold, *Diag = tl->Diag;
   TaoMat *H;
   TaoLMVMMat *M = tl->M;
@@ -140,6 +140,12 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
   info = TaoGetSolution(tao, &X); CHKERRQ(info);
   info = TaoGetHessian(tao, &H); CHKERRQ(info);
 
+  /*   Project the current point onto the feasible set */
+  TaoVec *XU, *XL;
+  info = TaoGetVariableBounds(tao,&XL,&XU);CHKERRQ(info);
+  info = TaoEvaluateVariableBounds(tao,XL,XU); CHKERRQ(info);
+  info = X->Median(XL,X,XU); CHKERRQ(info);
+  
   if (NTL_PC_BFGS == tl->pc_type && !M) {
     tl->M = new TaoLMVMMat(X);
     M = tl->M;
@@ -230,6 +236,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 
   // Initialize trust-region radius.  The initialization is only performed 
   // when we are using Steihaug-Toint or the Generalized Lanczos method.
+  info=PetscInfo1(tao,"initializing trust region radius %d \n",tl->init_type);
   switch(tl->init_type) {
   case NTL_INIT_CONSTANT:
     // Use the initial radius specified
@@ -369,6 +376,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
     radius = 0.0;
     break;
   }
+  info=PetscInfo1(tao,"initial trust region radius %22.15e \n",radius);
 
   // Set initial scaling for the BFGS preconditioner
   // This step is done after computing the initial trust-region radius
@@ -413,6 +421,18 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       info = M->Update(X, G); CHKERRQ(info);
       ++bfgsUpdates;
     }
+
+    // use constrained norm for tolerance
+    PetscScalar boundNorm;
+    info = PG->BoundGradientProjection(G,XL,X,XU);CHKERRQ(info);
+    info = PG->Norm2(&boundNorm); CHKERRQ(info);
+    
+    PetscScalar ewAtol  = PetscMin(0.5,boundNorm)*boundNorm;
+    info = KSPSetTolerances(pksp,PETSC_DEFAULT,ewAtol,
+                            PETSC_DEFAULT, PETSC_DEFAULT); CHKERRQ(info);
+    info=PetscInfo2(tao,"TaoSolve_NTL: gnorm=%22.12e, boundNorm=%22.12e\n",gnorm,boundNorm);
+    pksp->printreason = PETSC_TRUE;
+    info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
 
     // Solve the Newton system of equations
     info = TaoPreLinearSolve(tao, H); CHKERRQ(info);
@@ -465,6 +485,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 
     // Check trust-region reduction conditions
     tr_reject = 0;
+    info=PetscInfo1(tao,"ntl update type , %d\n",tl->update_type);
     if (NTL_UPDATE_REDUCTION == tl->update_type) {
       // Get predicted reduction
       info = pls->GetObjFcn(&prered); CHKERRQ(info);
@@ -494,30 +515,36 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	  else {
 	    kappa = actred / prered;
 	  }
+          info=PetscInfo1(tao,"Checking TR model kappa %22.15e \n",kappa );
 
 	  // Accept of reject the step and update radius
 	  if (kappa < tl->eta1) {
 	    // Reject the step
 	    radius = tl->alpha1 * TaoMin(radius, norm_d);
 	    tr_reject = 1;
+            info=PetscInfo1(tao,"Reject the TR step radius %22.15e \n",radius);
 	  }
 	  else {
 	    // Accept the step
 	    if (kappa < tl->eta2) {
 	      // Marginal bad step
 	      radius = tl->alpha2 * TaoMin(radius, norm_d);
+              info=PetscInfo1(tao,"Marginal bad TR step %22.15e \n",radius);
 	    }
 	    else if (kappa < tl->eta3) {
 	      // Reasonable step
 	      radius = tl->alpha3 * radius;
+              info=PetscInfo1(tao,"Reasonable TR step %22.15e \n",radius);
 	    }
 	    else if (kappa < tl->eta4) {
 	      // Good step
 	      radius = TaoMax(tl->alpha4 * norm_d, radius);
+              info=PetscInfo1(tao,"Good TR step %22.15e \n",radius);
 	    }
 	    else {
 	      // Very good step
 	      radius = TaoMax(tl->alpha5 * norm_d, radius);
+              info=PetscInfo1(tao,"Very good TR step %22.15e \n",radius);
 	    }
 	  }
 	}
@@ -618,6 +645,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       // The trust-region constraints rejected the step.  Apply a linesearch.
       // Check for descent direction.
       info = D->Dot(G, &gdx); CHKERRQ(info);
+      info=PetscInfo1(tao,"trust-region constraints rejected the step, gdx %22.15e \n",gdx);
       if ((gdx >= 0.0) || TaoInfOrNaN(gdx)) {
 	// Newton step is not descent or direction produced Inf or NaN
 	
@@ -637,6 +665,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	  
 	  // Check for success (descent direction)
 	  info = D->Dot(G, &gdx); CHKERRQ(info);
+          info=PetscInfo1(tao,"newton direction fail bfgs descent gdx %22.15e \n",gdx);
 	  if ((gdx >= 0) || TaoInfOrNaN(gdx)) {
 	    // BFGS direction is not descent or direction produced not a number
 	    // We can assert bfgsUpdates > 1 in this case because
@@ -676,6 +705,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       }
       else {
 	// Computed Newton step is descent
+        info=PetscInfo1(tao,"Computed Newton step is descent, gdx %22.15e \n",gdx);
 	++tl->newt;
 	stepType = NTL_NEWTON;
       }
@@ -689,6 +719,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
       info = TaoLineSearchApply(tao, X, G, D, W, &f, &f_full, &step, &status); CHKERRQ(info);
 
       while (status && stepType != NTL_GRADIENT) {
+        info=PetscInfo1(tao,"line search fail , %d\n",status);
 	// Linesearch failed
 	f = fold;
 	info = X->CopyFrom(Xold); CHKERRQ(info);
@@ -802,10 +833,12 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	if (step < tl->nu1) {
 	  // Very bad step taken; reduce radius
 	  radius = tl->omega1 * TaoMin(norm_d, radius);
+          info=PetscInfo1(tao,"Very bad step taken; reduce radius %22.15e \n",radius);
 	}
 	else if (step < tl->nu2) {
 	  // Reasonably bad step taken; reduce radius
 	  radius = tl->omega2 * TaoMin(norm_d, radius);
+          info=PetscInfo1(tao,"Reasonably bad step taken; reduce radius %22.15e \n",radius);
 	}
 	else if (step < tl->nu3) {
 	  // Reasonable step was taken; leave radius alone
@@ -815,24 +848,28 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
 	  else if (tl->omega3 > 1.0) {
 	    radius = TaoMax(tl->omega3 * norm_d, radius);
 	  }
+          info=PetscInfo1(tao,"Reasonable step was taken; leave radius alone %22.15e \n",radius);
 	}
 	else if (step < tl->nu4) {
 	  // Full step taken; increase the radius
 	  radius = TaoMax(tl->omega4 * norm_d, radius);
+          info=PetscInfo1(tao,"Full step taken; increase the radius %22.15e \n",radius);
 	}
 	else {
 	  // More than full step taken; increase the radius
 	  radius = TaoMax(tl->omega5 * norm_d, radius);
+          info=PetscInfo1(tao,"More than full step taken; increase the radius %22.15e \n",radius);
 	}
       }
       else {
 	// Newton step was not good; reduce the radius
 	radius = tl->omega1 * TaoMin(norm_d, radius);
+        info=PetscInfo1(tao,"Newton step was not good; reduce the radius %22.15e \n",radius);
       }
     }
     else {
       // Trust-region step is accepted
-
+      info=PetscInfo(tao,"trust-region step accepted \n");
       info = X->CopyFrom(W); CHKERRQ(info);
       f = ftrial;
       info = TaoComputeGradient(tao, X, G); CHKERRQ(info);
@@ -870,6 +907,9 @@ static int TaoSetUp_NTL(TAO_SOLVER tao, void *solver)
   info = X->Clone(&tl->G); CHKERRQ(info);
   info = X->Clone(&tl->D); CHKERRQ(info);
   info = X->Clone(&tl->W); CHKERRQ(info);
+  info = X->Clone(&tl->XL); CHKERRQ(info);
+  info = X->Clone(&tl->XU); CHKERRQ(info);
+  info = X->Clone(&tl->PG); CHKERRQ(info);
 
   info = X->Clone(&tl->Xold); CHKERRQ(info);
   info = X->Clone(&tl->Gold); CHKERRQ(info);
@@ -879,6 +919,7 @@ static int TaoSetUp_NTL(TAO_SOLVER tao, void *solver)
 
   info = TaoSetLagrangianGradientVector(tao, tl->G); CHKERRQ(info);
   info = TaoSetStepDirectionVector(tao, tl->D); CHKERRQ(info);
+  info = TaoSetVariableBounds(tao,tl->XL,tl->XU);CHKERRQ(info);
 
   // Set linear solver to default for symmetric matrices
   info = TaoGetHessian(tao, &H); CHKERRQ(info);
@@ -901,6 +942,9 @@ static int TaoDestroy_NTL(TAO_SOLVER tao, void *solver)
   info = TaoVecDestroy(tl->G); CHKERRQ(info);
   info = TaoVecDestroy(tl->D); CHKERRQ(info);
   info = TaoVecDestroy(tl->W); CHKERRQ(info);
+  info = TaoVecDestroy(tl->XL); CHKERRQ(info);
+  info = TaoVecDestroy(tl->XU); CHKERRQ(info);
+  info = TaoVecDestroy(tl->PG); CHKERRQ(info);
 
   info = TaoVecDestroy(tl->Xold); CHKERRQ(info);
   info = TaoVecDestroy(tl->Gold); CHKERRQ(info);
@@ -1079,7 +1123,7 @@ int TaoCreate_NTL(TAO_SOLVER tao)
   tl->init_type       = NTL_INIT_INTERPOLATION;
   tl->update_type     = NTL_UPDATE_REDUCTION;
 
-  info = TaoCreateMoreThuenteLineSearch(tao, 0, 0); CHKERRQ(info);
+  info = TaoCreateMoreThuenteBoundLineSearch(tao,0,0.9); CHKERRQ(info);
   TaoFunctionReturn(0);
 }
 EXTERN_C_END
