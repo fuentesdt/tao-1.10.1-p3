@@ -76,8 +76,10 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   info = TaoGetLinearSolver(tao, &tls); CHKERRQ(info);
   TaoLinearSolverPetsc *pls;
   pls  = dynamic_cast <TaoLinearSolverPetsc *> (tls);
-  // set trust radius large to not interfere
-  pls->SetTrustRadius(TAO_INFINITY);
+  // set trust radius to zero 
+  // PETSc ignores this case and should return the negative curvature direction
+  // at its current default length
+  pls->SetTrustRadius(0.0);
 
   if(!bnls->M) bnls->M = new TaoLMVMMat(X);
   TaoLMVMMat *M = bnls->M;
@@ -215,6 +217,7 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
 //        info = M->Update(X, G); CHKERRQ(info);
 //        success = TAO_FALSE;
       } else {
+        info=PetscInfo1(tao,"Newton Solve is descent direction, gdx %22.12e \n",gdx);
 	success = TAO_TRUE;
       }
 
