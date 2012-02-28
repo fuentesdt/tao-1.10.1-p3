@@ -76,6 +76,8 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   info = TaoGetLinearSolver(tao, &tls); CHKERRQ(info);
   TaoLinearSolverPetsc *pls;
   pls  = dynamic_cast <TaoLinearSolverPetsc *> (tls);
+  // set trust radius large to not interfere
+  pls->SetTrustRadius(TAO_INFINITY);
 
   if(!bnls->M) bnls->M = new TaoLMVMMat(X);
   TaoLMVMMat *M = bnls->M;
@@ -89,6 +91,7 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   if( BFGSPreconditioner) 
     { 
      info=PetscInfo(tao,"TaoSolve_BNLS:  using bfgs preconditioner\n");
+     info = KSPSetNormType(pksp, KSP_NORM_PRECONDITIONED); CHKERRQ(info);
      info = PCSetType(ppc, PCSHELL); CHKERRQ(info);
      info = PCShellSetName(ppc, "bfgs"); CHKERRQ(info);
      info = PCShellSetContext(ppc, M); CHKERRQ(info);
@@ -171,27 +174,46 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
       info = DX->ReducedXPY(DXFree,FreeVariables);CHKERRQ(info);
       info = DX->Dot(G,&gdx); CHKERRQ(info);
 
-      if (gdx>=0 || success==TAO_FALSE) { /* Modify diagonal of Hessian if not a descent direction */
-        bnls->gamma_factor *= 2; 
-        bnls->gamma = bnls->gamma_factor*(gnorm); 
-#if !defined(PETSC_USE_COMPLEX)
-        info=PetscInfo2(tao,"TaoSolve_NLS:  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",bnls->gamma_factor,bnls->gamma);
-	CHKERRQ(info);
-#else
-        info=PetscInfo3(tao,"TaoSolve_NLS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g, gdx %22.12e \n",
-	     bnls->gamma_factor,PetscReal(bnls->gamma),gdx);CHKERRQ(info);
-#endif
-        info = Hsub->ShiftDiagonal(bnls->gamma);CHKERRQ(info);
-        if (f != 0.0) {
-          info = M->SetDelta(2.0 * TaoAbsDouble(f) / (gnorm*gnorm)); CHKERRQ(info);
-        }
-        else {
-          info = M->SetDelta(2.0 / (gnorm*gnorm)); CHKERRQ(info);
-        }
-        info = M->Reset(); CHKERRQ(info);
-        info = M->Update(X, G); CHKERRQ(info);
-	success = TAO_FALSE;
-	
+      if (gdx>=0 || success==TAO_FALSE) { /* use bfgs direction */
+        info=PetscInfo1(tao,"Newton Solve Fail use BFGS direction, gdx %22.12e \n",gdx);
+        info = M->Solve(G, DX, &success); CHKERRQ(info);
+        // Check for success (descent direction)
+        info = DX->Dot(G,&gdx); CHKERRQ(info);
+        if (gdx <= 0) {
+          // Step is not descent or solve was not successful
+          // Use steepest descent direction (scaled)
+          info=PetscInfo1(tao,"LMVM Solve Fail use steepest descent, gdx %22.12e \n",gdx);
+          if (f != 0.0) {
+            info = M->SetDelta(2.0 * TaoAbsDouble(f) / (gnorm*gnorm)); CHKERRQ(info);
+          }
+          else {
+            info = M->SetDelta(2.0 / (gnorm*gnorm)); CHKERRQ(info);
+          }
+          info = M->Reset(); CHKERRQ(info);
+          info = M->Update(X, G); CHKERRQ(info);
+          info = DX->CopyFrom(G);
+        } 
+        info = DX->Negate(); CHKERRQ(info);
+	success = TAO_TRUE;
+//        bnls->gamma_factor *= 2; 
+//        bnls->gamma = bnls->gamma_factor*(gnorm); 
+//#if !defined(PETSC_USE_COMPLEX)
+//        info=PetscInfo2(tao,"TaoSolve_NLS:  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",bnls->gamma_factor,bnls->gamma);
+//	CHKERRQ(info);
+//#else
+//        info=PetscInfo3(tao,"TaoSolve_NLS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g, gdx %22.12e \n",
+//	     bnls->gamma_factor,PetscReal(bnls->gamma),gdx);CHKERRQ(info);
+//#endif
+//        info = Hsub->ShiftDiagonal(bnls->gamma);CHKERRQ(info);
+//        if (f != 0.0) {
+//          info = M->SetDelta(2.0 * TaoAbsDouble(f) / (gnorm*gnorm)); CHKERRQ(info);
+//        }
+//        else {
+//          info = M->SetDelta(2.0 / (gnorm*gnorm)); CHKERRQ(info);
+//        }
+//        info = M->Reset(); CHKERRQ(info);
+//        info = M->Update(X, G); CHKERRQ(info);
+//        success = TAO_FALSE;
       } else {
 	success = TAO_TRUE;
       }

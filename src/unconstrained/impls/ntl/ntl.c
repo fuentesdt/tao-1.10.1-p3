@@ -436,6 +436,7 @@ static int TaoSolve_NTL(TAO_SOLVER tao, void *solver)
     info=PetscInfo2(tao,"TaoSolve_NTL: gnorm=%22.12e, boundNorm=%22.12e\n",gnorm,boundNorm);
     pksp->printreason = PETSC_TRUE;
     info = KSPView(pksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info);
+    M->View();
 
     // Solve the Newton system of equations
     info = TaoPreLinearSolve(tao, H); CHKERRQ(info);
