@@ -176,20 +176,17 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
 
       info = DX->SetToZero(); CHKERRQ(info);
       info = DX->ReducedXPY(DXFree,FreeVariables);CHKERRQ(info);
-      info = DX->BoundGradientProjection(DX,XL,X,XU); CHKERRQ(info);
       info = DX->Dot(G,&gdx); CHKERRQ(info);
 
       if (gdx>=0 || success==TAO_FALSE) { /* use bfgs direction */
-        info=PetscInfo1(tao,"Newton Solve Fail use BFGS direction, gdx %22.12e \n",gdx);
         info = M->Solve(G, DX, &success); CHKERRQ(info);
-        info = DX->Negate(); CHKERRQ(info);
         info = DX->BoundGradientProjection(DX,XL,X,XU); CHKERRQ(info);
+        info = DX->Negate(); CHKERRQ(info);
         // Check for success (descent direction)
         info = DX->Dot(G,&gdx); CHKERRQ(info);
         if (gdx >= 0) {
           // Step is not descent or solve was not successful
           // Use steepest descent direction (scaled)
-          info=PetscInfo1(tao,"LMVM Solve Fail use steepest descent, gdx %22.12e \n",gdx);
           if (f != 0.0) {
             info = M->SetDelta(2.0 * TaoAbsDouble(f) / (gnorm*gnorm)); CHKERRQ(info);
           }
@@ -200,6 +197,11 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
           info = M->Update(X, G); CHKERRQ(info);
           info = DX->CopyFrom(G);
           info = DX->Negate(); CHKERRQ(info);
+          info = DX->Dot(G,&gdx); CHKERRQ(info);
+          info=PetscInfo1(tao,"LMVM Solve Fail use steepest descent, gdx %22.12e \n",gdx);
+        } 
+        else {
+          info=PetscInfo1(tao,"Newton Solve Fail use BFGS direction, gdx %22.12e \n",gdx);
         } 
 	success = TAO_TRUE;
 //        bnls->gamma_factor *= 2; 
