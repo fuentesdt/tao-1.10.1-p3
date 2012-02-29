@@ -84,6 +84,8 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
   if(!bnls->M) bnls->M = new TaoLMVMMat(X);
   TaoLMVMMat *M = bnls->M;
   KSP pksp = pls->GetKSP();
+  // we will want to provide an initial guess in case neg curvature on the first iteration
+  info = KSPSetInitialGuessNonzero(pksp,PETSC_TRUE); CHKERRQ(info);
   PC ppc;
   // Modify the preconditioner to use the bfgs approximation
   info = KSPGetPC(pksp, &ppc); CHKERRQ(info);
@@ -174,14 +176,17 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
 
       info = DX->SetToZero(); CHKERRQ(info);
       info = DX->ReducedXPY(DXFree,FreeVariables);CHKERRQ(info);
+      info = DX->BoundGradientProjection(DX,XL,X,XU); CHKERRQ(info);
       info = DX->Dot(G,&gdx); CHKERRQ(info);
 
       if (gdx>=0 || success==TAO_FALSE) { /* use bfgs direction */
         info=PetscInfo1(tao,"Newton Solve Fail use BFGS direction, gdx %22.12e \n",gdx);
         info = M->Solve(G, DX, &success); CHKERRQ(info);
+        info = DX->Negate(); CHKERRQ(info);
+        info = DX->BoundGradientProjection(DX,XL,X,XU); CHKERRQ(info);
         // Check for success (descent direction)
         info = DX->Dot(G,&gdx); CHKERRQ(info);
-        if (gdx <= 0) {
+        if (gdx >= 0) {
           // Step is not descent or solve was not successful
           // Use steepest descent direction (scaled)
           info=PetscInfo1(tao,"LMVM Solve Fail use steepest descent, gdx %22.12e \n",gdx);
@@ -194,8 +199,8 @@ static int TaoSolve_BNLS(TAO_SOLVER tao, void*solver){
           info = M->Reset(); CHKERRQ(info);
           info = M->Update(X, G); CHKERRQ(info);
           info = DX->CopyFrom(G);
+          info = DX->Negate(); CHKERRQ(info);
         } 
-        info = DX->Negate(); CHKERRQ(info);
 	success = TAO_TRUE;
 //        bnls->gamma_factor *= 2; 
 //        bnls->gamma = bnls->gamma_factor*(gnorm); 
